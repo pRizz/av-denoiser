@@ -16,13 +16,12 @@ Users can pass an audio or video file through a guided denoise pipeline and get 
 
 <!-- Shipped and confirmed valuable. -->
 
-(None yet — ship to validate)
+- [x] User can install and run a Bun-based TypeScript CLI locally. Validated in Phase 1: Bun CLI Foundation & Trust Model.
 
 ### Active
 
 <!-- Current scope. Building toward these. -->
 
-- [ ] User can install and run a Bun-based TypeScript CLI locally.
 - [ ] User can pass an audio file as input and receive a cleaned audio output file.
 - [ ] User can pass a video file as input and receive a video output with cleaned audio.
 - [ ] User can use a friendly guided interactive workflow without memorizing CLI flags.
@@ -82,7 +81,7 @@ The product should be approachable for non-flag users. The ideal first-run exper
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Build as a Bun-based TypeScript CLI | Matches the user's requested stack and Bright Builds TypeScript guidance for new standalone TS projects. | — Pending |
+| Build as a Bun-based TypeScript CLI | Matches the user's requested stack and Bright Builds TypeScript guidance for new standalone TS projects. | Validated in Phase 1 with a runnable Bun CLI, strict TypeScript/Biome verification, focused Bun tests, and `doctor` preflight command. |
 | Treat audio and video inputs as v1 table stakes | The tool should be useful for both media types from the start. | — Pending |
 | Optimize video/container integrity first | The user explicitly prioritized avoiding video recompression and only modifying the audio track when possible. | — Pending |
 | Provide guided interactive flows plus flags | Friendly defaults help casual users; flags preserve power-user and batch workflows. | — Pending |
@@ -107,4 +106,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-01 after initialization*
+*Last updated: 2026-05-01 after Phase 1 completion*
