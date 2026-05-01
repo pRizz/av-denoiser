@@ -25,7 +25,9 @@ export type ProcessCommandResult =
   | { readonly kind: "invalid"; readonly reason: ProcessCommandInvalidReason };
 
 /** Creates an argv-array process command; shell command strings are intentionally unsupported. */
-export function createProcessCommand(input: ProcessCommandInput): ProcessCommandResult {
+export function createProcessCommand(
+  input: ProcessCommandInput,
+): ProcessCommandResult {
   const executable = input.executable.trim();
 
   if (executable.length === 0) {

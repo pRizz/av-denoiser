@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test";
 import {
   createProcessCommand,
-  renderDisplayCommand,
   type ProcessCommand,
+  renderDisplayCommand,
 } from "../../src/index";
 
 test("preserves paths with spaces as one argv element", () => {
@@ -29,7 +29,13 @@ test("renders a diagnostic command without changing execution data", () => {
   // Arrange
   const command: ProcessCommand = {
     executable: "ffmpeg",
-    args: ["-i", "clip with spaces.mov", "clip \"quoted\".wav", "café.wav", "-dash.wav"],
+    args: [
+      "-i",
+      "clip with spaces.mov",
+      'clip "quoted".wav',
+      "café.wav",
+      "-dash.wav",
+    ],
   };
 
   // Act
@@ -41,7 +47,7 @@ test("renders a diagnostic command without changing execution data", () => {
   expect(command.args).toEqual([
     "-i",
     "clip with spaces.mov",
-    "clip \"quoted\".wav",
+    'clip "quoted".wav',
     "café.wav",
     "-dash.wav",
   ]);

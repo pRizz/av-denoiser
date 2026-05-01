@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test";
 import {
+  type DoctorReport,
   doctorReportToOutcome,
   summarizeDoctorReport,
-  type DoctorReport,
 } from "../../src/index";
 
 test("maps missing required tools to a missing-tools failure", () => {
@@ -75,7 +75,9 @@ test("represents capability checks as not checked yet without failing tool avail
         requirement: "required",
         path: "/opt/homebrew/bin/ffmpeg",
         version: "8.1",
-        capabilities: [{ kind: "not-checked-yet", id: "afftdn-filter", phase: "01" }],
+        capabilities: [
+          { kind: "not-checked-yet", id: "afftdn-filter", phase: "01" },
+        ],
       },
       availableRequiredTool("ffprobe"),
     ],
@@ -112,7 +114,9 @@ test("summarizes optional missing tools as warnings while required tools succeed
   expect(outcome.kind).toBe("success");
 });
 
-function availableRequiredTool(tool: "ffmpeg" | "ffprobe"): DoctorReport["tools"][number] {
+function availableRequiredTool(
+  tool: "ffmpeg" | "ffprobe",
+): DoctorReport["tools"][number] {
   return {
     kind: "available",
     tool,

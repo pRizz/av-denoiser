@@ -5,18 +5,18 @@ export {
   renderDoctorGuidance,
   renderHelpGuidance,
 } from "./cli/render";
-export {
-  mapOutcomeToExitCode,
-  type CommandFailureReason,
-  type CommandOutcome,
-} from "./domain/command-outcome";
 export type { CliRequest, CliRequestResult } from "./domain/cli-request";
 export {
+  type CommandFailureReason,
+  type CommandOutcome,
+  mapOutcomeToExitCode,
+} from "./domain/command-outcome";
+export {
+  type DoctorReport,
+  type DoctorSummary,
   defaultToolDefinitions,
   doctorReportToOutcome,
   summarizeDoctorReport,
-  type DoctorReport,
-  type DoctorSummary,
   type ToolAvailability,
   type ToolCapabilityStatus,
   type ToolDefinition,
@@ -24,12 +24,16 @@ export {
   type ToolRequirement,
   type UncheckedCapability,
 } from "./domain/doctor-report";
-export { ExitCode, type ExitCodeName, type ExitCodeValue } from "./domain/exit-codes";
+export {
+  ExitCode,
+  type ExitCodeName,
+  type ExitCodeValue,
+} from "./domain/exit-codes";
 export {
   createProcessCommand,
-  renderDisplayCommand,
   type ProcessCommand,
   type ProcessCommandInput,
   type ProcessCommandInvalidReason,
   type ProcessCommandResult,
+  renderDisplayCommand,
 } from "./domain/process-command";

@@ -14,7 +14,11 @@ export type ToolRequirement = "required" | "optional";
 export type ToolCapabilityStatus =
   | { readonly kind: "available"; readonly id: string }
   | { readonly kind: "missing"; readonly id: string; readonly detail: string }
-  | { readonly kind: "not-checked-yet"; readonly id: string; readonly phase: string };
+  | {
+      readonly kind: "not-checked-yet";
+      readonly id: string;
+      readonly phase: string;
+    };
 
 export type ToolAvailability =
   | {
@@ -92,7 +96,8 @@ export const defaultToolDefinitions = [
   {
     tool: "audacity",
     requirement: "optional",
-    installHint: "Install Audacity only for the future optional GUI-backed workflow.",
+    installHint:
+      "Install Audacity only for the future optional GUI-backed workflow.",
   },
   {
     tool: "melt",
@@ -108,7 +113,9 @@ export function summarizeDoctorReport(report: DoctorReport): DoctorSummary {
     .map((tool) => tool.tool);
 
   const missingOptionalTools = report.tools
-    .filter((tool) => tool.kind === "missing" && tool.requirement === "optional")
+    .filter(
+      (tool) => tool.kind === "missing" && tool.requirement === "optional",
+    )
     .map((tool) => tool.tool);
 
   const uncheckedCapabilities = report.tools.flatMap((tool) => {
@@ -149,20 +156,32 @@ export function doctorReportToOutcome(report: DoctorReport): CommandOutcome {
     };
   }
 
-  return { kind: "success", message: "Doctor readiness facts are sufficient for Phase 1." };
+  return {
+    kind: "success",
+    message: "Doctor readiness facts are sufficient for Phase 1.",
+  };
 }
 
 function isRequiredUnavailable(tool: ToolAvailability): boolean {
-  return tool.requirement === "required" && (tool.kind === "missing" || tool.kind === "check-failed");
+  return (
+    tool.requirement === "required" &&
+    (tool.kind === "missing" || tool.kind === "check-failed")
+  );
 }
 
-function optionalCheckFailedWarnings(tools: readonly ToolAvailability[]): string[] {
+function optionalCheckFailedWarnings(
+  tools: readonly ToolAvailability[],
+): string[] {
   return tools
-    .filter((tool) => tool.kind === "check-failed" && tool.requirement === "optional")
+    .filter(
+      (tool) => tool.kind === "check-failed" && tool.requirement === "optional",
+    )
     .map((tool) => `Optional tool check failed: ${tool.tool}`);
 }
 
-function missingCapabilityWarnings(tools: readonly ToolAvailability[]): string[] {
+function missingCapabilityWarnings(
+  tools: readonly ToolAvailability[],
+): string[] {
   return tools.flatMap((tool) => {
     if (tool.kind !== "available") {
       return [];
@@ -170,6 +189,8 @@ function missingCapabilityWarnings(tools: readonly ToolAvailability[]): string[]
 
     return tool.capabilities
       .filter((capability) => capability.kind === "missing")
-      .map((capability) => `Missing capability for ${tool.tool}: ${capability.id}`);
+      .map(
+        (capability) => `Missing capability for ${tool.tool}: ${capability.id}`,
+      );
   });
 }
