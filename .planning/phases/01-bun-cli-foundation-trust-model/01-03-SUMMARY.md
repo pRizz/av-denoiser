@@ -1,4 +1,8 @@
 ---
+generated_by: gsd-execute-plan
+lifecycle_mode: yolo
+phase_lifecycle_id: 01-2026-05-01T23-00-58
+generated_at: "2026-05-01T23:59:00.000Z"
 phase: 01-bun-cli-foundation-trust-model
 plan: 03
 subsystem: testing
@@ -30,10 +34,6 @@ patterns-established:
   - "Adapter tests use process.execPath for argv-only Bun spawn smoke."
 
 requirements-completed: [TRUST-01]
-generated_by: gsd-execute-plan
-lifecycle_mode: yolo
-phase_lifecycle_id: 01-2026-05-01T23-00-58
-generated_at: 2026-05-01T23:59:00.000Z
 
 duration: "~12min"
 completed: 2026-05-01
@@ -84,7 +84,7 @@ completed: 2026-05-01
 - **Files modified:** `test/adapters/process-runner.test.ts`
 - **Committed in:** `ca7abc3`
 
----
+***
 
 **Total deviations:** 1 auto-fixed (bug in test expectation)
 **Impact on plan:** Preserves argv-only invocation and trustworthy success signal without flake or false negatives.
@@ -107,6 +107,6 @@ None.
 - `git log --oneline ca7abc3` → FOUND
 - `git log --oneline fe4073b` → FOUND
 
----
+***
 _Phase: 01-bun-cli-foundation-trust-model_
 _Completed: 2026-05-01_

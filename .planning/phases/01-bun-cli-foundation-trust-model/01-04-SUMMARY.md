@@ -1,4 +1,8 @@
 ---
+generated_by: gsd-execute-plan
+lifecycle_mode: yolo
+phase_lifecycle_id: 01-2026-05-01T23-00-58
+generated_at: "2026-05-01T23:59:00.000Z"
 phase: 01-bun-cli-foundation-trust-model
 plan: "04"
 subsystem: cli
@@ -36,11 +40,6 @@ requirements-completed:
   - CLI-02
   - CLI-03
   - TRUST-04
-
-generated_by: gsd-execute-plan
-lifecycle_mode: yolo
-phase_lifecycle_id: 01-2026-05-01T23-00-58
-generated_at: "2026-05-01T23:59:00.000Z"
 
 duration: "~15min"
 completed: "2026-05-01"

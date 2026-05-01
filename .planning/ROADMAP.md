@@ -12,7 +12,7 @@ v1 builds a trustworthy local Bun/TypeScript CLI for cleaning audio in audio and
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Bun CLI Foundation & Trust Model** - Users can install, run, diagnose, and verify the safe CLI shell.
+- [x] **Phase 1: Bun CLI Foundation & Trust Model** - Users can install, run, diagnose, and verify the safe CLI shell. (completed 2026-05-01)
 - [x] **Phase 2: Media Probing & Output Planning** - Users can inspect input media facts and safe output decisions before processing.
 - [ ] **Phase 3: Video Preservation & Fallback Control** - Users can understand and control when video stream copy is possible or impossible.
 - [ ] **Phase 4: Core Audio Pipeline & SoX Cleanup** - Users can clean single audio files through transparent presets and sequential FFmpeg/SoX steps.
@@ -36,10 +36,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 4 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Re-verify Bun package/scripts, strict TS/Biome scope, and CLI entry smoke (`CLI-01`).
-- [ ] 01-02-PLAN.md — Regression-lock exit taxonomy, outcomes, ProcessCommand, and doctor unions (`CLI-03`).
-- [ ] 01-03-PLAN.md — Strengthen argv-only process runner + injectable tool discovery coverage (`TRUST-01`).
-- [ ] 01-04-PLAN.md — Doctor/CLI integration tests, README exit-code docs, aggregate `verify` gate (`CLI-02`, `CLI-03`, `TRUST-04`).
+- [x] 01-01-PLAN.md — Re-verify Bun package/scripts, strict TS/Biome scope, and CLI entry smoke (`CLI-01`).
+- [x] 01-02-PLAN.md — Regression-lock exit taxonomy, outcomes, ProcessCommand, and doctor unions (`CLI-03`).
+- [x] 01-03-PLAN.md — Strengthen argv-only process runner + injectable tool discovery coverage (`TRUST-01`).
+- [x] 01-04-PLAN.md — Doctor/CLI integration tests, README exit-code docs, aggregate `verify` gate (`CLI-02`, `CLI-03`, `TRUST-04`).
 
 ### Phase 2: Media Probing & Output Planning
 **Goal**: Users can inspect structured input media facts and safe output decisions before any denoise step runs.
@@ -152,7 +152,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Bun CLI Foundation & Trust Model | 0/4 | Planned (replanned) | - |
+| 1. Bun CLI Foundation & Trust Model | 4/4 | Complete    | 2026-05-01 |
 | 2. Media Probing & Output Planning | 3/3 | Complete    | 2026-05-01 |
 | 3. Video Preservation & Fallback Control | 0/1 | Not started | - |
 | 4. Core Audio Pipeline & SoX Cleanup | 0/1 | Not started | - |
