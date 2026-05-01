@@ -92,7 +92,7 @@ Actionable directives to enforce:
 
 | Library / Tool | Version | Purpose | Why Standard |
 |----------------|---------|---------|--------------|
-| Bun runtime | Target 1.3.13; local 1.3.9 installed | Runtime, package manager, script runner, test runner, and subprocess API | Bun is the locked project runtime and supports TypeScript execution, `bun test`, `Bun.spawn`, and `Bun.which`. [CITED: https://bun.sh/blog/bun-v1.3.13] [VERIFIED: local shell] |
+| Bun runtime | Phase 1 minimum 1.3.9; current target 1.3.13 | Runtime, package manager, script runner, test runner, and subprocess API | Bun is the locked project runtime and supports TypeScript execution, `bun test`, `Bun.spawn`, and `Bun.which`. Phase 1 must avoid 1.3.13-only flags and should document both the local/current Bun version and the target version in `doctor`. [CITED: https://bun.sh/blog/bun-v1.3.13] [VERIFIED: local shell] |
 | TypeScript | 6.0.3 | Strict typing and domain modeling | Current npm version; Bun docs recommend strict Bun-friendly compiler options including `"module": "Preserve"`, `"moduleResolution": "bundler"`, `"types": ["bun"]`, and `"noUncheckedIndexedAccess": true`. [VERIFIED: npm registry] [CITED: https://bun.sh/docs/runtime/typescript] |
 | `@types/bun` | 1.3.13 | Bun runtime type definitions | Current npm version; Bun docs instruct Bun TypeScript projects to install `@types/bun` for Bun globals. [VERIFIED: npm registry] [CITED: https://bun.sh/docs/runtime/typescript] |
 | `commander` | 14.0.3 | CLI parser, subcommands, help, command errors | Current stable npm version; Commander provides command definition, strict option parsing, automated help, and action handlers. [VERIFIED: npm registry] [CITED: https://raw.githubusercontent.com/tj/commander.js/master/Readme.md] |
@@ -105,7 +105,7 @@ Actionable directives to enforce:
 |----------------|---------|---------|-------------|
 | `@biomejs/biome` | 2.4.14 | Formatting, linting, import organization, CI-style checks | Install in Phase 1 and expose repo-native scripts. Biome docs recommend installing it as an exact dev dependency. [VERIFIED: npm registry] [CITED: https://biomejs.dev/guides/getting-started/] |
 | Bun test | Runtime bundled | Unit tests for pure logic and command builders | Use for Phase 1 tests; Bun test supports TypeScript, Jest-like APIs, filtering, coverage, and non-zero exits on failure. [CITED: https://bun.sh/docs/cli/test] |
-| `@clack/prompts` | 1.3.0 | Future guided prompts | Defer runtime use until Phase 6; install only if the planner chooses to create prompt adapter scaffolding now. [VERIFIED: npm registry] [VERIFIED: CONTEXT.md] |
+| `@clack/prompts` | 1.3.0 | Future guided prompts | Defer installation and runtime use until Phase 6. Phase 1 must not install Clack or create prompt adapter scaffolding. [VERIFIED: npm registry] [VERIFIED: CONTEXT.md] |
 
 ### Alternatives Considered
 
@@ -123,7 +123,7 @@ bun add commander @commander-js/extra-typings zod
 bun add -d typescript @types/bun @biomejs/biome
 ```
 
-Optional Phase 6 dependency, not required for the Phase 1 command surface:
+Optional Phase 6 dependency, not required for the Phase 1 command surface and not to be installed in Phase 1:
 
 ```bash
 bun add @clack/prompts
@@ -462,7 +462,7 @@ Planner notes:
 
 - `verify` should be the aggregate phase gate once `package.json` exists. [CITED: Bright Builds verification standard]
 - Use `bun test --coverage` only if the phase adds coverage expectations; Bun supports coverage, but Bright Builds requires meaningful pure logic tests more than a numeric threshold. [CITED: https://bun.sh/docs/cli/test] [CITED: Bright Builds testing standard]
-- Avoid Bun 1.3.13-specific test flags unless the plan also updates/checks the local Bun runtime. [VERIFIED: local shell] [CITED: https://bun.sh/blog/bun-v1.3.13]
+- Avoid Bun 1.3.13-specific test flags in Phase 1. The local compatible baseline is Bun 1.3.9, while `doctor` should document the current target/current version so users can see runtime drift without requiring an upgrade for Phase 1. [VERIFIED: local shell] [CITED: https://bun.sh/blog/bun-v1.3.13]
 
 ## State of the Art
 
@@ -483,7 +483,7 @@ Planner notes:
 
 | Dependency | Required By | Available | Version | Fallback |
 |------------|-------------|-----------|---------|----------|
-| Bun | CLI runtime and scripts | yes | 1.3.9 local; 1.3.13 current target | Use 1.3.9-compatible APIs or upgrade before using newer flags. [VERIFIED: local shell] [CITED: https://bun.sh/blog/bun-v1.3.13] |
+| Bun | CLI runtime and scripts | yes | 1.3.9 local; 1.3.13 current target | Phase 1 uses 1.3.9-compatible APIs, avoids 1.3.13-only flags, and has `doctor` document target/current Bun version information. [VERIFIED: local shell] [CITED: https://bun.sh/blog/bun-v1.3.13] |
 | npm registry access | Dependency version verification | yes | npm 11.6.2 | None needed. [VERIFIED: local shell] |
 | FFmpeg | Required future media tool reported by `doctor` | yes | 8.1 | Phase 1 version check only; real capabilities later. [VERIFIED: local shell] [VERIFIED: CONTEXT.md] |
 | FFprobe | Required future media tool reported by `doctor` | yes | 8.1 | Phase 1 version check only; real probing later. [VERIFIED: local shell] [VERIFIED: CONTEXT.md] |
@@ -528,22 +528,19 @@ All implementation-shaping claims in this research were verified against phase/p
 |---|-------|---------|---------------|
 | - | None | - | - |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **What Bun minimum should `package.json` document?**
    - What we know: Current target research says Bun 1.3.13, while local Bun is 1.3.9. [VERIFIED: local shell] [CITED: https://bun.sh/blog/bun-v1.3.13]
-   - What's unclear: Whether the implementation should require an upgrade now or avoid newer Bun-specific flags.
-   - Recommendation: Use APIs documented before/at 1.3.9 where practical and add a `doctor` warning if Bun is below the target; only require 1.3.13 if the plan uses new 1.3.13 features.
+   - RESOLVED: Phase 1 will use APIs compatible with local Bun 1.3.9, document target/current Bun information in `doctor`, and avoid requiring 1.3.13-only flags. The current project target remains 1.3.13 for forward-looking stack documentation.
 
 2. **Should `@clack/prompts` be installed now or deferred?**
    - What we know: Guided prompts are out of scope until Phase 6, but the project stack recommends Clack for guided UX. [VERIFIED: CONTEXT.md] [VERIFIED: STACK.md]
-   - What's unclear: Whether the planner wants to reserve a prompt adapter module now.
-   - Recommendation: Defer the dependency unless a Phase 1 task creates prompt-adapter scaffolding that is actually imported and tested.
+   - RESOLVED: Defer `@clack/prompts` until Phase 6. Phase 1 will not install Clack and will not create prompt-adapter scaffolding.
 
 3. **Should `doctor` fail nonzero when FFmpeg/FFprobe are missing?**
    - What we know: FFmpeg/FFprobe are required for v1 media work, and Phase 1 success says `doctor` reports required and optional tools. [VERIFIED: ROADMAP.md] [VERIFIED: STACK.md]
-   - What's unclear: Whether a developer without FFmpeg should be blocked from `doctor` itself.
-   - Recommendation: `doctor` should exit `missingTools` when required tools are missing, but optional missing tools should not fail unless `--strict` is added.
+   - RESOLVED: `doctor` returns the `missingTools` exit behavior when required tools (`ffmpeg`, `ffprobe`) are missing. Missing optional tools are warnings and do not fail in Phase 1; a future strict mode can change that behavior when explicitly planned.
 
 ## Sources
 
