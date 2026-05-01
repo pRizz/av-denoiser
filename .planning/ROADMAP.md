@@ -33,10 +33,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User receives documented exit codes for success, invalid input, missing tools, planning failures, processing failures, and fallback-required outcomes.
   4. User can trust that external media tools are invoked through argv arrays rather than unsafe shell command strings.
   5. User can run repo-native verification that covers pure planning logic, parsers, command builders, and representative probe fixtures.
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: TBD
+- [ ] 01-01-PLAN.md — Create the Bun package, strict TypeScript/Biome configuration, and typed CLI entrypoint.
+- [ ] 01-02-PLAN.md — Implement the pure trust-model domain for exit codes, process commands, and doctor facts.
+- [ ] 01-03-PLAN.md — Wire doctor, safe process execution, docs, and full verification into the CLI.
 
 ### Phase 2: Media Probing & Output Planning
 **Goal**: Users can inspect structured input media facts and safe output decisions before any denoise step runs.
@@ -147,7 +149,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Bun CLI Foundation & Trust Model | 0/1 | Not started | - |
+| 1. Bun CLI Foundation & Trust Model | 0/3 | Not started | - |
 | 2. Media Probing & Output Planning | 0/1 | Not started | - |
 | 3. Video Preservation & Fallback Control | 0/1 | Not started | - |
 | 4. Core Audio Pipeline & SoX Cleanup | 0/1 | Not started | - |
