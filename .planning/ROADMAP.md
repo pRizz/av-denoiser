@@ -50,10 +50,12 @@ Plans:
   2. User can choose safe output paths while the tool protects source files from in-place modification and accidental overwrite.
   3. User can see whether a planned output is audio-only, video-copy-safe, fallback-required, or unsupported before processing starts.
   4. User can rely on deliberate audio codec and container choices instead of hidden FFmpeg defaults for final output planning.
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD
+- [ ] 02-01-PLAN.md — Typed FFprobe JSON parsing and argv-only probe adapter.
+- [ ] 02-02-PLAN.md — Output path rules and modality planning from `MediaProbe`.
+- [ ] 02-03-PLAN.md — `inspect` CLI command, orchestration, and human-readable summary.
 
 ### Phase 3: Video Preservation & Fallback Control
 **Goal**: Users can understand and control video stream-copy decisions before any fallback changes quality or container behavior.
@@ -151,7 +153,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Bun CLI Foundation & Trust Model | 2/4 | In Progress | - |
-| 2. Media Probing & Output Planning | 0/1 | Not started | - |
+| 2. Media Probing & Output Planning | 0/3 | Planned | - |
 | 3. Video Preservation & Fallback Control | 0/1 | Not started | - |
 | 4. Core Audio Pipeline & SoX Cleanup | 0/1 | Not started | - |
 | 5. Final Media Output & Reporting | 0/1 | Not started | - |
