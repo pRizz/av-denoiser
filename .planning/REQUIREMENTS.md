@@ -117,54 +117,54 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLI-01 | TBD | Pending |
-| CLI-02 | TBD | Pending |
-| CLI-03 | TBD | Pending |
-| CLI-04 | TBD | Pending |
-| MEDIA-01 | TBD | Pending |
-| MEDIA-02 | TBD | Pending |
-| MEDIA-03 | TBD | Pending |
-| MEDIA-04 | TBD | Pending |
-| MEDIA-05 | TBD | Pending |
-| VIDEO-01 | TBD | Pending |
-| VIDEO-02 | TBD | Pending |
-| VIDEO-03 | TBD | Pending |
-| VIDEO-04 | TBD | Pending |
-| VIDEO-05 | TBD | Pending |
-| PIPE-01 | TBD | Pending |
-| PIPE-02 | TBD | Pending |
-| PIPE-03 | TBD | Pending |
-| PIPE-04 | TBD | Pending |
-| PIPE-05 | TBD | Pending |
-| PIPE-06 | TBD | Pending |
-| TOOL-01 | TBD | Pending |
-| TOOL-02 | TBD | Pending |
-| TOOL-03 | TBD | Pending |
-| TOOL-04 | TBD | Pending |
-| TOOL-05 | TBD | Pending |
-| TOOL-06 | TBD | Pending |
-| TOOL-07 | TBD | Pending |
-| TOOL-08 | TBD | Pending |
-| UX-01 | TBD | Pending |
-| UX-02 | TBD | Pending |
-| UX-03 | TBD | Pending |
-| UX-04 | TBD | Pending |
-| UX-05 | TBD | Pending |
-| BATCH-01 | TBD | Pending |
-| BATCH-02 | TBD | Pending |
-| BATCH-03 | TBD | Pending |
-| BATCH-04 | TBD | Pending |
-| BATCH-05 | TBD | Pending |
-| TRUST-01 | TBD | Pending |
-| TRUST-02 | TBD | Pending |
-| TRUST-03 | TBD | Pending |
-| TRUST-04 | TBD | Pending |
+| CLI-01 | Phase 1 | Pending |
+| CLI-02 | Phase 1 | Pending |
+| CLI-03 | Phase 1 | Pending |
+| CLI-04 | Phase 6 | Pending |
+| MEDIA-01 | Phase 4 | Pending |
+| MEDIA-02 | Phase 5 | Pending |
+| MEDIA-03 | Phase 2 | Pending |
+| MEDIA-04 | Phase 2 | Pending |
+| MEDIA-05 | Phase 2 | Pending |
+| VIDEO-01 | Phase 3 | Pending |
+| VIDEO-02 | Phase 3 | Pending |
+| VIDEO-03 | Phase 3 | Pending |
+| VIDEO-04 | Phase 5 | Pending |
+| VIDEO-05 | Phase 2 | Pending |
+| PIPE-01 | Phase 4 | Pending |
+| PIPE-02 | Phase 4 | Pending |
+| PIPE-03 | Phase 4 | Pending |
+| PIPE-04 | Phase 4 | Pending |
+| PIPE-05 | Phase 4 | Pending |
+| PIPE-06 | Phase 4 | Pending |
+| TOOL-01 | Phase 5 | Pending |
+| TOOL-02 | Phase 4 | Pending |
+| TOOL-03 | Phase 8 | Pending |
+| TOOL-04 | Phase 8 | Pending |
+| TOOL-05 | Phase 8 | Pending |
+| TOOL-06 | Phase 8 | Pending |
+| TOOL-07 | Phase 8 | Pending |
+| TOOL-08 | Phase 8 | Pending |
+| UX-01 | Phase 6 | Pending |
+| UX-02 | Phase 6 | Pending |
+| UX-03 | Phase 6 | Pending |
+| UX-04 | Phase 6 | Pending |
+| UX-05 | Phase 6 | Pending |
+| BATCH-01 | Phase 7 | Pending |
+| BATCH-02 | Phase 7 | Pending |
+| BATCH-03 | Phase 7 | Pending |
+| BATCH-04 | Phase 7 | Pending |
+| BATCH-05 | Phase 7 | Pending |
+| TRUST-01 | Phase 1 | Pending |
+| TRUST-02 | Phase 5 | Pending |
+| TRUST-03 | Phase 5 | Pending |
+| TRUST-04 | Phase 1 | Pending |
 
 **Coverage:**
 - v1 requirements: 42 total
-- Mapped to phases: 0
-- Unmapped: 42 (pending roadmap)
+- Mapped to phases: 42
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-01*
-*Last updated: 2026-05-01 after initial definition*
+*Last updated: 2026-05-01 after roadmap creation*
