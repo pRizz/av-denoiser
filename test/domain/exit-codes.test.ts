@@ -63,6 +63,54 @@ test("maps invalid input failures to invalid input exit code", () => {
   expect(exitCode).toBe(ExitCode.invalidInput);
 });
 
+test("maps planning failures to planning failure exit code", () => {
+  // Arrange
+  const outcome: CommandOutcome = {
+    kind: "failure",
+    reason: { kind: "planning-failure", message: "Cannot build output plan." },
+  };
+
+  // Act
+  const exitCode = mapOutcomeToExitCode(outcome);
+
+  // Assert
+  expect(exitCode).toBe(ExitCode.planningFailure);
+});
+
+test("maps processing failures to processing failure exit code", () => {
+  // Arrange
+  const outcome: CommandOutcome = {
+    kind: "failure",
+    reason: {
+      kind: "processing-failure",
+      message: "ffmpeg exited with code 1",
+    },
+  };
+
+  // Act
+  const exitCode = mapOutcomeToExitCode(outcome);
+
+  // Assert
+  expect(exitCode).toBe(ExitCode.processingFailure);
+});
+
+test("maps fallback-required failures to fallback required exit code", () => {
+  // Arrange
+  const outcome: CommandOutcome = {
+    kind: "failure",
+    reason: {
+      kind: "fallback-required",
+      message: "Video recompression requires explicit approval.",
+    },
+  };
+
+  // Act
+  const exitCode = mapOutcomeToExitCode(outcome);
+
+  // Assert
+  expect(exitCode).toBe(ExitCode.fallbackRequired);
+});
+
 test("maps unexpected internal errors to internal error exit code", () => {
   // Arrange
   const outcome: CommandOutcome = {
