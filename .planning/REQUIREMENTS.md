@@ -9,7 +9,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### CLI Foundation
 
-- [ ] **CLI-01**: User can install dependencies and run the Bun-based TypeScript CLI locally.
+- [x] **CLI-01**: User can install dependencies and run the Bun-based TypeScript CLI locally.
 - [ ] **CLI-02**: User can run a `doctor` or preflight command that reports required and optional media tools, versions, and missing capabilities.
 - [ ] **CLI-03**: User receives stable, documented exit codes for success, invalid input, missing tools, planning failures, processing failures, and fallback-required outcomes.
 - [ ] **CLI-04**: User can run every guided workflow through equivalent non-interactive flags for repeatable automation.
@@ -71,7 +71,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **TRUST-01**: User can trust that external tools are invoked with argv arrays rather than unsafe shell command strings.
 - [ ] **TRUST-02**: User can inspect logs or summaries that explain what the tool did without exposing confusing raw media-tool output as the only error message.
 - [ ] **TRUST-03**: User can rely on post-run media verification that checks output existence, basic probe validity, duration sanity, and video-copy status.
-- [ ] **TRUST-04**: User can run tests or verification commands that cover pure planning logic, parser logic, command builders, and representative media probe fixtures.
+- [x] **TRUST-04**: User can run tests or verification commands that cover pure planning logic, parser logic, command builders, and representative media probe fixtures.
 
 ## v2 Requirements
 
@@ -117,7 +117,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLI-01 | Phase 1 | Pending |
+| CLI-01 | Phase 1 | Complete |
 | CLI-02 | Phase 1 | Pending |
 | CLI-03 | Phase 1 | Pending |
 | CLI-04 | Phase 6 | Pending |
@@ -158,7 +158,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TRUST-01 | Phase 1 | Pending |
 | TRUST-02 | Phase 5 | Pending |
 | TRUST-03 | Phase 5 | Pending |
-| TRUST-04 | Phase 1 | Pending |
+| TRUST-04 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 42 total

@@ -36,7 +36,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 4 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Create the Bun package, strict TypeScript/Biome configuration, and typed CLI entrypoint.
+- [x] 01-01-PLAN.md — Create the Bun package, strict TypeScript/Biome configuration, and typed CLI entrypoint.
 - [ ] 01-02-PLAN.md — Implement the pure trust-model domain for exit codes, process commands, and doctor facts.
 - [ ] 01-03-PLAN.md — Wire the safe process runner and deterministic tool discovery adapters.
 - [ ] 01-04-PLAN.md — Wire doctor, docs, exit behavior, and full verification into the CLI.
