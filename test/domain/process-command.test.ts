@@ -90,3 +90,22 @@ test("supports timeout and ignored stdin without shell options", () => {
     },
   });
 });
+
+test("copies argv so mutating the input array cannot alter the command", () => {
+  // Arrange
+  const args = ["-i", "input.wav"];
+  const input = { executable: "ffmpeg", args };
+
+  // Act
+  const result = createProcessCommand(input);
+  args.push("--evil-flag");
+
+  // Assert
+  expect(result).toEqual({
+    kind: "created",
+    command: {
+      executable: "ffmpeg",
+      args: ["-i", "input.wav"],
+    },
+  });
+});

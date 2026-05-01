@@ -114,6 +114,48 @@ test("summarizes optional missing tools as warnings while required tools succeed
   expect(outcome.kind).toBe("success");
 });
 
+test("treats missing capabilities as verified gaps while not-checked-yet stays deferred", () => {
+  // Arrange
+  const report: DoctorReport = {
+    tools: [
+      {
+        kind: "available",
+        tool: "ffmpeg",
+        requirement: "required",
+        path: "/opt/homebrew/bin/ffmpeg",
+        version: "8.1",
+        capabilities: [
+          {
+            kind: "missing",
+            id: "ladspa-filter",
+            detail: "FFmpeg build lacks ladspa",
+          },
+          {
+            kind: "not-checked-yet",
+            id: "afftdn-filter",
+            phase: "02",
+          },
+        ],
+      },
+      availableRequiredTool("ffprobe"),
+    ],
+  };
+
+  // Act
+  const summary = summarizeDoctorReport(report);
+  const outcome = doctorReportToOutcome(report);
+
+  // Assert
+  expect(summary.warnings).toContain(
+    "Missing capability for ffmpeg: ladspa-filter",
+  );
+  expect(summary.uncheckedCapabilities).toEqual([
+    { tool: "ffmpeg", id: "afftdn-filter", phase: "02" },
+  ]);
+  expect(summary.status).toBe("ready");
+  expect(outcome.kind).toBe("success");
+});
+
 function availableRequiredTool(
   tool: "ffmpeg" | "ffprobe",
 ): DoctorReport["tools"][number] {
