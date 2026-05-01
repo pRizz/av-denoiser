@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test";
 import {
+  type CommandOutcome,
   ExitCode,
   mapOutcomeToExitCode,
-  type CommandOutcome,
 } from "../../src/index";
 
 test("locks stable exit code values", () => {
