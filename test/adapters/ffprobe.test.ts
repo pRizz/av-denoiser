@@ -59,3 +59,77 @@ test("runFfprobeProbe parses stdout from injected runProcess", async () => {
 
   expect(result.value.streams[0]?.codec_type).toBe("audio");
 });
+
+test("runFfprobeProbe maps non-zero exit to non-zero-exit error", async () => {
+  const runProcess: ProcessRunner = async () => ({
+    kind: "exited",
+    exitCode: 1,
+    stdout: "",
+    stderr: "probe failed",
+  });
+
+  const result = await runFfprobeProbe({
+    ffprobePath: "/bin/ffprobe",
+    inputPath: "any.m4a",
+    runProcess,
+  });
+
+  expect(result.ok).toBe(false);
+  if (result.ok) {
+    return;
+  }
+
+  expect(result.error.kind).toBe("non-zero-exit");
+  if (result.error.kind !== "non-zero-exit") {
+    return;
+  }
+
+  expect(result.error.exitCode).toBe(1);
+});
+
+test("runFfprobeProbe maps whitespace-only stdout to empty-output after zero exit", async () => {
+  const runProcess: ProcessRunner = async () => ({
+    kind: "exited",
+    exitCode: 0,
+    stdout: "   ",
+    stderr: "",
+  });
+
+  const result = await runFfprobeProbe({
+    ffprobePath: "/bin/ffprobe",
+    inputPath: "any.m4a",
+    runProcess,
+  });
+
+  expect(result.ok).toBe(false);
+  if (result.ok) {
+    return;
+  }
+
+  expect(result.error.kind).toBe("empty-output");
+});
+
+test("runFfprobeProbe maps spawn-failed process result", async () => {
+  const runProcess: ProcessRunner = async () => ({
+    kind: "spawn-failed",
+    error: new Error("ENOENT"),
+  });
+
+  const result = await runFfprobeProbe({
+    ffprobePath: "/missing/ffprobe",
+    inputPath: "any.m4a",
+    runProcess,
+  });
+
+  expect(result.ok).toBe(false);
+  if (result.ok) {
+    return;
+  }
+
+  expect(result.error.kind).toBe("spawn-failed");
+  if (result.error.kind !== "spawn-failed") {
+    return;
+  }
+
+  expect(result.error.message).toBe("ENOENT");
+});

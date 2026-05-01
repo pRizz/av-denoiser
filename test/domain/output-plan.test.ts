@@ -59,6 +59,7 @@ test("planMediaOutput audio-only when only audio streams", () => {
     return;
   }
 
+  expect(plan.reasonCodes).toContain("phase-2-stub-audio-only");
   expect(plan.selectedAudioStreamIndex).toBe(0);
   expect(plan.plannedAudioCodec).toBe("aac");
   expect(plan.plannedContainer).toBe("mp4");
@@ -89,6 +90,13 @@ test("planMediaOutput video-copy-safe when audio and video present", () => {
 
   // Assert
   expect(plan.modality).toBe("video-copy-safe");
+  if (plan.modality === "unsupported") {
+    return;
+  }
+
+  expect(plan.reasonCodes).toContain("phase-2-stub-video-copy-safe");
+  expect(plan.plannedAudioCodec).toBe("aac");
+  expect(plan.plannedContainer).toBe("mp4");
 });
 
 test("planMediaOutput prefers default audio disposition", () => {
@@ -124,4 +132,39 @@ test("planMediaOutput prefers default audio disposition", () => {
   }
 
   expect(plan.selectedAudioStreamIndex).toBe(1);
+});
+
+test("planMediaOutput prefers lower-index default stream over higher channel count", () => {
+  // Arrange — index 0 is marked default but has fewer channels than index 1
+  const probe: MediaProbe = {
+    streams: [
+      {
+        index: 0,
+        codec_name: "aac",
+        codec_type: "audio",
+        channels: 1,
+        disposition: { default: 1 },
+      },
+      {
+        index: 1,
+        codec_name: "aac",
+        codec_type: "audio",
+        channels: 6,
+      },
+    ],
+  };
+
+  // Act
+  const plan = planMediaOutput({
+    probe,
+    pathOutcome: pathOk("/in.mkv", "/out.mkv"),
+  });
+
+  // Assert
+  expect(plan.modality).not.toBe("unsupported");
+  if (plan.modality === "unsupported") {
+    return;
+  }
+
+  expect(plan.selectedAudioStreamIndex).toBe(0);
 });

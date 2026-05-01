@@ -65,6 +65,45 @@ test("runInspectRequest returns inspect summary when probe succeeds", async () =
   expect(outcome.inspect.summary.plannedAudioCodec).toBe("aac");
 });
 
+test("runInspectRequest json flag preserves planned codec and container in serialized summary", async () => {
+  // Arrange
+  const fixture = await Bun.file(
+    `${import.meta.dir}/../fixtures/ffprobe/minimal-audio.json`,
+  ).text();
+
+  // Act
+  const outcome = await runInspectRequest(
+    {
+      kind: "inspect",
+      inputPath: "clip.m4a",
+      force: false,
+      json: true,
+    },
+    {
+      cwd: "/project",
+      maybeWhich: () => "/bin/ffprobe",
+      runProcess: async () => ({
+        kind: "exited",
+        exitCode: 0,
+        stdout: fixture,
+        stderr: "",
+      }),
+      outputExists: () => false,
+    },
+  );
+
+  // Assert
+  expect(outcome.kind).toBe("success");
+  if (outcome.kind !== "success" || outcome.inspect === undefined) {
+    return;
+  }
+
+  expect(outcome.inspect.json).toBe(true);
+  const serialized = JSON.stringify(outcome.inspect.summary);
+  expect(serialized).toContain('"plannedAudioCodec":"aac"');
+  expect(serialized).toContain('"plannedContainer":"mp4"');
+});
+
 test("runInspectRequest surfaces planning-failure when output collides", async () => {
   // Arrange
   const fixture = await Bun.file(

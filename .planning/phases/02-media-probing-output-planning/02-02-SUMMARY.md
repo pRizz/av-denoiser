@@ -2,23 +2,22 @@
 phase: 02-media-probing-output-planning
 plan: 02
 subsystem: output-planning
-tags: [paths, modality, domain]
-generated_by: gsd-execute-plan
-lifecycle_mode: yolo
-phase_lifecycle_id: 02-2026-05-01T22-28-29
-generated_at: 2026-05-01T23:45:00Z
-requirements-completed: [MEDIA-04, MEDIA-05]
+tags: [output-path, modality, VIDEO-05]
+generated_by: gsd-execute-phase
+lifecycle_mode: interactive
+phase_lifecycle_id: 02-replan-2026-05-02T001500Z
+generated_at: 2026-05-02T19:56:00Z
+requirements-completed: [MEDIA-04, MEDIA-05, VIDEO-05]
 ---
 
 # Phase 02 Plan 02 Summary
 
-**Collision-safe output paths and modality planning from probes**
+**Pure planning layer regression locks**
 
 ## Accomplishments
 
-- Implemented `resolveOutputPath` with `.avdn` default suffix, `output-equals-input`, and `output-exists` failures (`src/domain/output-path.ts`).
-- Implemented `planMediaOutput` with `audio-only`, `video-copy-safe`, `unsupported`, explicit AAC/mp4 defaults, and D-10 audio stream ordering (`src/domain/output-plan.ts`).
-- Added `InspectPlanSummary` builder in `src/domain/inspect-summary.ts`.
+- Extended `planMediaOutput` tests with Phase 2 stub `reasonCodes` and explicit `aac` / `mp4` assertions on success paths.
+- Added D-10 coverage: lower-index stream with `disposition.default` wins over a higher-index stream with more channels.
 
 ## Verification
 

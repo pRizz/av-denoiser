@@ -1,6 +1,35 @@
 import { expect, test } from "bun:test";
 
+import { parseCliRequest } from "../../src/cli/main";
 import { ExitCode } from "../../src/domain/exit-codes";
+
+test("parses inspect argv into typed inspect request", () => {
+  expect(parseCliRequest(["inspect", "clip.m4a"])).toEqual({
+    kind: "inspect",
+    inputPath: "clip.m4a",
+    force: false,
+    json: false,
+  });
+});
+
+test("parses inspect with --output --force and --json together", () => {
+  expect(
+    parseCliRequest([
+      "inspect",
+      "--output",
+      "out.mp4",
+      "--force",
+      "--json",
+      "in.mp4",
+    ]),
+  ).toEqual({
+    kind: "inspect",
+    inputPath: "in.mp4",
+    maybeOutputPath: "out.mp4",
+    force: true,
+    json: true,
+  });
+});
 
 test("default CLI prints guidance and exits successfully", async () => {
   // Arrange
