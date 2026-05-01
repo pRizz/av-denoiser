@@ -1,8 +1,8 @@
 ---
 generated_by: gsd-discuss-phase
 lifecycle_mode: yolo
-phase_lifecycle_id: 1-2026-05-01T21-21-03
-generated_at: 2026-05-01T21:21:03.063Z
+phase_lifecycle_id: 01-2026-05-01T23-00-58
+generated_at: 2026-05-01T23:00:58.240Z
 ---
 
 # Phase 1: Bun CLI Foundation & Trust Model - Context
@@ -15,6 +15,8 @@ generated_at: 2026-05-01T21:21:03.063Z
 ## Phase Boundary
 
 Phase 1 establishes the installable Bun/TypeScript CLI foundation and trust model. It should make the repository runnable, testable, and safe for later media work, but it should not implement real denoise pipelines, FFmpeg remuxing, SoX cleanup, Demucs, Audacity, Kdenlive, batch processing, or guided media workflows yet.
+
+Discussion refresh: same boundary; codebase now contains Phase 1 deliverables plus later-phase modules added by roadmap execution. Rearrchitecting or expanding Phase 1 scope is out of scope—only clarify decisions that downstream work should keep honoring.
 </domain>
 
 <decisions>
@@ -44,6 +46,7 @@ Phase 1 establishes the installable Bun/TypeScript CLI foundation and trust mode
 - **D-11:** Phase 1 must add repo-native verification commands for formatting/linting, typechecking, tests, and an aggregate check command.
 - **D-12:** Unit tests should cover pure/business logic created in this phase: exit-code mapping, doctor result aggregation, tool availability parsing, command-result handling, and safe command-builder behavior.
 - **D-13:** Tests should use clear Arrange / Act / Assert sections unless the structure is unmistakable.
+- **D-14:** Scope Biome verification to package manifests, config files, `src/`, and tests so generated or planning metadata (for example under `.planning/`) does not fail unrelated lint rules.
 
 ### Claude's Discretion
 
@@ -59,7 +62,7 @@ Phase 1 establishes the installable Bun/TypeScript CLI foundation and trust mode
 ### Project Scope
 
 - `.planning/PROJECT.md` — Project vision, core value, constraints, and key decisions.
-- `.planning/REQUIREMENTS.md` — Phase 1 requirement IDs and acceptance scope.
+- `.planning/REQUIREMENTS.md` — Phase 1 requirement IDs (CLI-01–03, TRUST-01, TRUST-04) and acceptance scope.
 - `.planning/ROADMAP.md` — Phase boundary, dependencies, and success criteria.
 - `.planning/STATE.md` — Current project position and known concerns.
 
@@ -74,6 +77,7 @@ Phase 1 establishes the installable Bun/TypeScript CLI foundation and trust mode
 
 - `AGENTS.md` — Repo instruction entrypoint with Bright Builds and GSD guidance.
 - `AGENTS.bright-builds.md` — Managed Bright Builds sidecar and pinned standards metadata.
+- `standards/index.md` — Bright Builds standards routing entrypoint.
 - `standards-overrides.md` — Repo-local standards deviations, currently none active.
 </canonical_refs>
 
@@ -82,18 +86,23 @@ Phase 1 establishes the installable Bun/TypeScript CLI foundation and trust mode
 
 ### Reusable Assets
 
-- No source code exists yet. The repository currently contains planning documents, Bright Builds managed guidance, and top-level project metadata.
+- `src/cli/main.ts`, `src/cli/command.ts`, `src/cli/render.ts` — Commander wiring, help, and human-oriented rendering.
+- `src/app/run-command.ts`, `src/app/doctor.ts` — Application orchestration for CLI requests and doctor aggregation.
+- `src/adapters/process-runner.ts` — Central `Bun.spawn` argv-only execution boundary.
+- `src/adapters/tool-discovery.ts` — PATH resolution and injectable test doubles for external tools.
+- `src/domain/exit-codes.ts`, `src/domain/command-outcome.ts`, `src/domain/doctor-report.ts`, `src/domain/cli-request.ts`, `src/domain/process-command.ts` — Trust-model types and pure transitions.
+- Later roadmap modules also live under `src/` (for example `inspect` and media probe planning). Treat them as downstream integration points that must keep honoring the Phase 1 process and exit contracts—they are not an invitation to weaken argv-only execution or untyped boundaries in the core.
 
 ### Established Patterns
 
 - `AGENTS.md` is the canonical instruction file with `CLAUDE.md` as a symlink compatibility alias.
 - Planning docs are committed to git and should remain in sync with phase progress.
-- Bright Builds rules require functional core / imperative shell, boundary parsing, unit tests for pure logic, Bun as the repo-owned TS surface, and no repo-owned Python scripts.
+- Bright Builds rules require functional core / imperative shell, boundary parsing, unit tests for pure logic, Bun as the repo-owned TypeScript surface, and no repo-owned Python scripts.
 
 ### Integration Points
 
-- New code should introduce the initial `package.json`, `bun.lock`, TypeScript config, formatter/linter config, `src/`, and tests.
-- The CLI entrypoint should connect to future phases through stable domain and adapter module boundaries rather than media-specific shortcuts.
+- New trust or CLI work should extend existing domain modules and adapters rather than adding parallel execution paths.
+- External tool calls must continue to flow through `ProcessRunner` (or a deliberate successor that preserves the argv contract).
 </code_context>
 
 <specifics>

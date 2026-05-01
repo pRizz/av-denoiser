@@ -1,69 +1,89 @@
-# Phase 1: Bun CLI Foundation & Trust Model - Discussion Log
+# Phase 01: bun-cli-foundation-trust-model - Discussion Log
 
 > **Audit trail only.** Do not use as input to planning, research, or execution agents.
 > Decisions are captured in CONTEXT.md — this log preserves the alternatives considered.
 
-**Date:** 2026-05-01T21:21:03.063Z
-**Phase:** 01-Bun CLI Foundation & Trust Model
+**Date:** 2026-05-01
+**Phase:** 01-bun-cli-foundation-trust-model
 **Mode:** Yolo
-**Areas discussed:** CLI Surface, Trust and Safety Model, Architecture, Verification
+**Areas discussed:** CLI default invocation, Doctor report surface, Exit code registry, Verification/lint scope, Safe process execution contract
 
 ---
 
-## CLI Surface
+## CLI default invocation
 
 | Option | Description | Selected |
 |--------|-------------|----------|
-| Bun-first CLI foundation | Establish package metadata, executable entrypoint, help, and `doctor` command without implementing denoise behavior yet. | yes |
-| Media features immediately | Start by wiring real denoise/media behavior before the trust shell exists. | no |
+| Help-first | Bare CLI prints concise help and routes users to `doctor` and later commands | ✓ |
+| Doctor-first | Bare CLI runs `doctor` immediately | |
+| Placeholder only | Bare CLI exits with a static message and no Commander integration | |
 
-**User's choice:** Auto-selected recommended default.
-**Notes:** Phase 1 scope is foundation and trust model only; media processing starts in later phases.
+**User's choice:** Help-first (recommended default for discoverability without surprising side effects)
+
+**Notes:** Yolo pass; aligns with Phase 1 roadmap success criteria (install, help, preflight story).
 
 ---
 
-## Trust and Safety Model
+## Doctor report surface
 
 | Option | Description | Selected |
 |--------|-------------|----------|
-| Single argv-array process runner | Route all external tool execution through a safe abstraction that never shells user-provided values. | yes |
-| Inline process spawning per adapter | Let each adapter call subprocess APIs directly. | no |
-| Shell command strings | Build shell commands as strings for convenience. | no |
+| Structured facts + human render | Domain holds `DoctorReport`; CLI renders readable sections | ✓ |
+| Raw tool stdout | Pipe external CLI output straight to the terminal | |
+| JSON-only | Machine-first doctor with no stable human layout | |
 
-**User's choice:** Auto-selected recommended default.
-**Notes:** This matches Bright Builds guidance and prevents media-tool command construction from becoming unsafe.
+**User's choice:** Structured facts + human render
+
+**Notes:** Keeps tests and later UX evolution anchored to typed facts rather than scraped strings.
 
 ---
 
-## Architecture
+## Exit code registry
 
 | Option | Description | Selected |
 |--------|-------------|----------|
-| Functional core / imperative shell | Pure domain modules for decisions, thin adapters for CLI/filesystem/process I/O. | yes |
-| CLI-centric implementation | Keep most logic close to the command handlers. | no |
+| Single domain module | Named outcomes and numeric mapping live in one place (`exit-codes`) | ✓ |
+| Per-command ad-hoc | Each command picks exit numbers independently | |
+| Platform-default only | Rely on implicit Node/Bun defaults | |
 
-**User's choice:** Auto-selected recommended default.
-**Notes:** This keeps Phase 1 logic easy to test before external media tools are introduced.
+**User's choice:** Single domain module
+
+**Notes:** Satisfies TRUST-03 / documented exit categories without churn as media errors arrive.
 
 ---
 
-## Verification
+## Verification / lint scope
 
 | Option | Description | Selected |
 |--------|-------------|----------|
-| Full repo-native verification baseline | Add format/lint, typecheck, tests, and aggregate check scripts in Phase 1. | yes |
-| Minimal smoke test only | Add only a basic CLI run check and defer type/test rigor. | no |
+| Product code + configs only | Biome/`verify` targets `src/`, tests, and manifests; exclude planning noise | ✓ |
+| Entire repository | Lint every markdown tree including `.planning/` | |
+| CLI-only | No Biome; TypeScript only | |
 
-**User's choice:** Auto-selected recommended default.
-**Notes:** Phase 1 requirement TRUST-04 requires verification coverage for pure planning logic, parsers, command builders, and probe fixtures.
+**User's choice:** Product code + configs only
+
+**Notes:** Matches repo practice of keeping GSD metadata from breaking product CI.
+
+---
+
+## Safe process execution contract
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| argv-only runner | One adapter wraps `Bun.spawn` with executable + argv array | ✓ |
+| Shell with escaping | Build shell strings with careful quoting | |
+| Direct scattered spawns | Call `spawn` from many modules | |
+
+**User's choice:** argv-only runner
+
+**Notes:** Non-negotiable for TRUST-01 and for safe future FFmpeg/SoX argv graphs.
 
 ---
 
 ## Claude's Discretion
 
-- Exact package script names, module filenames, and help text wording.
-- Exact human-readable `doctor` formatting, provided it remains testable.
+- Exact help copy and minor script naming remain implementation choices as long as conventions stay Bun-idiomatic and documented in `package.json`.
 
 ## Deferred Ideas
 
-- Real media probing, video preservation planning, audio cleanup, remuxing, guided workflows, batch mode, and heavy integrations are deferred to their mapped roadmap phases.
+None raised in this yolo pass — scope stayed within Phase 1.
