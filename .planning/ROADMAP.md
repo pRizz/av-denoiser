@@ -37,7 +37,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [x] 01-01-PLAN.md — Create the Bun package, strict TypeScript/Biome configuration, and typed CLI entrypoint.
-- [ ] 01-02-PLAN.md — Implement the pure trust-model domain for exit codes, process commands, and doctor facts.
+- [x] 01-02-PLAN.md — Implement the pure trust-model domain for exit codes, process commands, and doctor facts.
 - [ ] 01-03-PLAN.md — Wire the safe process runner and deterministic tool discovery adapters.
 - [ ] 01-04-PLAN.md — Wire doctor, docs, exit behavior, and full verification into the CLI.
 
@@ -150,7 +150,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Bun CLI Foundation & Trust Model | 0/4 | Not started | - |
+| 1. Bun CLI Foundation & Trust Model | 2/4 | In Progress | - |
 | 2. Media Probing & Output Planning | 0/1 | Not started | - |
 | 3. Video Preservation & Fallback Control | 0/1 | Not started | - |
 | 4. Core Audio Pipeline & SoX Cleanup | 0/1 | Not started | - |
