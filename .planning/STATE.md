@@ -46,7 +46,7 @@ Progress: [████████░░] 75%
 |-------|-------|-------|----------|
 | Phase 01 P01 | 4 min | 3 tasks | 10 files |
 | Phase 01 P02 | 3 min | 3 tasks | 8 files |
-| Phase 01 P03 | 1 min | 1 tasks | 4 files |
+| Phase 01 P03 | 2 min | 1 tasks | 4 files |
 
 ## Accumulated Context
 
