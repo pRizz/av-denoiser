@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 
 import { runCliRequest } from "../../src/app/run-command";
+import { renderCommandOutcome } from "../../src/cli/render";
 import {
   ExitCode,
   mapOutcomeToExitCode,
@@ -61,6 +62,11 @@ test("doctor request fails when ffmpeg is missing", async () => {
   // Assert
   expect(outcome.kind).toBe("failure");
   expect(mapOutcomeToExitCode(outcome)).toBe(ExitCode.missingTools);
+
+  const rendered = renderCommandOutcome({ kind: "doctor" }, outcome, "");
+  expect(rendered).toContain("ffmpeg");
+  expect(rendered).toContain("Missing required tools:");
+  expect(rendered).toContain("Exit code: missingTools (3)");
 });
 
 function availableRequiredTool(tool: "ffmpeg" | "ffprobe"): ToolAvailability {

@@ -14,6 +14,20 @@ test("parses doctor command into a typed request", () => {
   expect(request).toEqual({ kind: "doctor" });
 });
 
+test("parses --help into show-help request", () => {
+  expect(parseCliRequest(["--help"])).toEqual({ kind: "show-help" });
+});
+
+test("parses -h into show-help request", () => {
+  expect(parseCliRequest(["-h"])).toEqual({ kind: "show-help" });
+});
+
+test("rejects excess root arguments (unknown command surface)", () => {
+  expect(() => parseCliRequest(["not-a-command"])).toThrow(
+    /too many arguments/,
+  );
+});
+
 test("parses inspect command into a typed request", () => {
   // Arrange
   const rawArgs = ["inspect", "clip.m4a", "--force", "--json"];

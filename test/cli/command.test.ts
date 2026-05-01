@@ -28,6 +28,19 @@ test("unknown CLI options exit as invalid input", async () => {
   expect(result.stderr).toContain("invalidInput");
 });
 
+test("excess root arguments exit as invalid input", async () => {
+  const result = await runProcess([
+    "bun",
+    "run",
+    "src/cli/main.ts",
+    "not-a-command",
+  ]);
+
+  expect(result.exitCode).toBe(ExitCode.invalidInput);
+  expect(result.stderr).toContain("invalidInput");
+  expect(result.stderr).toContain("Invalid input:");
+});
+
 type ProcessOutput = {
   readonly exitCode: number;
   readonly stdout: string;
