@@ -3,6 +3,10 @@ phase: 01-bun-cli-foundation-trust-model
 plan: 04
 subsystem: cli-foundation
 tags: [bun, typescript, doctor, exit-codes, cli]
+generated_by: gsd-execute-plan
+lifecycle_mode: yolo
+phase_lifecycle_id: 1-2026-05-01T21-21-03
+generated_at: 2026-05-01T21:58:19Z
 
 # Dependency graph
 requires:
@@ -49,10 +53,6 @@ patterns-established:
   - "Product metadata can live outside command syntax modules to keep deferred media-surface checks focused."
 
 requirements-completed: [CLI-01, CLI-02, CLI-03, TRUST-04]
-generated_by: gsd-execute-plan
-lifecycle_mode: yolo
-phase_lifecycle_id: 1-2026-05-01T21-21-03
-generated_at: 2026-05-01T21:58:19Z
 
 # Metrics
 duration: 4 min
@@ -128,7 +128,7 @@ Each task was committed atomically:
 - **Verification:** The Task 1 acceptance grep passed after the move.
 - **Committed in:** `c8b69a7`
 
----
+***
 
 **Total deviations:** 2 auto-fixed (2 blocking)
 **Impact on plan:** Both fixes were required to satisfy the planned verification and acceptance gates. No media processing, prompts, presets, batch mode, or remux behavior was added.
@@ -159,7 +159,7 @@ Phase 1 is complete and ready for verification or Phase 2 planning. The CLI foun
 - Verified task commits `d324f91`, `c8b69a7`, and `4d47584` exist.
 - Verified `bun run format && bun run verify`, `bun run cli`, `bun run src/cli/main.ts --help`, `bun run doctor`, and `bun run src/cli/main.ts --unknown` exit behavior.
 
----
+***
 
 *Phase: 01-bun-cli-foundation-trust-model*
 *Completed: 2026-05-01*
