@@ -1,4 +1,11 @@
 export {
+  createFfprobeJsonCommand,
+  type FfprobeProbeError,
+  type RunFfprobeProbeDeps,
+  type RunFfprobeProbeResult,
+  runFfprobeProbe,
+} from "./adapters/ffprobe";
+export {
   type ProcessResult,
   type ProcessRunner,
   runProcessCommand,
@@ -8,6 +15,12 @@ export {
   type ToolDiscoveryDeps,
 } from "./adapters/tool-discovery";
 export { createDoctorReport, type DoctorDeps } from "./app/doctor";
+export {
+  type InspectCliOutcome,
+  type InspectCliSuccess,
+  type InspectDeps,
+  runInspectRequest,
+} from "./app/inspect";
 export {
   type CliCommandOutcome,
   type CliRequestDeps,
@@ -24,6 +37,7 @@ export {
   renderDoctorReport,
   renderFailureOutcome,
   renderHelpGuidance,
+  renderInspectPlanText,
 } from "./cli/render";
 export type { CliRequest, CliRequestResult } from "./domain/cli-request";
 export {
@@ -49,6 +63,32 @@ export {
   type ExitCodeName,
   type ExitCodeValue,
 } from "./domain/exit-codes";
+export {
+  type InspectPlanSummary,
+  outputPlanToInspectSummary,
+} from "./domain/inspect-summary";
+export {
+  type FfprobeParseError,
+  type MediaProbe,
+  type ParseFfprobeJsonResult,
+  parseFfprobeJson,
+} from "./domain/media-probe";
+export {
+  DEFAULT_OUTPUT_SUFFIX_SEGMENT,
+  type OutputPathFailure,
+  type OutputPathSuccess,
+  type ResolveOutputPathInput,
+  type ResolveOutputPathResult,
+  resolveOutputPath,
+} from "./domain/output-path";
+export {
+  type OutputModality,
+  type OutputPlan,
+  type PlanMediaOutputInput,
+  type PlannedAudioCodec,
+  type PlannedContainer,
+  planMediaOutput,
+} from "./domain/output-plan";
 export {
   createProcessCommand,
   type ProcessCommand,

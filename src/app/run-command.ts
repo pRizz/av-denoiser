@@ -5,13 +5,20 @@ import {
   doctorReportToOutcome,
 } from "../domain/doctor-report";
 import { createDoctorReport } from "./doctor";
+import {
+  type InspectCliSuccess,
+  type InspectDeps,
+  runInspectRequest,
+} from "./inspect";
 
 export type CliCommandOutcome = CommandOutcome & {
   readonly doctorReport?: DoctorReport;
+  readonly inspect?: InspectCliSuccess;
 };
 
 export type CliRequestDeps = {
   readonly discoverTools?: () => Promise<DoctorReport>;
+  readonly inspect?: Partial<InspectDeps>;
 };
 
 export async function runCliRequest(
@@ -28,5 +35,7 @@ export async function runCliRequest(
 
       return { ...outcome, doctorReport: report };
     }
+    case "inspect":
+      return runInspectRequest(request, deps.inspect);
   }
 }

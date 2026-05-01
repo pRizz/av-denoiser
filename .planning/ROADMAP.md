@@ -13,7 +13,7 @@ v1 builds a trustworthy local Bun/TypeScript CLI for cleaning audio in audio and
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Bun CLI Foundation & Trust Model** - Users can install, run, diagnose, and verify the safe CLI shell.
-- [ ] **Phase 2: Media Probing & Output Planning** - Users can inspect input media facts and safe output decisions before processing.
+- [x] **Phase 2: Media Probing & Output Planning** - Users can inspect input media facts and safe output decisions before processing.
 - [ ] **Phase 3: Video Preservation & Fallback Control** - Users can understand and control when video stream copy is possible or impossible.
 - [ ] **Phase 4: Core Audio Pipeline & SoX Cleanup** - Users can clean single audio files through transparent presets and sequential FFmpeg/SoX steps.
 - [ ] **Phase 5: Final Media Output & Reporting** - Users can receive cleaned audio/video outputs with verified FFmpeg remuxing and human-readable reports.
@@ -53,9 +53,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Typed FFprobe JSON parsing and argv-only probe adapter.
-- [ ] 02-02-PLAN.md — Output path rules and modality planning from `MediaProbe`.
-- [ ] 02-03-PLAN.md — `inspect` CLI command, orchestration, and human-readable summary.
+- [x] 02-01-PLAN.md — Typed FFprobe JSON parsing and argv-only probe adapter.
+- [x] 02-02-PLAN.md — Output path rules and modality planning from `MediaProbe`.
+- [x] 02-03-PLAN.md — `inspect` CLI command, orchestration, and human-readable summary.
 
 ### Phase 3: Video Preservation & Fallback Control
 **Goal**: Users can understand and control video stream-copy decisions before any fallback changes quality or container behavior.
@@ -153,7 +153,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Bun CLI Foundation & Trust Model | 2/4 | In Progress | - |
-| 2. Media Probing & Output Planning | 0/3 | Planned | - |
+| 2. Media Probing & Output Planning | 3/3 | Complete    | 2026-05-01 |
 | 3. Video Preservation & Fallback Control | 0/1 | Not started | - |
 | 4. Core Audio Pipeline & SoX Cleanup | 0/1 | Not started | - |
 | 5. Final Media Output & Reporting | 0/1 | Not started | - |

@@ -1,3 +1,4 @@
+import type { InspectCliSuccess } from "../app/inspect";
 import type { CliRequest } from "../domain/cli-request";
 import {
   type CommandOutcome,
@@ -10,11 +11,13 @@ import {
   type ToolCapabilityStatus,
 } from "../domain/doctor-report";
 import { ExitCode } from "../domain/exit-codes";
+import type { InspectPlanSummary } from "../domain/inspect-summary";
 
 const DEFAULT_GUIDANCE_LINES = [
   "av-denoiser CLI foundation is installed.",
   'Run "av-denoiser doctor" to inspect local tool readiness.',
-  "Media processing commands are not available in this phase.",
+  'Run "av-denoiser inspect <path>" to probe media and preview planned outputs.',
+  "Heavy transcoding and denoise pipelines are not wired yet.",
 ];
 
 const DOCTOR_GUIDANCE_LINES = [
@@ -22,7 +25,7 @@ const DOCTOR_GUIDANCE_LINES = [
   "",
   "Doctor command routing is wired into the typed CLI request model.",
   "Detailed media tool readiness checks are not available in this phase.",
-  "Media processing commands are not available in this phase.",
+  "Heavy transcoding and denoise pipelines are not wired yet.",
 ];
 
 const targetBunVersion = "1.3.13";
@@ -34,6 +37,7 @@ export type RuntimeInfo = {
 
 export type RenderableOutcome = CommandOutcome & {
   readonly doctorReport?: DoctorReport;
+  readonly inspect?: InspectCliSuccess;
 };
 
 export function renderDefaultGuidance(): string {
@@ -49,7 +53,7 @@ export function renderHelpGuidance(helpText: string): string {
     helpText.trimEnd(),
     "",
     "Current phase note:",
-    "Media processing commands are not available in this phase.",
+    "Heavy transcoding and denoise pipelines are not wired yet.",
   ].join("\n");
 }
 
@@ -86,6 +90,41 @@ export function renderDoctorReport(
   return lines.join("\n");
 }
 
+export function renderInspectPlanText(summary: InspectPlanSummary): string {
+  const lines = [
+    "av-denoiser inspect",
+    "",
+    "Input",
+    `- ${summary.inputPath}`,
+    "",
+    "Output path",
+    `- ${summary.outputPath}`,
+    "",
+    "Modality",
+    `- ${summary.modality}`,
+    "",
+    "Selected audio stream index",
+    `- ${
+      summary.selectedAudioStreamIndex === null
+        ? "n/a"
+        : String(summary.selectedAudioStreamIndex)
+    }`,
+    "",
+    "Planned audio codec",
+    `- ${
+      summary.plannedAudioCodec === null ? "n/a" : summary.plannedAudioCodec
+    }`,
+    "",
+    "Planned container",
+    `- ${summary.plannedContainer === null ? "n/a" : summary.plannedContainer}`,
+    "",
+    "Reason codes",
+    ...summary.reasonCodes.map((code) => `- ${code}`),
+  ];
+
+  return lines.join("\n");
+}
+
 export function renderCommandOutcome(
   request: CliRequest,
   outcome: RenderableOutcome,
@@ -98,6 +137,16 @@ export function renderCommandOutcome(
 
   if (request.kind === "show-help") {
     return renderHelpGuidance(helpText);
+  }
+
+  if (request.kind === "inspect") {
+    if (outcome.kind === "success" && outcome.inspect !== undefined) {
+      return outcome.inspect.json
+        ? `${JSON.stringify(outcome.inspect.summary, null, 2)}\n`
+        : renderInspectPlanText(outcome.inspect.summary);
+    }
+
+    return appendFailureDetails("av-denoiser inspect failed.", outcome);
   }
 
   if (outcome.doctorReport !== undefined) {
@@ -125,6 +174,12 @@ export function renderCliRequest(
       return renderHelpGuidance(helpText);
     case "doctor":
       return renderDoctorGuidance();
+    case "inspect":
+      return [
+        "av-denoiser inspect <path>",
+        "",
+        "Runs ffprobe and prints planned output modality and paths.",
+      ].join("\n");
   }
 }
 

@@ -24,5 +24,29 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
       handleRequest({ kind: "doctor" });
     });
 
+  program
+    .command("inspect")
+    .description(
+      "Probe input media with ffprobe and print a planned output summary (no transcoding)",
+    )
+    .argument("<input>", "Path to the input audio or video file")
+    .option("-o, --output <path>", "Explicit output path (optional)")
+    .option("--force", "Allow overwriting an existing output file", false)
+    .option("--json", "Print machine-readable JSON instead of text", false)
+    .action(
+      (
+        input: string,
+        options: { output?: string; force?: boolean; json?: boolean },
+      ) => {
+        handleRequest({
+          kind: "inspect",
+          inputPath: input,
+          maybeOutputPath: options.output,
+          force: Boolean(options.force),
+          json: Boolean(options.json),
+        });
+      },
+    );
+
   return program;
 }
