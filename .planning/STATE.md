@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-05-01T21:47:45.113Z"
+stopped_at: Completed 01-03-PLAN.md
+last_updated: "2026-05-01T21:52:06.657Z"
 last_activity: 2026-05-01
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 4
-  completed_plans: 2
-  percent: 50
+  completed_plans: 3
+  percent: 75
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-05-01)
 ## Current Position
 
 Phase: 01 (Bun CLI Foundation & Trust Model) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-05-01
 
-Progress: [███░░░░░░░] 25%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
@@ -46,6 +46,7 @@ Progress: [███░░░░░░░] 25%
 |-------|-------|-------|----------|
 | Phase 01 P01 | 4 min | 3 tasks | 10 files |
 | Phase 01 P02 | 3 min | 3 tasks | 8 files |
+| Phase 01 P03 | 1 min | 1 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -60,6 +61,9 @@ Recent decisions affecting current work:
 - [Phase 01]: Scoped Biome verification to package/config/source/test files for Phase 1. — This keeps repo-owned code verification green without rewriting GSD planning metadata.
 - [Phase 01]: Kept doctor as typed routing with honest Phase 1 output. — Real tool readiness checks belong to later Phase 1 plans, while this plan establishes the CLI contract.
 - [Phase 01]: Centralized trust-model exit outcomes, argv-only process command specs, and structured doctor readiness facts.
+- [Phase 01]: Kept process execution behind one ProcessRunner adapter that only calls Bun.spawn with an executable plus argv array.
+- [Phase 01]: Used injectable maybeWhich and runProcess dependencies so tool discovery tests never require local media tools.
+- [Phase 01]: Reported future capability checks as explicit not-checked-yet facts instead of implying full tool readiness.
 
 ### Pending Todos
 
@@ -73,6 +77,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-01T21:47:45.111Z
-Stopped at: Completed 01-02-PLAN.md
+Last session: 2026-05-01T21:52:06.655Z
+Stopped at: Completed 01-03-PLAN.md
 Resume file: None
