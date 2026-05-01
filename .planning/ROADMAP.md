@@ -39,7 +39,7 @@ Plans:
 - [x] 01-01-PLAN.md — Create the Bun package, strict TypeScript/Biome configuration, and typed CLI entrypoint.
 - [x] 01-02-PLAN.md — Implement the pure trust-model domain for exit codes, process commands, and doctor facts.
 - [x] 01-03-PLAN.md — Wire the safe process runner and deterministic tool discovery adapters.
-- [ ] 01-04-PLAN.md — Wire doctor, docs, exit behavior, and full verification into the CLI.
+- [x] 01-04-PLAN.md — Wire doctor, docs, exit behavior, and full verification into the CLI.
 
 ### Phase 2: Media Probing & Output Planning
 **Goal**: Users can inspect structured input media facts and safe output decisions before any denoise step runs.
