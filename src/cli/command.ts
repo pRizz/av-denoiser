@@ -1,12 +1,13 @@
 import { Command } from "@commander-js/extra-typings";
 
 import type { CliRequest } from "../domain/cli-request";
+import { cliName } from "../domain/product";
 
 export type CliRequestHandler = (request: CliRequest) => void;
 
 export function createCommandProgram(handleRequest: CliRequestHandler) {
   const program = new Command()
-    .name("av-denoiser")
+    .name(cliName)
     .description(
       "Clean noisy audio in local media files through a safe typed pipeline",
     )

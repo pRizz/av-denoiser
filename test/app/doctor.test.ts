@@ -63,9 +63,7 @@ test("doctor request fails when ffmpeg is missing", async () => {
   expect(mapOutcomeToExitCode(outcome)).toBe(ExitCode.missingTools);
 });
 
-function availableRequiredTool(
-  tool: "ffmpeg" | "ffprobe",
-): ToolAvailability {
+function availableRequiredTool(tool: "ffmpeg" | "ffprobe"): ToolAvailability {
   return {
     kind: "available",
     tool,

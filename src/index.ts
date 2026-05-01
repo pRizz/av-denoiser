@@ -7,11 +7,22 @@ export {
   discoverTools,
   type ToolDiscoveryDeps,
 } from "./adapters/tool-discovery";
+export { createDoctorReport, type DoctorDeps } from "./app/doctor";
+export {
+  type CliCommandOutcome,
+  type CliRequestDeps,
+  runCliRequest,
+} from "./app/run-command";
 export { createCommandProgram } from "./cli/command";
 export {
+  type RenderableOutcome,
+  type RuntimeInfo,
   renderCliRequest,
+  renderCommandOutcome,
   renderDefaultGuidance,
   renderDoctorGuidance,
+  renderDoctorReport,
+  renderFailureOutcome,
   renderHelpGuidance,
 } from "./cli/render";
 export type { CliRequest, CliRequestResult } from "./domain/cli-request";
@@ -46,3 +57,4 @@ export {
   type ProcessCommandResult,
   renderDisplayCommand,
 } from "./domain/process-command";
+export { cliName } from "./domain/product";

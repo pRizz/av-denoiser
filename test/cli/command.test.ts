@@ -35,7 +35,7 @@ type ProcessOutput = {
 };
 
 async function runProcess(command: readonly string[]): Promise<ProcessOutput> {
-  const subprocess = Bun.spawn(command, {
+  const subprocess = Bun.spawn([...command], {
     cwd: process.cwd(),
     stdout: "pipe",
     stderr: "pipe",
