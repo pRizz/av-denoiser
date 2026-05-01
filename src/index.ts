@@ -1,3 +1,12 @@
+export {
+  type ProcessResult,
+  type ProcessRunner,
+  runProcessCommand,
+} from "./adapters/process-runner";
+export {
+  discoverTools,
+  type ToolDiscoveryDeps,
+} from "./adapters/tool-discovery";
 export { createCommandProgram } from "./cli/command";
 export {
   renderCliRequest,

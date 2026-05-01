@@ -1,8 +1,7 @@
 import { expect, test } from "bun:test";
 import {
-  discoverTools,
   type DoctorReport,
-  type ProcessResult,
+  discoverTools,
   type ProcessRunner,
   type ToolAvailability,
   type ToolName,
@@ -69,9 +68,9 @@ test("includes optional missing tool facts without failing discovery", async () 
     "audacity",
     "melt",
   ]);
-  expect(optionalToolFacts(report).every((tool) => tool.kind === "missing")).toBe(
-    true,
-  );
+  expect(
+    optionalToolFacts(report).every((tool) => tool.kind === "missing"),
+  ).toBe(true);
 });
 
 test("marks planned capability checks as not checked yet", async () => {
@@ -93,10 +92,12 @@ test("marks planned capability checks as not checked yet", async () => {
   ).toBe(true);
 });
 
-function fakeDiscoveryDeps(overrides: {
-  readonly maybeWhich?: (name: string) => string | null;
-  readonly runProcess?: ProcessRunner;
-} = {}) {
+function fakeDiscoveryDeps(
+  overrides: {
+    readonly maybeWhich?: (name: string) => string | null;
+    readonly runProcess?: ProcessRunner;
+  } = {},
+) {
   const runProcess: ProcessRunner =
     overrides.runProcess ??
     (async () => ({
