@@ -5,7 +5,10 @@ import {
   type ToolDefinition,
   type ToolName,
 } from "../domain/doctor-report";
-import type { ProcessCommand } from "../domain/process-command";
+import {
+  createProcessCommand,
+  type ProcessCommand,
+} from "../domain/process-command";
 import { type ProcessRunner, runProcessCommand } from "./process-runner";
 
 export type ToolDiscoveryDeps = {
@@ -63,9 +66,13 @@ async function discoverTool(
     };
   }
 
-  const result = await deps.runProcess(
-    versionProbeCommand(definition, maybePath),
-  );
+  const probe = buildVersionProbeCommand(definition, maybePath);
+
+  if (probe.kind !== "created") {
+    return checkFailedTool(definition, maybePath, probe.reason);
+  }
+
+  const result = await deps.runProcess(probe.command);
 
   if (result.kind === "spawn-failed") {
     return checkFailedTool(definition, maybePath, result.error.message);
@@ -120,16 +127,30 @@ function resolveToolDiscoveryDeps(
   };
 }
 
-function versionProbeCommand(
+function buildVersionProbeCommand(
   definition: ToolDefinition,
   executable: string,
-): ProcessCommand {
-  return {
+):
+  | { readonly kind: "created"; readonly command: ProcessCommand }
+  | {
+      readonly kind: "invalid";
+      readonly reason: string;
+    } {
+  const created = createProcessCommand({
     executable,
     args: versionArgsByTool[definition.tool],
     timeoutMs: versionProbeTimeoutMs,
     stdin: "ignore",
-  };
+  });
+
+  if (created.kind !== "created") {
+    return {
+      kind: "invalid",
+      reason: "resolved executable is empty after normalization",
+    };
+  }
+
+  return { kind: "created", command: created.command };
 }
 
 function checkFailedTool(

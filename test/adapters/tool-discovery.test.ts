@@ -2,6 +2,7 @@ import { expect, test } from "bun:test";
 import {
   type DoctorReport,
   discoverTools,
+  type ProcessCommand,
   type ProcessRunner,
   type ToolAvailability,
   type ToolName,
@@ -22,6 +23,39 @@ test("reports missing required ffmpeg when path lookup fails", async () => {
     tool: "ffmpeg",
     requirement: "required",
     installHint: "Install FFmpeg and ensure ffmpeg is on PATH.",
+  });
+});
+
+test("runs ffmpeg version probes with spaced paths as discrete argv arrays", async () => {
+  const captured: ProcessCommand[] = [];
+  const spacedPath = "/opt/ffmpeg tools/ffmpeg";
+  const deps = fakeDiscoveryDeps({
+    maybeWhich: (name) => (name === "ffmpeg" ? spacedPath : null),
+    runProcess: async (command) => {
+      captured.push(command);
+      return {
+        kind: "exited",
+        exitCode: 0,
+        stdout: "\nffmpeg version 8.1\n",
+        stderr: "",
+      };
+    },
+  });
+
+  const report = await discoverTools(deps);
+
+  expect(captured).toEqual([
+    {
+      executable: spacedPath,
+      args: ["-version"],
+      timeoutMs: 5_000,
+      stdin: "ignore",
+    },
+  ]);
+  expect(toolFact(report, "ffmpeg")).toMatchObject({
+    kind: "available",
+    path: spacedPath,
+    version: "ffmpeg version 8.1",
   });
 });
 
