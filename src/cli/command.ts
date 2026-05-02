@@ -5,7 +5,7 @@ import {
   parseLadspaCliTriple,
   parsePresetId,
 } from "../domain/audio-pipeline-plan";
-import type { CliRequest } from "../domain/cli-request";
+import type { CliHelpSubcommandTopic, CliRequest } from "../domain/cli-request";
 import { cliName } from "../domain/product";
 
 function parseNoiseStrength(raw: string): number {
@@ -382,4 +382,53 @@ function integrationFieldsFromCliOptions(options: {
       : undefined;
 
   return { acceptAudacityPipeRisk, maybeAudacityMacro, maybeLadspa };
+}
+
+export function resolveCliHelpTopicFromArgvToken(
+  firstToken: string,
+): CliHelpSubcommandTopic | undefined {
+  const map: Partial<Record<string, CliHelpSubcommandTopic>> = {
+    doctor: "doctor",
+    "install-tools": "install-tools",
+    "install-deps": "install-tools",
+    guided: "guided",
+    inspect: "inspect",
+    clean: "clean",
+    batch: "batch",
+  };
+
+  return map[firstToken];
+}
+
+function findRegisteredSubcommandByTopic(
+  program: Command,
+  topic: CliHelpSubcommandTopic,
+): Command | undefined {
+  if (topic === "install-tools") {
+    return program.commands.find((c) => c.name() === "install-tools") as
+      | Command
+      | undefined;
+  }
+
+  return program.commands.find((c) => c.name() === topic) as
+    | Command
+    | undefined;
+}
+
+/** Builds help text shown for `show-help`, including scoped subcommand `-h|--help`. */
+export function cliHelpDocumentation(
+  program: Command,
+  request: CliRequest,
+): string {
+  if (request.kind !== "show-help") {
+    return program.helpInformation();
+  }
+
+  if (request.topic === undefined) {
+    return program.helpInformation();
+  }
+
+  const nested = findRegisteredSubcommandByTopic(program, request.topic);
+
+  return nested?.helpInformation() ?? program.helpInformation();
 }

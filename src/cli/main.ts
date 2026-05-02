@@ -5,7 +5,11 @@ import { runCliRequest } from "../app/run-command";
 import type { CliRequest } from "../domain/cli-request";
 import { mapOutcomeToExitCode } from "../domain/command-outcome";
 import { ExitCode } from "../domain/exit-codes";
-import { createCommandProgram } from "./command";
+import {
+  cliHelpDocumentation,
+  createCommandProgram,
+  resolveCliHelpTopicFromArgvToken,
+} from "./command";
 import { renderCommandOutcome, renderFailureOutcome } from "./render";
 
 function isHelpFlag(argument: string): boolean {
@@ -13,6 +17,24 @@ function isHelpFlag(argument: string): boolean {
 }
 
 export function parseCliRequest(rawArgs: readonly string[]): CliRequest {
+  const maybeFirstArg = rawArgs[0];
+
+  if (maybeFirstArg !== undefined && isHelpFlag(maybeFirstArg)) {
+    return { kind: "show-help" };
+  }
+
+  if (rawArgs.length >= 2 && rawArgs.some(isHelpFlag)) {
+    const head = rawArgs[0];
+
+    if (head !== undefined && !head.startsWith("-")) {
+      const maybeTopic = resolveCliHelpTopicFromArgvToken(head);
+
+      if (maybeTopic !== undefined) {
+        return { kind: "show-help", topic: maybeTopic };
+      }
+    }
+  }
+
   if (rawArgs.some(isHelpFlag)) {
     return { kind: "show-help" };
   }
@@ -56,7 +78,7 @@ export async function runCli(
   const output = renderCommandOutcome(
     requestResult.request,
     outcome,
-    program.helpInformation(),
+    cliHelpDocumentation(program, requestResult.request),
   );
   const exitCode = resolveProcessExitCode(requestResult.request, outcome);
   const outputStream =

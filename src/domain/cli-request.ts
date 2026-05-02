@@ -4,9 +4,22 @@ import type {
   PresetId,
 } from "./audio-pipeline-plan";
 
+/** Canonical subcommands that support `av-denoiser <name> [--options] ... --help` help text. */
+export type CliHelpSubcommandTopic =
+  | "doctor"
+  | "install-tools"
+  | "guided"
+  | "inspect"
+  | "clean"
+  | "batch";
+
 export type CliRequest =
   | { readonly kind: "show-default" }
-  | { readonly kind: "show-help" }
+  | {
+      readonly kind: "show-help";
+      /** When set, print this subcommand's options (instead of root command list only). */
+      readonly topic?: CliHelpSubcommandTopic;
+    }
   | { readonly kind: "doctor" }
   | {
       readonly kind: "install-tools";

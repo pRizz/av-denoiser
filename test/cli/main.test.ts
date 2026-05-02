@@ -46,6 +46,20 @@ test("parses --help into show-help request", () => {
   expect(parseCliRequest(["--help"])).toEqual({ kind: "show-help" });
 });
 
+test("parses clean --help into scoped show-help for clean", () => {
+  expect(parseCliRequest(["clean", "--help"])).toEqual({
+    kind: "show-help",
+    topic: "clean",
+  });
+});
+
+test("parses install-deps --help into install-tools help topic", () => {
+  expect(parseCliRequest(["install-deps", "-h"])).toEqual({
+    kind: "show-help",
+    topic: "install-tools",
+  });
+});
+
 test("parses -h into show-help request", () => {
   expect(parseCliRequest(["-h"])).toEqual({ kind: "show-help" });
 });
