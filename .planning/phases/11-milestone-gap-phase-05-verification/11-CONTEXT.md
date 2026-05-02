@@ -1,8 +1,8 @@
 ---
 generated_by: gsd-discuss-phase
 lifecycle_mode: yolo
-phase_lifecycle_id: 11-2026-05-02T11-35-42.371Z
-generated_at: "2026-05-02T11:35:42.371Z"
+phase_lifecycle_id: 11-2026-05-02T11-43-15
+generated_at: "2026-05-02T11:43:15.126Z"
 ---
 
 # Phase 11: milestone-gap-phase-05-verification - Context
@@ -41,7 +41,7 @@ Close the **v1.0 milestone audit** gaps for Phase 5:** author `05-VERIFICATION.m
 ### Evidence and code pointers (for the verification author)
 
 - **D-06:** Ground claims in **`runCleanRequest`** / **`finalizeCleanSuccess`** (`src/app/clean.ts`), **`verifyCleanOutput`** (`src/domain/clean-output-verify.ts`), **`CleanRunReport`** / **`renderCleanRunReportText`** (`src/domain/clean-run-report.ts`), **`buildExtractPrimaryAudioWavCommand`** / **`buildRemuxVideoCopyCommand`** (`src/domain/video-clean-argv.ts`), CLI **`clean`** / **`--allow-video-fallback`** (`src/cli/command.ts`, `src/cli/render.ts`, `src/app/run-command.ts`), and tests under **`test/app/clean.test.ts`**, **`test/domain/clean-output-verify.test.ts`**, **`test/domain/video-clean-argv.test.ts`**, **`test/cli/command.test.ts`** / **`test/cli/main.test.ts`** as appropriate.
-- **D-07:** **Behavioral spot-check:** document **`bun run verify`** (Biome + `tsc` + **135** tests at documentation time) with exit **0** before declaring **`status: passed`**.
+- **D-07:** **Behavioral spot-check:** document **`bun run verify`** (Biome + `tsc` + full test suite) with exit **0** before declaring **`status: passed`**. Do **not** bake in brittle hard-coded test counts—align wording with **`11-01-PLAN.md`** finalize step.
 
 ### Claude's Discretion
 
@@ -79,6 +79,10 @@ _None — `todo match-phase` returned no matches._
 ### Phase 5 plans (requirements source of truth for SUMMARYs)
 
 - `.planning/phases/05-final-media-output-reporting/05-01-PLAN.md` through **`05-04-PLAN.md`** — **`requirements:`** frontmatter for **`requirements-completed`** alignment.
+
+### Phase 11 execution plan
+
+- `.planning/phases/11-milestone-gap-phase-05-verification/11-01-PLAN.md` — Task specs, acceptance `rg` checks, and **`bun run verify`** gate.
 
 </canonical_refs>
 

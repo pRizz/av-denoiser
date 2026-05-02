@@ -6,7 +6,7 @@
 **Date:** 2026-05-02  
 **Phase:** 11 — Milestone Gap — Phase 5 verification  
 **Mode:** Yolo  
-**Areas discussed:** Verification placement & shape, SUMMARY requirements-completed hygiene, evidence bar, change policy
+**Areas discussed:** Verification placement & shape, SUMMARY requirements-completed hygiene, code change policy, behavioral verify wording
 
 ---
 
@@ -59,6 +59,18 @@
 
 **User's choice:** Documentation and summary hygiene only unless verification exposes a regression.  
 **Notes:** `[auto] [Scope] — Q: "Allow src/ edits?" → Selected: "Docs-only unless regression" (recommended default)`
+
+---
+
+## Behavioral spot-check wording (`05-VERIFICATION.md`)
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Describe `bun run verify` + exit 0; omit hard-coded test counts | Matches **11-01-PLAN.md** finalize / acceptance | ✓ |
+| Pin a numeric test count at authoring time | Becomes stale; plan flags as brittle | |
+
+**User's choice:** Omit brittle hard-coded counts; cite **`bun run verify`** and pass/fail outcome.  
+**Notes:** `[auto] [Behavioral verify] — Q: "Include fixed test count in spot-check prose?" → Selected: "No — align with plan/task acceptance" (recommended default)`
 
 ---
 
