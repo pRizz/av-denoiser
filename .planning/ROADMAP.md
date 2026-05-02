@@ -203,7 +203,10 @@ Plans:
 **Depends on**: Phase 11
 **Gap closure**: v1.0-MILESTONE-AUDIT `TOOL-03` partial + missing `08-VERIFICATION.md`
 **Requirements**: TOOL-03, TOOL-04, TOOL-05, TOOL-06, TOOL-07, TOOL-08
-**Plans**: Plans TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 12-01-PLAN.md — Retroactive **`08-VERIFICATION.md`** + SUMMARY `requirements-completed` + app-layer **Demucs** `runCleanRequest` test + **`bun run verify`** (`TOOL-03`–`TOOL-08`).
 
 ### Phase 13: Milestone Gap — Batch manifest doctor snapshot
 **Goal**: Default `batch` runs persist doctor/discovery snapshots into manifests per `BATCH-05`.
@@ -237,7 +240,7 @@ Phases execute in numeric order: 1 … 14. Gap phases **9–14** depend on merge
 | 9. Milestone Gap — Phase 3 verification | 1/1 | Complete    | 2026-05-02 |
 | 10. Milestone Gap — Phase 4 verification | 1/1 | Complete    | 2026-05-02 |
 | 11. Milestone Gap — Phase 5 verification | 1/1 | Complete    | 2026-05-02 |
-| 12. Milestone Gap — Phase 8 verification | 0/? | Planned     | |
+| 12. Milestone Gap — Phase 8 verification | 1/1 | Ready to execute | |
 | 13. Milestone Gap — Batch manifest doctor snapshot | 0/? | Planned     | |
 | 14. Milestone Gap — Guided optional-tool parity & Phase 6/7 verification | 0/? | Planned     | |
 
