@@ -17,8 +17,8 @@ This audit trail is managed upstream by `bright-builds-rules`. If the managed au
 - Audit manifest path: `bright-builds-rules.audit.md`
 - Auto-update: `enabled`
 - Auto-update reason: `trusted repo owner pRizz`
-- Last operation: `install`
-- Last updated (UTC): `2026-05-01T20:22:27Z`
+- Last operation: `update`
+- Last updated (UTC): `2026-05-02T14:26:27Z`
 
 ## Managed files
 
