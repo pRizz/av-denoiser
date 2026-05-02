@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 05 context gathered (yolo reopen)
-last_updated: "2026-05-02T00:48:53.817Z"
-last_activity: 2026-05-02 -- Phase 06 planning complete
+stopped_at: Phase 06 executed — guided workflows shipped
+last_updated: "2026-05-02T12:00:00.000Z"
+last_activity: 2026-05-02 -- Phase 06 execution complete
 progress:
   total_phases: 8
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 20
-  completed_plans: 17
-  percent: 85
+  completed_plans: 20
+  percent: 75
 ---
 
 # Project State
@@ -21,22 +21,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-01)
 
 **Core value:** Users can pass an audio or video file through a guided denoise pipeline and get a cleaned output while avoiding video recompression whenever possible.
-**Current focus:** Phase 6 — Guided & Repeatable Workflows (next)
+**Current focus:** Phase 7 — Batch Processing & Manifests (next)
 
 ## Current Position
 
-Phase: 6
+Phase: 7
 Plan: Not started
-Status: Ready to execute
-Last activity: 2026-05-02 -- Phase 06 planning complete
+Status: Ready to plan or execute per roadmap
+Last activity: 2026-05-02 -- Phase 06 execution complete
 
-Progress: [█████░░░░░] 62% (5/8 phases complete)
+Progress: [██████░░░░] 75% (6/8 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 17
+- Total plans completed: 20
 - Average duration: N/A
 - Total execution time: 0.0 hours
 
@@ -54,6 +54,7 @@ Progress: [█████░░░░░] 62% (5/8 phases complete)
 | 3 | 2 | - | - |
 | 4 | 4 | - | - |
 | 5 | 4 | - | - |
+| 6 | 3 | - | - |
 
 ## Accumulated Context
 
@@ -75,6 +76,7 @@ Recent decisions affecting current work:
 - [Phase 01]: Rendered doctor output from structured DoctorReport facts instead of overclaiming capability readiness.
 - [Phase 01]: Documented target/current Bun runtime information as informational for Phase 1 compatibility.
 - [Phase 5]: Post-run verification uses duration tolerance and optional video codec match when modality is video-copy-safe and copy is claimed.
+- [Phase 6]: Guided `av-denoiser guided` mirrors `clean` dry-run and execute with copy-paste argv replay; optional `reportProgress` drives spinner labels.
 
 ### Pending Todos
 
@@ -88,6 +90,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-02T00:46:59.210Z
-Stopped at: Phase 05 context gathered (yolo reopen)
-Resume file: .planning/phases/05-final-media-output-reporting/05-CONTEXT.md
+Last session: 2026-05-02
+Stopped at: Phase 06 complete — next: Phase 7 batch/manifests
+Resume file: .planning/phases/06-guided-repeatable-workflows/06-CONTEXT.md

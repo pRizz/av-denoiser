@@ -4,6 +4,7 @@ export type CliRequest =
   | { readonly kind: "show-default" }
   | { readonly kind: "show-help" }
   | { readonly kind: "doctor" }
+  | { readonly kind: "guided-clean" }
   | {
       readonly kind: "inspect";
       readonly inputPath: string;

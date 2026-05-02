@@ -38,6 +38,15 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
     });
 
   program
+    .command("guided")
+    .description(
+      "Interactive guided clean workflow with prompts and an equivalent flags summary",
+    )
+    .action(() => {
+      handleRequest({ kind: "guided-clean" });
+    });
+
+  program
     .command("inspect")
     .description(
       "Probe input media with ffprobe and print a planned output summary (no transcoding)",

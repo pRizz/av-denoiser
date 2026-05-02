@@ -20,6 +20,7 @@ const DEFAULT_GUIDANCE_LINES = [
   'Run "av-denoiser inspect <path>" to probe media and preview planned outputs.',
   'Use "av-denoiser clean <path>" for preset FFmpeg/SoX cleanup when tools are ready.',
   'Use "av-denoiser clean <path>" after inspect for video inputs when stream-copy-safe or when you pass --allow-video-fallback for fallback plans.',
+  'Run "av-denoiser guided" for a prompted clean workflow that prints equivalent CLI flags.',
 ];
 
 const DOCTOR_GUIDANCE_LINES = [
@@ -41,6 +42,7 @@ export type RenderableOutcome = CommandOutcome & {
   readonly doctorReport?: DoctorReport;
   readonly inspect?: InspectCliSuccess;
   readonly clean?: CleanCliSuccess;
+  readonly guidedHumanSummary?: string;
 };
 
 export function renderDefaultGuidance(): string {
@@ -57,6 +59,7 @@ export function renderHelpGuidance(helpText: string): string {
     "",
     "Current phase note:",
     "Video inputs use extract → preset pipeline → remux with video stream copy when inspect reports video-copy-safe.",
+    'Use "av-denoiser guided" for a prompted walkthrough that prints equivalent flags.',
   ].join("\n");
 }
 
@@ -203,6 +206,14 @@ export function renderCommandOutcome(
     return appendFailureDetails("av-denoiser clean failed.", outcome);
   }
 
+  if (request.kind === "guided-clean") {
+    if (outcome.kind === "success") {
+      return outcome.guidedHumanSummary ?? "av-denoiser guided finished.\n";
+    }
+
+    return appendFailureDetails("av-denoiser guided failed.", outcome);
+  }
+
   if (outcome.doctorReport !== undefined) {
     return appendFailureDetails(
       renderDoctorReport(outcome.doctorReport, runtimeInfo),
@@ -228,6 +239,12 @@ export function renderCliRequest(
       return renderHelpGuidance(helpText);
     case "doctor":
       return renderDoctorGuidance();
+    case "guided-clean":
+      return [
+        "av-denoiser guided",
+        "",
+        "Runs an interactive preset clean workflow with prompts, dry-run preview, and equivalent CLI flags.",
+      ].join("\n");
     case "inspect":
       return [
         "av-denoiser inspect <path>",

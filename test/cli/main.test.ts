@@ -14,6 +14,10 @@ test("parses doctor command into a typed request", () => {
   expect(request).toEqual({ kind: "doctor" });
 });
 
+test("parses guided command into typed guided-clean request", () => {
+  expect(parseCliRequest(["guided"])).toEqual({ kind: "guided-clean" });
+});
+
 test("parses --help into show-help request", () => {
   expect(parseCliRequest(["--help"])).toEqual({ kind: "show-help" });
 });
@@ -99,5 +103,6 @@ test("renders default guidance without stale phase promises", () => {
   expect(output).toContain(expectedDoctorHint);
   expect(output).toContain(expectedInspectHint);
   expect(output).toContain("clean");
+  expect(output).toContain('Run "av-denoiser guided"');
   expect(output).not.toContain("Phase 5 will add");
 });

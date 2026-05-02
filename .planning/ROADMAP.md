@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Video Preservation & Fallback Control** - Users can understand and control when video stream copy is possible or impossible. (completed 2026-05-02)
 - [x] **Phase 4: Core Audio Pipeline & SoX Cleanup** - Users can clean single audio files through transparent presets and sequential FFmpeg/SoX steps. (completed 2026-05-02)
 - [x] **Phase 5: Final Media Output & Reporting** - Users can receive cleaned audio/video outputs with verified FFmpeg remuxing and human-readable reports. (completed 2026-05-01)
-- [ ] **Phase 6: Guided & Repeatable Workflows** - Users can choose guided prompts or equivalent flags for the same dry-run and execution behavior.
+- [x] **Phase 6: Guided & Repeatable Workflows** - Users can choose guided prompts or equivalent flags for the same dry-run and execution behavior. (completed 2026-05-02)
 - [ ] **Phase 7: Batch Processing & Manifests** - Users can process many files safely with per-file status, summaries, and failure isolation.
 - [ ] **Phase 8: Optional Heavy & Editor Integrations** - Users can opt into Demucs, Audacity, and Kdenlive/MLT paths when prerequisites are available.
 
@@ -117,10 +117,12 @@ Plans:
   3. User can preview a dry-run plan showing resolved tools, ordered steps, expected outputs, and video preservation decisions.
   4. User can copy and run the equivalent non-interactive command for every guided workflow choice.
   5. User receives concise progress updates and a human-readable final summary during guided or flag-driven runs.
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 06-01: TBD
+- [x] 06-01-PLAN.md — `@clack`, `GuidedCleanSelections`, argv equivalence builder + tests (`CLI-04`).
+- [x] 06-02-PLAN.md — `guided` command, prompts, dry-run preview, equivalent line, confirmed execute (`UX-01`–`UX-04`, `CLI-04`).
+- [x] 06-03-PLAN.md — `reportProgress`, guided spinner, CLI round-trip test, help guidance (`UX-05`, `CLI-04`).
 
 ### Phase 7: Batch Processing & Manifests
 **Goal**: Users can process many files safely with independent per-file plans, statuses, outputs, and run records.

@@ -81,6 +81,8 @@ export type CleanDeps = {
   readonly rmSync?: (path: string, options?: { recursive?: boolean }) => void;
   /** Test injection for post-run verification without real output files. */
   readonly outputFileSize?: (absolutePath: string) => number;
+  /** Coarse milestones during non–dry-run execution (`probe`, `step:N`, `verify`). */
+  readonly reportProgress?: (phase: string) => void;
 };
 
 type ExecutableOutputPlan = Exclude<OutputPlan, { modality: "unsupported" }>;
@@ -253,8 +255,11 @@ async function runSequentialPipeline(params: {
   readonly bootstrapIntermediatePath: string;
   readonly ctxInputMediaPath: string;
   readonly finalDeliverablePath: string;
+  readonly reportProgress?: (phase: string) => void;
+  readonly stepIndexOffset?: number;
 }): Promise<CleanCliOutcome | null> {
   let inputPathForStep = params.bootstrapIntermediatePath;
+  const offset = params.stepIndexOffset ?? 0;
 
   for (let i = 0; i < params.logicalSteps.length; i++) {
     const logical = params.logicalSteps[i];
@@ -263,6 +268,7 @@ async function runSequentialPipeline(params: {
       break;
     }
 
+    params.reportProgress?.(`step:${offset + i}`);
     const isEncode =
       logical.tool === "ffmpeg" && logical.step.kind === "encode-deliverable";
     const outPath = isEncode
@@ -337,6 +343,7 @@ async function finalizeCleanSuccess(params: {
   readonly claimedVideoCopied: boolean;
   readonly baseSuccess: CleanCliSuccess;
   readonly report: Omit<CleanRunReport, "verificationOk">;
+  readonly reportProgress?: (phase: string) => void;
 }): Promise<CleanCliOutcome> {
   const outProbe = await runFfprobeProbe({
     ffprobePath: params.ffprobePath,
@@ -370,6 +377,8 @@ async function finalizeCleanSuccess(params: {
       },
     };
   }
+
+  params.reportProgress?.("verify");
 
   const verify = verifyCleanOutput({
     outputPath: params.outputPath,
@@ -655,6 +664,8 @@ export async function runCleanRequest(
   let executionOk = false;
 
   try {
+    deps.reportProgress?.("probe");
+
     if (isVideoCleanModality(executablePlan)) {
       const audioMeta = audioLayoutForStream(
         probeResult.value,
@@ -683,6 +694,8 @@ export async function runCleanRequest(
         };
       }
 
+      deps.reportProgress?.("step:0");
+
       const extractRun = await runProcess(extractCmd.command);
 
       if (extractRun.kind !== "exited" || extractRun.exitCode !== 0) {
@@ -708,6 +721,8 @@ export async function runCleanRequest(
         bootstrapIntermediatePath: extractPath,
         ctxInputMediaPath: extractPath,
         finalDeliverablePath: pipelineAudioPath,
+        reportProgress: deps.reportProgress,
+        stepIndexOffset: 1,
       });
 
       if (pipeFail !== null) {
@@ -731,6 +746,8 @@ export async function runCleanRequest(
           },
         };
       }
+
+      deps.reportProgress?.(`step:${1 + sliced.length}`);
 
       const remuxRun = await runProcess(remuxCmd.command);
 
@@ -774,6 +791,7 @@ export async function runCleanRequest(
               ? [...executablePlan.reasonCodes]
               : undefined,
         },
+        reportProgress: deps.reportProgress,
       });
     }
 
@@ -790,6 +808,8 @@ export async function runCleanRequest(
       bootstrapIntermediatePath: audioOnlyPlan.resolvedInputPath,
       ctxInputMediaPath: audioOnlyPlan.resolvedInputPath,
       finalDeliverablePath: audioOnlyPlan.resolvedOutputPath,
+      reportProgress: deps.reportProgress,
+      stepIndexOffset: 0,
     });
 
     if (pipeFailAudio !== null) {
@@ -817,6 +837,7 @@ export async function runCleanRequest(
         audioCodecSummary: audioOnlyPlan.plannedAudioCodec,
         droppedStreamsLabels: [],
       },
+      reportProgress: deps.reportProgress,
     });
   } finally {
     if (executionOk) {

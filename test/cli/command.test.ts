@@ -2,6 +2,34 @@ import { expect, test } from "bun:test";
 
 import { parseCliRequest, runCli } from "../../src/cli/main";
 import { ExitCode } from "../../src/domain/exit-codes";
+import { argvTokensForEquivalentClean } from "../../src/domain/guided-clean-equivalent";
+import type { GuidedCleanSelections } from "../../src/domain/guided-clean-selection";
+
+test("argvTokensForEquivalentClean round-trips through parseCliRequest", () => {
+  const selections: GuidedCleanSelections = {
+    inputPath: "fixture.wav",
+    force: false,
+    dryRun: false,
+    presetId: "speech-soft-sox",
+    noiseStrength: 0.25,
+    allowVideoFallback: true,
+  };
+
+  const tokens = argvTokensForEquivalentClean(selections);
+  const parsed = parseCliRequest([...tokens.slice(1)]);
+
+  expect(parsed).toEqual({
+    kind: "clean",
+    inputPath: "fixture.wav",
+    maybeOutputPath: undefined,
+    force: false,
+    dryRun: false,
+    json: false,
+    presetId: "speech-soft-sox",
+    knobs: { noiseStrength: 0.25 },
+    allowVideoFallback: true,
+  });
+});
 
 test("parses clean dry-run with default speech-light preset", () => {
   expect(parseCliRequest(["clean", "--dry-run", "clip.wav"])).toMatchObject({
