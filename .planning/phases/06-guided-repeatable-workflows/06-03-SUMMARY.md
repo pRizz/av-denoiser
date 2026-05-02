@@ -1,3 +1,13 @@
+---
+phase: 06-guided-repeatable-workflows
+plan: "03"
+requirements-completed:
+  - UX-05
+  - CLI-04
+generated_by: manual-retrofit
+completed: "2026-05-02"
+---
+
 # Phase 6 Plan 03 — Summary
 
 **Completed:** 2026-05-02
