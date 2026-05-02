@@ -99,10 +99,13 @@ Plans:
   3. User receives a final report confirming whether video streams were copied, audio was encoded, side streams were preserved or dropped, and which fallbacks were used.
   4. User can inspect logs or summaries that explain what the tool did without raw media-tool output being the only error message.
   5. User can rely on post-run media verification for output existence, basic probe validity, duration sanity, and video-copy status.
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 05-01: TBD
+- [ ] 05-01-PLAN.md — Run report + post-run verify pure domain (`VIDEO-04`, `TRUST-03`).
+- [ ] 05-02-PLAN.md — FFmpeg argv builders extract WAV + remux `-c:v copy` (`TOOL-01`).
+- [ ] 05-03-PLAN.md — `runCleanRequest` video path + verification + report assembly (`MEDIA-02`, `TOOL-01`, `TRUST-02`, `TRUST-03`).
+- [ ] 05-04-PLAN.md — `clean --allow-video-fallback`, render checklist, help copy (`MEDIA-02`, `VIDEO-04`, `TRUST-02`).
 
 ### Phase 6: Guided & Repeatable Workflows
 **Goal**: Users can choose between a friendly guided workflow and equivalent non-interactive commands for the same execution model.
@@ -160,7 +163,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 2. Media Probing & Output Planning | 3/3 | Complete    | 2026-05-01 |
 | 3. Video Preservation & Fallback Control | 2/2 | Complete    | 2026-05-02 |
 | 4. Core Audio Pipeline & SoX Cleanup | 4/4 | Complete    | 2026-05-02 |
-| 5. Final Media Output & Reporting | 0/1 | Not started | - |
+| 5. Final Media Output & Reporting | 0/4 | Not started | - |
 | 6. Guided & Repeatable Workflows | 0/1 | Not started | - |
 | 7. Batch Processing & Manifests | 0/1 | Not started | - |
 | 8. Optional Heavy & Editor Integrations | 0/1 | Not started | - |
