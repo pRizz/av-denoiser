@@ -40,6 +40,41 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
     });
 
   program
+    .command("install-tools")
+    .alias("install-deps")
+    .description(
+      "macOS: install FFmpeg (and optional media tools) via Homebrew",
+    )
+    .option(
+      "--dry-run",
+      "Print brew commands and manual hints without running Homebrew",
+      false,
+    )
+    .option(
+      "--with-optional",
+      "Also install SoX_ng, MLT, Audacity cask; print Demucs pip hint",
+      false,
+    )
+    .option(
+      "-y, --yes",
+      "Reserved for non-interactive use (brew may still prompt)",
+      false,
+    )
+    .action(
+      (options: {
+        dryRun?: boolean;
+        withOptional?: boolean;
+        yes?: boolean;
+      }) => {
+        handleRequest({
+          kind: "install-tools",
+          dryRun: Boolean(options.dryRun),
+          withOptional: Boolean(options.withOptional),
+        });
+      },
+    );
+
+  program
     .command("guided")
     .description(
       "Interactive guided clean workflow with prompts and an equivalent flags summary",

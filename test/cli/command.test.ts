@@ -160,6 +160,19 @@ test("parses inspect with --output --force and --json together", () => {
   });
 });
 
+test("parses install-tools and install-deps alias", () => {
+  expect(parseCliRequest(["install-tools", "--dry-run"])).toEqual({
+    kind: "install-tools",
+    dryRun: true,
+    withOptional: false,
+  });
+  expect(parseCliRequest(["install-deps", "--with-optional"])).toEqual({
+    kind: "install-tools",
+    dryRun: false,
+    withOptional: true,
+  });
+});
+
 test("default CLI prints guidance and exits successfully", async () => {
   // Arrange
   const command = ["bun", "run", "cli"];

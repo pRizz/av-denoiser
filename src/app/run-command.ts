@@ -17,6 +17,7 @@ import {
   type InspectDeps,
   runInspectRequest,
 } from "./inspect";
+import { type InstallToolsDeps, runInstallToolsRequest } from "./install-tools";
 
 export type CliCommandOutcome = CommandOutcome & {
   readonly doctorReport?: DoctorReport;
@@ -32,6 +33,7 @@ export type CliRequestDeps = {
   readonly clean?: Partial<CleanDeps>;
   readonly guided?: Partial<GuidedCleanDeps>;
   readonly batch?: BatchOrchestratorDeps["batch"];
+  readonly installTools?: Partial<InstallToolsDeps>;
 };
 
 export async function runCliRequest(
@@ -48,6 +50,14 @@ export async function runCliRequest(
 
       return { ...outcome, doctorReport: report };
     }
+    case "install-tools":
+      return runInstallToolsRequest(
+        {
+          dryRun: request.dryRun,
+          withOptional: request.withOptional,
+        },
+        deps.installTools,
+      );
     case "inspect":
       return runInspectRequest(request, deps.inspect);
     case "guided-clean":

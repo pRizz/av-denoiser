@@ -37,8 +37,13 @@ import {
   renderCleanRunReportText,
 } from "../domain/clean-run-report";
 import type { CommandOutcome } from "../domain/command-outcome";
+import { resolveDidYouMeanMediaPath } from "../domain/input-path-hint";
 import type { MediaProbe } from "../domain/media-probe";
-import { resolveOutputPath } from "../domain/output-path";
+import {
+  canonicalInputPath,
+  describeMissingInputPath,
+  resolveOutputPath,
+} from "../domain/output-path";
 import { type OutputPlan, planMediaOutput } from "../domain/output-plan";
 import { renderDisplayCommand } from "../domain/process-command";
 import {
@@ -581,9 +586,24 @@ export async function runCleanRequest(
   const ffprobePath = maybeFfprobe;
   const ffmpegPath = maybeFfmpeg;
 
+  const resolvedInputPath = canonicalInputPath(cwd, request.inputPath);
+
+  if (!outputExists(resolvedInputPath)) {
+    return {
+      kind: "failure",
+      reason: {
+        kind: "planning-failure",
+        message: describeMissingInputPath(
+          resolvedInputPath,
+          resolveDidYouMeanMediaPath(resolvedInputPath),
+        ),
+      },
+    };
+  }
+
   const probeResult = await runFfprobeProbe({
     ffprobePath,
-    inputPath: request.inputPath,
+    inputPath: resolvedInputPath,
     runProcess,
   });
 

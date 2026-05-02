@@ -4,11 +4,14 @@ import { type FfprobeProbeError, runFfprobeProbe } from "../adapters/ffprobe";
 import { runProcessCommand } from "../adapters/process-runner";
 import type { CliRequest } from "../domain/cli-request";
 import type { CommandOutcome } from "../domain/command-outcome";
+import { resolveDidYouMeanMediaPath } from "../domain/input-path-hint";
 import {
   type InspectPlanSummary,
   outputPlanToInspectSummary,
 } from "../domain/inspect-summary";
 import {
+  canonicalInputPath,
+  describeMissingInputPath,
   type OutputPathFailure,
   resolveOutputPath,
 } from "../domain/output-path";
@@ -48,9 +51,24 @@ export async function runInspectRequest(
     };
   }
 
+  const resolvedInputPath = canonicalInputPath(cwd, request.inputPath);
+
+  if (!outputExists(resolvedInputPath)) {
+    return {
+      kind: "failure",
+      reason: {
+        kind: "planning-failure",
+        message: describeMissingInputPath(
+          resolvedInputPath,
+          resolveDidYouMeanMediaPath(resolvedInputPath),
+        ),
+      },
+    };
+  }
+
   const probeResult = await runFfprobeProbe({
     ffprobePath,
-    inputPath: request.inputPath,
+    inputPath: resolvedInputPath,
     runProcess,
   });
 

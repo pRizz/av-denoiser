@@ -5,6 +5,17 @@ import {
   renderCommandOutcome,
   renderInspectPlanText,
 } from "../../src/cli/render";
+import { canonicalInputPath } from "../../src/domain/output-path";
+
+/** Resolved input exists; default output beside input does not (typical dry-run disk). */
+function outputExistsForProbeOnly(
+  cwd: string,
+  inputPath: string,
+): (p: string) => boolean {
+  const resolvedInput = canonicalInputPath(cwd, inputPath);
+
+  return (p) => p === resolvedInput;
+}
 
 test("runInspectRequest fails when ffprobe is missing from PATH", async () => {
   // Act
@@ -33,6 +44,48 @@ test("runInspectRequest fails when ffprobe is missing from PATH", async () => {
   expect(outcome.reason.tools).toContain("ffprobe");
 });
 
+test("runInspectRequest fails before ffprobe when input path does not exist", async () => {
+  let ffprobeSpawned = false;
+
+  const outcome = await runInspectRequest(
+    {
+      kind: "inspect",
+      inputPath: "/no/such/my movie.mp4",
+      force: false,
+      json: false,
+      allowVideoFallback: false,
+    },
+    {
+      cwd: "/project",
+      maybeWhich: () => "/bin/ffprobe",
+      runProcess: async () => {
+        ffprobeSpawned = true;
+
+        return {
+          kind: "exited",
+          exitCode: 0,
+          stdout: "{}",
+          stderr: "",
+        };
+      },
+      outputExists: () => false,
+    },
+  );
+
+  expect(ffprobeSpawned).toBe(false);
+  expect(outcome.kind).toBe("failure");
+  if (outcome.kind !== "failure") {
+    return;
+  }
+
+  expect(outcome.reason.kind).toBe("planning-failure");
+  if (outcome.reason.kind !== "planning-failure") {
+    return;
+  }
+
+  expect(outcome.reason.message).toContain("Input file not found");
+});
+
 test("runInspectRequest returns inspect summary when probe succeeds", async () => {
   // Arrange
   const fixture = await Bun.file(
@@ -57,7 +110,7 @@ test("runInspectRequest returns inspect summary when probe succeeds", async () =
         stdout: fixture,
         stderr: "",
       }),
-      outputExists: () => false,
+      outputExists: outputExistsForProbeOnly("/project", "clip.m4a"),
     },
   );
 
@@ -95,7 +148,7 @@ test("runInspectRequest json flag preserves planned codec and container in seria
         stdout: fixture,
         stderr: "",
       }),
-      outputExists: () => false,
+      outputExists: outputExistsForProbeOnly("/project", "clip.m4a"),
     },
   );
 
@@ -180,7 +233,10 @@ test("runInspectRequest denies fallback-required without allowVideoFallback flag
         stdout,
         stderr: "",
       }),
-      outputExists: () => false,
+      outputExists: outputExistsForProbeOnly(
+        "/project",
+        "/in/webm/source.webm",
+      ),
     },
   );
 
@@ -228,7 +284,10 @@ test("runInspectRequest allows fallback-required when acknowledged", async () =>
         stdout,
         stderr: "",
       }),
-      outputExists: () => false,
+      outputExists: outputExistsForProbeOnly(
+        "/project",
+        "/in/webm/source.webm",
+      ),
     },
   );
 

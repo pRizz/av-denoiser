@@ -1,9 +1,14 @@
 import { expect, test } from "bun:test";
 
 import {
+  canonicalInputPath,
   DEFAULT_OUTPUT_SUFFIX_SEGMENT,
   resolveOutputPath,
 } from "../../src/domain/output-path";
+
+test("canonicalInputPath trims accidental whitespace from pasted paths", () => {
+  expect(canonicalInputPath("/proj", "  clip.m4a  ")).toBe("/proj/clip.m4a");
+});
 
 test("resolveOutputPath derives clip.avdn.m4a from clip.m4a", () => {
   // Arrange

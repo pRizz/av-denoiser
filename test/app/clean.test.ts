@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 
 import { type CleanRunInput, runCleanRequest } from "../../src/app/clean";
+import { canonicalInputPath } from "../../src/domain/output-path";
 
 const minimalAudioFixture = await Bun.file(
   `${import.meta.dir}/../fixtures/ffprobe/minimal-audio.json`,
@@ -66,6 +67,15 @@ function baseCleanInput(overrides: Partial<CleanRunInput>): CleanRunInput {
   };
 }
 
+function outputExistsForCleanProbeOnly(
+  cwd: string,
+  inputPath: string,
+): (p: string) => boolean {
+  const resolvedInput = canonicalInputPath(cwd, inputPath);
+
+  return (p) => p === resolvedInput;
+}
+
 test("runCleanRequest dry-run speech-light does not invoke ffmpeg (probe still runs)", async () => {
   let ffmpegInvocations = 0;
 
@@ -84,7 +94,7 @@ test("runCleanRequest dry-run speech-light does not invoke ffmpeg (probe still r
         stderr: "",
       };
     },
-    outputExists: () => false,
+    outputExists: outputExistsForCleanProbeOnly("/project", "clip.m4a"),
   });
 
   expect(ffmpegInvocations).toBe(0);
@@ -113,7 +123,7 @@ test("runCleanRequest video-copy-safe dry-run succeeds with extract and remux st
         stdout: minimalVideoAudioFixture,
         stderr: "",
       }),
-      outputExists: () => false,
+      outputExists: outputExistsForCleanProbeOnly("/project", "clip.mp4"),
     },
   );
 
@@ -148,7 +158,7 @@ test("runCleanRequest fallback-required without allow flag returns fallback-requ
         stdout: fallbackMultiVideoProbe,
         stderr: "",
       }),
-      outputExists: () => false,
+      outputExists: outputExistsForCleanProbeOnly("/project", "multi.mp4"),
     },
   );
 
@@ -176,7 +186,7 @@ test("runCleanRequest fallback-required with allowVideoFallback dry-run succeeds
         stdout: fallbackMultiVideoProbe,
         stderr: "",
       }),
-      outputExists: () => false,
+      outputExists: outputExistsForCleanProbeOnly("/project", "multi.mp4"),
     },
   );
 
@@ -204,7 +214,7 @@ test("runCleanRequest unsupported modality mentions inspect", async () => {
         stdout: noAudioProbe,
         stderr: "",
       }),
-      outputExists: () => false,
+      outputExists: outputExistsForCleanProbeOnly("/project", "vonly.mp4"),
     },
   );
 
@@ -237,7 +247,7 @@ test("runCleanRequest speech-soft-sox missing SoX reports missing-tools sorted",
         stdout: minimalAudioFixture,
         stderr: "",
       }),
-      outputExists: () => false,
+      outputExists: outputExistsForCleanProbeOnly("/project", "clip.m4a"),
     },
   );
 

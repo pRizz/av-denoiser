@@ -14,6 +14,7 @@ import {
 } from "../domain/doctor-report";
 import { ExitCode } from "../domain/exit-codes";
 import type { InspectPlanSummary } from "../domain/inspect-summary";
+import { cliName } from "../domain/product";
 
 const DEFAULT_GUIDANCE_LINES = [
   "av-denoiser CLI foundation is installed.",
@@ -49,7 +50,15 @@ export type RenderableOutcome = CommandOutcome & {
 };
 
 export function renderDefaultGuidance(): string {
-  return DEFAULT_GUIDANCE_LINES.join("\n");
+  const lines = [...DEFAULT_GUIDANCE_LINES];
+
+  if (process.platform === "darwin") {
+    lines.push(
+      `On macOS, run "${cliName} install-tools" to install FFmpeg via Homebrew (add --with-optional for SoX_ng, MLT, Audacity, and a Demucs pip hint).`,
+    );
+  }
+
+  return lines.join("\n");
 }
 
 export function renderDoctorGuidance(): string {
@@ -96,7 +105,13 @@ export function renderDoctorReport(
     );
   }
 
-  return lines.join("\n");
+  const body = lines.join("\n");
+
+  if (process.platform !== "darwin") {
+    return body;
+  }
+
+  return `${body}\n\nTip: "${cliName} install-tools" installs FFmpeg via Homebrew; add --with-optional for SoX_ng, MLT, Audacity, and a Demucs pip hint.`;
 }
 
 export function renderBatchSummary(payload: BatchCliPayload): string {
@@ -254,6 +269,27 @@ export function renderCommandOutcome(
     return appendFailureDetails("av-denoiser batch failed.", outcome);
   }
 
+  if (request.kind === "install-tools") {
+    if (
+      outcome.kind === "success" &&
+      outcome.message !== undefined &&
+      outcome.message.length > 0
+    ) {
+      return outcome.message;
+    }
+
+    if (outcome.kind === "internal-error") {
+      const msg =
+        outcome.error instanceof Error
+          ? outcome.error.message
+          : String(outcome.error);
+
+      return `${cliName} install-tools failed.\n\nInternal error: ${msg}\n`;
+    }
+
+    return appendFailureDetails(`${cliName} install-tools failed.`, outcome);
+  }
+
   if (outcome.doctorReport !== undefined) {
     return appendFailureDetails(
       renderDoctorReport(outcome.doctorReport, runtimeInfo),
@@ -279,6 +315,12 @@ export function renderCliRequest(
       return renderHelpGuidance(helpText);
     case "doctor":
       return renderDoctorGuidance();
+    case "install-tools":
+      return [
+        `${cliName} install-tools`,
+        "",
+        "macOS only: runs Homebrew to install FFmpeg (required). For SoX_ng, MLT, and Audacity (cask), pass --with-optional; Demucs still needs a manual pip install (hint printed after brew). Use --dry-run to preview commands.",
+      ].join("\n");
     case "guided-clean":
       return [
         "av-denoiser guided",
@@ -414,8 +456,23 @@ function renderFailureReason(
   switch (outcome.reason.kind) {
     case "invalid-input":
       return `Invalid input: ${outcome.reason.message}`;
-    case "missing-tools":
-      return `Missing required tools: ${outcome.reason.tools.join(", ")}`;
+    case "missing-tools": {
+      let text = `Missing required tools: ${outcome.reason.tools.join(", ")}`;
+
+      if (process.platform === "darwin") {
+        text += `\nOn macOS, try: ${cliName} install-tools`;
+
+        const suggestOptional = outcome.reason.tools.some((t) =>
+          ["sox", "sox_ng", "demucs"].includes(t),
+        );
+
+        if (suggestOptional) {
+          text += " --with-optional";
+        }
+      }
+
+      return text;
+    }
     case "planning-failure":
       return `Planning failure: ${outcome.reason.message}`;
     case "processing-failure":

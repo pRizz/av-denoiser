@@ -22,6 +22,11 @@ export {
   runInspectRequest,
 } from "./app/inspect";
 export {
+  type InstallToolsDeps,
+  type InstallToolsInput,
+  runInstallToolsRequest,
+} from "./app/install-tools";
+export {
   type CliCommandOutcome,
   type CliRequestDeps,
   runCliRequest,
@@ -67,6 +72,12 @@ export {
   type InspectPlanSummary,
   outputPlanToInspectSummary,
 } from "./domain/inspect-summary";
+export {
+  type BrewInstallStep,
+  formatBrewInstallDryRunLines,
+  manualPostBrewHints,
+  planBrewInstallSteps,
+} from "./domain/install-tools-brew";
 export {
   type FfprobeParseError,
   type MediaProbe,

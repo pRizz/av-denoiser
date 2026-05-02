@@ -38,7 +38,36 @@ export type OutputPathFailure =
 export type ResolveOutputPathResult = OutputPathSuccess | OutputPathFailure;
 
 function canonicalPath(cwd: string, maybePath: string): string {
-  return normalize(resolve(cwd, maybePath));
+  const trimmed = maybePath.trim();
+
+  return normalize(resolve(cwd, trimmed));
+}
+
+/** Absolute normalized input path; matches planning resolution used by `resolveOutputPath`. */
+export function canonicalInputPath(cwd: string, inputPath: string): string {
+  return canonicalPath(cwd, inputPath);
+}
+
+/** User-facing planning failure line when `canonicalInputPath` does not exist on disk. */
+export function describeMissingInputPath(
+  resolvedPath: string,
+  maybeDidYouMean?: string | null,
+): string {
+  const chunks = [
+    `Input file not found: ${resolvedPath}`,
+    "Confirm that path exists on disk (Finder path vs terminal path, iCloud-only placeholders, or renamed files often cause this).",
+    "Shell note: paths with spaces must be quoted, e.g. av-denoiser inspect 'my clip.mp4'.",
+  ];
+
+  if (
+    maybeDidYouMean !== undefined &&
+    maybeDidYouMean !== null &&
+    maybeDidYouMean.length > 0
+  ) {
+    chunks.push(`Did you mean: ${maybeDidYouMean}`);
+  }
+
+  return chunks.join(" ");
 }
 
 /**

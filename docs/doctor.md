@@ -9,6 +9,10 @@
 
 If a required tool is missing or its lightweight version probe fails, `doctor` exits with `missingTools` (`3`).
 
+## macOS: `install-tools`
+
+On macOS, `bun run src/cli/main.ts install-tools` runs Homebrew to install **FFmpeg** (provides both `ffmpeg` and `ffprobe` on PATH). Use **`--with-optional`** to also install **SoX_ng**, **MLT** (`melt`), and the **Audacity** cask; the command then prints a **manual** hint for installing **Demucs** via `pip` (Demucs is not installed automatically). **`--dry-run`** prints the `brew` commands without executing them.
+
 ## Optional Tools
 
 The following tools are optional warnings in Phase 1:

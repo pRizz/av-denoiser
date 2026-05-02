@@ -8,6 +8,11 @@ export type CliRequest =
   | { readonly kind: "show-default" }
   | { readonly kind: "show-help" }
   | { readonly kind: "doctor" }
+  | {
+      readonly kind: "install-tools";
+      readonly dryRun: boolean;
+      readonly withOptional: boolean;
+    }
   | { readonly kind: "guided-clean" }
   | {
       readonly kind: "inspect";
