@@ -290,6 +290,75 @@ test("runCleanRequest speech-light executes ffmpeg pipeline plus output probe", 
   }
 });
 
+test("runCleanRequest speech-vocals-demucs executes demucs between extract and encode", async () => {
+  let demucsInvoked = false;
+  let ffmpegIndex = 0;
+  let encodeInputPath: string | undefined;
+
+  const maybeWhichDemucs = (name: string) => {
+    const map: Record<string, string | null> = {
+      ffmpeg: "/bin/ffmpeg",
+      ffprobe: "/bin/ffprobe",
+      demucs: "/bin/demucs",
+      sox_ng: null,
+      sox: null,
+    };
+
+    return map[name] ?? null;
+  };
+
+  const outcome = await runCleanRequest(
+    baseCleanInput({
+      dryRun: false,
+      presetId: "speech-vocals-demucs",
+      force: true,
+    }),
+    {
+      cwd: "/project",
+      maybeWhich: maybeWhichDemucs,
+      mkdtempSync: () => "/tmp/av-test-clean-demucs",
+      rmSync: () => {},
+      outputExists: () => true,
+      outputFileSize: () => 1024,
+      runProcess: async (cmd) => {
+        if (cmd.executable === "/bin/demucs") {
+          demucsInvoked = true;
+          expect(cmd.args).toContain("--two-stems");
+          expect(cmd.args).toContain("vocals");
+          expect(cmd.args).toContain("-n");
+          expect(cmd.args).toContain("htdemucs");
+          expect(cmd.args).toContain("-o");
+        }
+
+        if (cmd.executable === "/bin/ffmpeg") {
+          ffmpegIndex += 1;
+          const iIdx = cmd.args.indexOf("-i");
+
+          if (ffmpegIndex === 2 && iIdx >= 0) {
+            encodeInputPath = cmd.args[iIdx + 1];
+          }
+        }
+
+        return {
+          kind: "exited",
+          exitCode: 0,
+          stdout: minimalAudioFixture,
+          stderr: "",
+        };
+      },
+    },
+  );
+
+  expect(outcome.kind).toBe("success");
+  expect(demucsInvoked).toBe(true);
+  expect(encodeInputPath).toBeDefined();
+  expect(encodeInputPath ?? "").toContain("step-1-demucs-out");
+  expect(encodeInputPath ?? "").toContain("vocals.wav");
+  if (outcome.kind === "success" && outcome.clean !== undefined) {
+    expect(outcome.clean.maybeReportText).toContain("Verified:");
+  }
+});
+
 test("runCleanRequest video-copy-safe execute runs extract remux and output probe", async () => {
   let ffprobeCalls = 0;
   let ffmpegArgsJoined = "";
