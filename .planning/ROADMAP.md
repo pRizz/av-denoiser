@@ -173,7 +173,10 @@ Plans:
 **Depends on**: Phase 8 (delivered code under audit)
 **Gap closure**: v1.0-MILESTONE-AUDIT (`gaps.requirements` PROCESS / orphaned VIDEO IDs)
 **Requirements**: VIDEO-01, VIDEO-02, VIDEO-03
-**Plans**: Plans TBD (typically one verification plan)
+**Plans**: 1 plan
+
+Plans:
+- [ ] 09-01-PLAN.md — Retroactive **`03-VERIFICATION.md`** + SUMMARY parity check + **`bun run verify`** (`VIDEO-01`–`VIDEO-03`).
 
 ### Phase 10: Milestone Gap — Phase 4 verification
 **Goal**: Close audit gap for pipe/preset/sox/audio outcomes without altering product scope (`MEDIA-01`, sequential pipeline reqs).
@@ -225,7 +228,7 @@ Phases execute in numeric order: 1 … 14. Gap phases **9–14** depend on merge
 | 6. Guided & Repeatable Workflows | 3/3 | Complete    | 2026-05-02 |
 | 7. Batch Processing & Manifests | 3/3 | Complete    | 2026-05-01 |
 | 8. Optional Heavy & Editor Integrations | 4/4 | Complete    | 2026-05-01 |
-| 9. Milestone Gap — Phase 3 verification | 0/? | Planned     | |
+| 9. Milestone Gap — Phase 3 verification | 0/1 | Planned — ready to execute | |
 | 10. Milestone Gap — Phase 4 verification | 0/? | Planned     | |
 | 11. Milestone Gap — Phase 5 verification | 0/? | Planned     | |
 | 12. Milestone Gap — Phase 8 verification | 0/? | Planned     | |
