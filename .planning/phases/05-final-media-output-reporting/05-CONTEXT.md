@@ -1,14 +1,14 @@
 ---
 generated_by: gsd-discuss-phase
 lifecycle_mode: yolo
-phase_lifecycle_id: 05-2026-05-02T00-37-51
-generated_at: 2026-05-02T00:37:51.453Z
+phase_lifecycle_id: 05-2026-05-02T00-46-42
+generated_at: 2026-05-02T00:46:42.585Z
 ---
 
 # Phase 5: Final Media Output & Reporting - Context
 
 **Gathered:** 2026-05-02
-**Status:** Ready for planning
+**Status:** Completed on roadmap (2026-05-01); context refreshed via yolo reopen — decisions unchanged, code pointers aligned to landed implementation
 **Mode:** Yolo
 
 <domain>
@@ -26,7 +26,7 @@ Scope stays **single-file**, **sequential pipeline** consistent with Phase 4 —
 ### Video + audio orchestration (MEDIA-02, TOOL-01)
 
 - **D-01:** **Reuse** the existing **probe → `planMediaOutput` → preset expansion → sequential step runner** model from Phase 4. For **`video-copy-safe`** (and **`fallback-required`** only when user policy allows, mirroring **`inspect` / `--allow-video-fallback`**), orchestrate: **extract chosen primary audio** to a **PCM-oriented intermediate** (same default bias as Phase 4: WAV / s16le family), **run the same logical pipeline steps** as audio-only clean, then **remux** with **`-c:v copy`** when the plan guarantees stream-copy-first behavior; **encode/replace audio** per **`OutputPlan` planned audio codec/container** (aligned with Phase 2/4 — no silent FFmpeg defaults contradicting the plan).
-- **D-02:** **`clean`** (or a dedicated sibling command only if planning proves cleaner — **default recommendation: extend `clean`** so one entry point owns execute) **accepts modalities that Phase 4 rejected**: lift the hard **`audio-only`** gate while preserving **explicit errors** for **`unsupported`** inputs.
+- **D-02:** **`clean`** **accepts modalities that Phase 4 rejected**: lift the hard **`audio-only`** gate while preserving **explicit errors** for **`unsupported`** inputs — **single entry point** with modality-driven branching (no mandatory sibling subcommand).
 - **D-03:** **Temp workspace** for intermediates follows Phase 4 bias: **cleanup on success**, **retain on failure** optional later; paths must not collide with user output rules from **`resolveOutputPath`**.
 
 ### Final report (VIDEO-04, TRUST-02)
@@ -41,7 +41,7 @@ Scope stays **single-file**, **sequential pipeline** consistent with Phase 4 —
 
 ### Post-run verification (TRUST-03)
 
-- **D-08:** After successful write, **verify**: output file **exists** and is **non-empty**; **ffprobe JSON** parses; **duration** within a **small relative epsilon** versus input (default recommendation: **0.5% or 500 ms whichever is larger**, exact constant for planner); for **stream-copy-safe** outcomes, **assert video stream codec (and profile-level signals already available in `MediaProbe`) matches copy intent** — i.e. video **not re-encoded** when report claims copy (compare probe fields before/after as feasible).
+- **D-08:** After successful write, **verify**: output file **exists** and is **non-empty**; **ffprobe JSON** parses; **duration** within tolerance **max(0.5% of input duration, 0.5 s)** — constants live in **`clean-output-verify.ts`** for planner/tests; for **stream-copy-safe** outcomes, **assert video stream semantics match copy intent** when copy is claimed (compare probe fields before/after as feasible).
 - **D-09:** Verification failure maps to a **distinct processing-failure outcome** with **actionable text**, not a generic crash.
 
 ### Streams policy (narrow v1)
@@ -50,13 +50,12 @@ Scope stays **single-file**, **sequential pipeline** consistent with Phase 4 —
 
 ### Claude's Discretion
 
-- Exact **ffmpeg argv** for extract/remux edge cases (PCM conversion, `-shortest`, timestamp discontinuities).
-- Whether **single combined `clean`** vs **`clean-video`** subcommand improves UX — **bias: one command** with modality-driven branching unless Commander help becomes unclear.
-- Precise **epsilon** and **which ffprobe fields** prove copy — planner fixtures should lock this.
+- Exact **ffmpeg argv** for extract/remux edge cases (PCM conversion, `-shortest`, timestamp discontinuities) — **narrowed** where builders now encode the happy path; remaining edge cases stay adapter-local.
+- Precise **which ffprobe fields** prove copy beyond baseline codec/index checks — lock in fixtures as regressions appear.
 
 ### Folded Todos
 
-_None — `todo match-phase` returned no matches._
+_None — `todo match-phase` returned no matches on this reopen._
 
 </decisions>
 
@@ -72,7 +71,7 @@ _None — `todo match-phase` returned no matches._
 
 ### Prior phase contracts
 
-- `.planning/phases/04-core-audio-pipeline-sox-cleanup/04-CONTEXT.md` — audio-only clean path, PCM intermediates, preset expansion, modality gate to lift in Phase 5.
+- `.planning/phases/04-core-audio-pipeline-sox-cleanup/04-CONTEXT.md` — audio-only clean path, PCM intermediates, preset expansion, modality gate lifted in Phase 5.
 - `.planning/phases/03-video-preservation-fallback-control/03-CONTEXT.md` — stream-copy vs fallback-required semantics and user approval flags.
 - `.planning/phases/02-media-probing-output-planning/02-CONTEXT.md` — `MediaProbe`, `OutputPlan`, planned codec/container.
 - `.planning/phases/01-bun-cli-foundation-trust-model/01-CONTEXT.md` — argv-only execution, exit taxonomy.
@@ -80,6 +79,12 @@ _None — `todo match-phase` returned no matches._
 ### Stack intent
 
 - `.planning/research/STACK.md` — FFmpeg extraction/remux, probe JSON, stream copy posture.
+
+### Implemented artifacts (Phase 5 reference)
+
+- `src/domain/clean-run-report.ts` — `CleanRunReport`, dropped-stream labels, human-readable checklist renderer.
+- `src/domain/clean-output-verify.ts` — duration tolerance constants, verification result taxonomy.
+- `src/app/clean.ts` — orchestration wiring for video path, report assembly, verification hooks.
 
 ### Deferred / adjacent
 
@@ -92,21 +97,23 @@ _None — `todo match-phase` returned no matches._
 
 ### Reusable Assets
 
-- `src/app/clean.ts` — `runCleanRequest`, modality gating, step execution, stderr mapping; **extend** for video path rather than fork ad hoc scripts.
+- `src/app/clean.ts` — `runCleanRequest`, modality handling, step execution, stderr mapping; **video path + report + verify** integrate here.
+- `src/domain/clean-run-report.ts` — typed final report and **`renderCleanRunReportText`**.
+- `src/domain/clean-output-verify.ts` — **`durationVerificationToleranceSeconds`** and **`CleanVerifyResult`** outcomes.
 - `src/domain/output-plan.ts`, `src/domain/output-path.ts` — planned outputs and collision-safe paths.
 - `src/domain/audio-pipeline-plan.ts`, `src/domain/audio-pipeline-argv.ts` — preset expansion and argv builders for sequential steps.
 - `src/adapters/ffprobe.ts`, `src/domain/media-probe.ts` — probe for pre/post verification.
 - `src/adapters/process-runner.ts`, `src/domain/process-command.ts` — argv-only spawning.
-- `src/app/inspect.ts` — probe/plan orchestration and **`allowVideoFallback`** policy to mirror for execute.
+- `src/app/inspect.ts` — probe/plan orchestration and **`allowVideoFallback`** policy mirrored for execute.
 
 ### Established Patterns
 
 - **Functional core** emits summaries and commands; adapters run tools.
-- **Phase 4** already caps stderr snippets and separates **plan vs execute** — Phase 5 adds **remux + verify + richer report**.
+- **Phase 4** caps stderr snippets and separates **plan vs execute** — Phase 5 adds **remux + verify + richer report**.
 
 ### Integration Points
 
-- CLI: `src/cli/command.ts`, `src/domain/cli-request.ts`, `src/cli/render.ts` — remove or narrow “Phase 5 ships later” messaging once implemented; align help text with new modalities.
+- CLI: `src/cli/command.ts`, `src/domain/cli-request.ts`, `src/cli/render.ts` — **`clean --allow-video-fallback`** and checklist-style terminal output aligned with **`VIDEO-04` / `TRUST-02`**.
 
 </code_context>
 

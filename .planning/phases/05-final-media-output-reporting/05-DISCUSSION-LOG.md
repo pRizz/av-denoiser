@@ -5,8 +5,16 @@
 
 **Date:** 2026-05-02
 **Phase:** 5-Final Media Output & Reporting
-**Mode:** Yolo
+**Mode:** Yolo (reopen — refresh decisions against landed code)
 **Areas discussed:** Video + audio orchestration, Final report shape, Logging and errors, Post-run verification, Multi-stream policy
+
+---
+
+## Session notes
+
+- `[auto-select]` Context exists — updating with synthesized decisions.
+- `[auto-select]` Plans exist — continuing with context capture, will replan after. _(informational — roadmap shows Phase 5 plans executed; no replan triggered by this reopen.)_
+- `[auto-select]` Selected all gray areas: Video + audio orchestration, Final report shape, Logging and errors, Post-run verification, Multi-stream policy.
 
 ---
 
@@ -18,7 +26,7 @@
 | New subcommand only for video | Clearer help split but duplicates orchestration | |
 | Shell out to one mega FFmpeg filtergraph | Conflicts with sequential step model and typed presets | |
 
-**User's choice:** _(yolo — recommended default)_ Extend `clean` (or equivalent single entry point) with extract/remux orchestration reusing the sequential pipeline.
+**User's choice:** _(yolo — recommended default)_ Extend `clean` with extract/remux orchestration reusing the sequential pipeline.
 **Notes:** Align remux and codec choices with `OutputPlan` and Phase 3 fallback flags.
 
 ---
@@ -56,6 +64,7 @@
 | Deep checksum / perceptual tests | Out of phase scope | |
 
 **User's choice:** _(yolo — recommended default)_ Lightweight probe-based verification with explicit failure outcomes.
+**Notes:** Duration tolerance implemented as `DURATION_VERIFY_RELATIVE_FRACTION` / `DURATION_VERIFY_MIN_ABS_SECONDS` in `src/domain/clean-output-verify.ts`.
 
 ---
 
@@ -73,7 +82,7 @@
 
 ## Claude's Discretion
 
-_FFMpeg edge-case argv, exact epsilon constants, subcommand naming if `clean` help becomes overloaded._
+_Remaining FFmpeg edge-case argv and evolving ffprobe field proofs for copy — prefer regression fixtures over speculative locking._
 
 ## Deferred Ideas
 
