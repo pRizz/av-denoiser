@@ -21,6 +21,15 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 7: Batch Processing & Manifests** - Users can process many files safely with per-file status, summaries, and failure isolation. (completed 2026-05-01)
 - [x] **Phase 8: Optional Heavy & Editor Integrations** - Users can opt into Demucs, Audacity, and Kdenlive/MLT paths when prerequisites are available. (completed 2026-05-01)
 
+**Gap closure (v1.0 milestone audit)** — retrospective verification artifacts, documentation sync, and integration fixes flagged in [.planning/v1.0-MILESTONE-AUDIT.md](./v1.0-MILESTONE-AUDIT.md).
+
+- [ ] **Phase 9: Milestone Gap — Phase 3 verification** — Author `03-VERIFICATION.md` and reconcile Phase 3 plan summaries (`VIDEO-01`–`VIDEO-03`) against `bun run verify`/code evidence after audit orphan rule.
+- [ ] **Phase 10: Milestone Gap — Phase 4 verification** — Author `04-VERIFICATION.md`, restore `requirements-completed` metadata on Phase 4 summaries where absent (`MEDIA-01`, `PIPE-01`–`PIPE-06`, `TOOL-02`).
+- [ ] **Phase 11: Milestone Gap — Phase 5 verification** — Author `05-VERIFICATION.md`, restore SUMMARY hygiene for Phase 5 (`MEDIA-02`, `VIDEO-04`, `TOOL-01`, `TRUST-02`, `TRUST-03`).
+- [ ] **Phase 12: Milestone Gap — Phase 8 verification** — Author `08-VERIFICATION.md`; add or extend app-layer tests wherever audit cited thin execution coverage (`TOOL-03`–`TOOL-08`).
+- [ ] **Phase 13: Milestone Gap — Batch manifest doctor snapshot** — Wire default `batch` CLI path to populate `manifest.maybeDoctorFacts` (reuse doctor/discovery pathway from `clean`/deps) plus regression tests (`BATCH-05`, broken flow batch manifest completeness).
+- [ ] **Phase 14: Milestone Gap — Guided optional-tool parity & Phase 6/7 verification** — Extend guided selections/prompts and argv equivalence for Demucs, Audacity, and LADSPA opt-in parity with `clean`/`batch`; author `06-VERIFICATION.md` and `07-VERIFICATION.md` (`CLI-04`, `UX-01`–`UX-05`, integration guided→heavy tools).
+
 ## Phase Details
 
 ### Phase 1: Bun CLI Foundation & Trust Model
@@ -159,10 +168,52 @@ Plans:
 - [x] 08-03-PLAN.md — Audacity pipe adapter, opt-in CLI, diagnostics (TOOL-05, TOOL-06).
 - [x] 08-04-PLAN.md — Demucs doctor (D-16), ladspa/melt probes, **runnable FFmpeg LADSPA step** (TOOL-07), docs TOOL-08 (`clean.ts` after 08-03).
 
+### Phase 9: Milestone Gap — Phase 3 verification
+**Goal**: Satisfy milestone audit orphan rule for `VIDEO-01`–`VIDEO-03` with a phase-local verification artifact anchored to shipped code/tests.
+**Depends on**: Phase 8 (delivered code under audit)
+**Gap closure**: v1.0-MILESTONE-AUDIT (`gaps.requirements` PROCESS / orphaned VIDEO IDs)
+**Requirements**: VIDEO-01, VIDEO-02, VIDEO-03
+**Plans**: Plans TBD (typically one verification plan)
+
+### Phase 10: Milestone Gap — Phase 4 verification
+**Goal**: Close audit gap for pipe/preset/sox/audio outcomes without altering product scope (`MEDIA-01`, sequential pipeline reqs).
+**Depends on**: Phase 9 *(recommended — keeps gap work ordered; may execute in parallel with caution)*
+**Gap closure**: v1.0-MILESTONE-AUDIT orphaned `PIPE-*`, `TOOL-02`, `MEDIA-01`
+**Requirements**: MEDIA-01, PIPE-01, PIPE-02, PIPE-03, PIPE-04, PIPE-05, PIPE-06, TOOL-02
+**Plans**: Plans TBD
+
+### Phase 11: Milestone Gap — Phase 5 verification
+**Goal**: Formalize finalized media/remux/reporting requirement evidence (`MEDIA-02`, `VIDEO-04`, FFmpeg path, trust summaries/post-run verification).
+**Depends on**: Phase 10
+**Gap closure**: v1.0-MILESTONE-AUDIT orphaned `MEDIA-02`, `VIDEO-04`, `TOOL-01`, `TRUST-02`, `TRUST-03`
+**Requirements**: MEDIA-02, VIDEO-04, TOOL-01, TRUST-02, TRUST-03
+**Plans**: Plans TBD
+
+### Phase 12: Milestone Gap — Phase 8 verification
+**Goal**: Verification artifact plus stronger execution-path confidence for optional heavy integrations.
+**Depends on**: Phase 11
+**Gap closure**: v1.0-MILESTONE-AUDIT `TOOL-03` partial + missing `08-VERIFICATION.md`
+**Requirements**: TOOL-03, TOOL-04, TOOL-05, TOOL-06, TOOL-07, TOOL-08
+**Plans**: Plans TBD
+
+### Phase 13: Milestone Gap — Batch manifest doctor snapshot
+**Goal**: Default `batch` runs persist doctor/discovery snapshots into manifests per `BATCH-05`.
+**Depends on**: Phase 7 *(delivered batch surface; executable before heavier verification phases if desired)*
+**Gap closure**: v1.0-MILESTONE-AUDIT integration `batch → manifest.maybeDoctorFacts`, flow batch manifest completeness
+**Requirements**: BATCH-05 (plus regression guard for BATCH-01–BATCH-04)
+**Plans**: Plans TBD
+
+### Phase 14: Milestone Gap — Guided optional-tool parity & Phase 6/7 verification
+**Goal**: Guided mode reaches parity with flagged `clean`/`batch` optional heavy surfaces; finalize guided/batch UX verification artifacts (`06-VERIFICATION.md`, `07-VERIFICATION.md`).
+**Depends on**: Phase 12 *(optional-heavy verification artifact complete)* and Phase 13 *(batch manifest doctor snapshot landed)*
+**Gap closure**: v1.0-MILESTONE-AUDIT guided→heavy integration gap, orphaned `CLI-04` process gap (implementation already), `UX-*`/`BATCH-*` verification absent
+**Requirements**: CLI-04, UX-01, UX-02, UX-03, UX-04, UX-05, BATCH-01, BATCH-02, BATCH-03, BATCH-04
+**Plans**: Plans TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
+Phases execute in numeric order: 1 … 14. Gap phases **9–14** depend on merged v1 work (audit closure); Phase **13** may start once Phase **7** is complete without blocking on Phases **9–12**.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -174,52 +225,58 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 6. Guided & Repeatable Workflows | 3/3 | Complete    | 2026-05-02 |
 | 7. Batch Processing & Manifests | 3/3 | Complete    | 2026-05-01 |
 | 8. Optional Heavy & Editor Integrations | 4/4 | Complete    | 2026-05-01 |
+| 9. Milestone Gap — Phase 3 verification | 0/? | Planned     | |
+| 10. Milestone Gap — Phase 4 verification | 0/? | Planned     | |
+| 11. Milestone Gap — Phase 5 verification | 0/? | Planned     | |
+| 12. Milestone Gap — Phase 8 verification | 0/? | Planned     | |
+| 13. Milestone Gap — Batch manifest doctor snapshot | 0/? | Planned     | |
+| 14. Milestone Gap — Guided optional-tool parity & Phase 6/7 verification | 0/? | Planned     | |
 
 ## Requirement Coverage
 
-| Requirement | Phase |
-|-------------|-------|
-| CLI-01 | Phase 1 |
-| CLI-02 | Phase 1 |
-| CLI-03 | Phase 1 |
-| CLI-04 | Phase 6 |
-| MEDIA-01 | Phase 4 |
-| MEDIA-02 | Phase 5 |
-| MEDIA-03 | Phase 2 |
-| MEDIA-04 | Phase 2 |
-| MEDIA-05 | Phase 2 |
-| VIDEO-01 | Phase 3 |
-| VIDEO-02 | Phase 3 |
-| VIDEO-03 | Phase 3 |
-| VIDEO-04 | Phase 5 |
-| VIDEO-05 | Phase 2 |
-| PIPE-01 | Phase 4 |
-| PIPE-02 | Phase 4 |
-| PIPE-03 | Phase 4 |
-| PIPE-04 | Phase 4 |
-| PIPE-05 | Phase 4 |
-| PIPE-06 | Phase 4 |
-| TOOL-01 | Phase 5 |
-| TOOL-02 | Phase 4 |
-| TOOL-03 | Phase 8 |
-| TOOL-04 | Phase 8 |
-| TOOL-05 | Phase 8 |
-| TOOL-06 | Phase 8 |
-| TOOL-07 | Phase 8 |
-| TOOL-08 | Phase 8 |
-| UX-01 | Phase 6 |
-| UX-02 | Phase 6 |
-| UX-03 | Phase 6 |
-| UX-04 | Phase 6 |
-| UX-05 | Phase 6 |
-| BATCH-01 | Phase 7 |
-| BATCH-02 | Phase 7 |
-| BATCH-03 | Phase 7 |
-| BATCH-04 | Phase 7 |
-| BATCH-05 | Phase 7 |
-| TRUST-01 | Phase 1 |
-| TRUST-02 | Phase 5 |
-| TRUST-03 | Phase 5 |
-| TRUST-04 | Phase 1 |
+| Requirement | Phase | Notes |
+|-------------|-------|--------|
+| CLI-01 | Phase 1 | |
+| CLI-02 | Phase 1 | |
+| CLI-03 | Phase 1 | |
+| CLI-04 | Phase 14 | Gap closure (**was** Phase 6 delivery) |
+| MEDIA-01 | Phase 10 | Gap closure (**was** Phase 4 delivery) |
+| MEDIA-02 | Phase 11 | Gap closure (**was** Phase 5 delivery) |
+| MEDIA-03 | Phase 2 | |
+| MEDIA-04 | Phase 2 | |
+| MEDIA-05 | Phase 2 | |
+| VIDEO-01 | Phase 9 | Gap closure (**was** Phase 3 delivery) |
+| VIDEO-02 | Phase 9 | Gap closure (**was** Phase 3 delivery) |
+| VIDEO-03 | Phase 9 | Gap closure (**was** Phase 3 delivery) |
+| VIDEO-04 | Phase 11 | Gap closure (**was** Phase 5 delivery) |
+| VIDEO-05 | Phase 2 | |
+| PIPE-01 | Phase 10 | Gap closure (**was** Phase 4 delivery) |
+| PIPE-02 | Phase 10 | Gap closure (**was** Phase 4 delivery) |
+| PIPE-03 | Phase 10 | Gap closure (**was** Phase 4 delivery) |
+| PIPE-04 | Phase 10 | Gap closure (**was** Phase 4 delivery) |
+| PIPE-05 | Phase 10 | Gap closure (**was** Phase 4 delivery) |
+| PIPE-06 | Phase 10 | Gap closure (**was** Phase 4 delivery) |
+| TOOL-01 | Phase 11 | Gap closure (**was** Phase 5 delivery) |
+| TOOL-02 | Phase 10 | Gap closure (**was** Phase 4 delivery) |
+| TOOL-03 | Phase 12 | Gap closure (**was** Phase 8 delivery) |
+| TOOL-04 | Phase 12 | Gap closure (**was** Phase 8 delivery) |
+| TOOL-05 | Phase 12 | Gap closure (**was** Phase 8 delivery) |
+| TOOL-06 | Phase 12 | Gap closure (**was** Phase 8 delivery) |
+| TOOL-07 | Phase 12 | Gap closure (**was** Phase 8 delivery) |
+| TOOL-08 | Phase 12 | Gap closure (**was** Phase 8 delivery) |
+| UX-01 | Phase 14 | Gap closure (**was** Phase 6 delivery) |
+| UX-02 | Phase 14 | Gap closure (**was** Phase 6 delivery) |
+| UX-03 | Phase 14 | Gap closure (**was** Phase 6 delivery) |
+| UX-04 | Phase 14 | Gap closure (**was** Phase 6 delivery) |
+| UX-05 | Phase 14 | Gap closure (**was** Phase 6 delivery) |
+| BATCH-01 | Phase 14 | Gap closure (**was** Phase 7 delivery) |
+| BATCH-02 | Phase 14 | Gap closure (**was** Phase 7 delivery) |
+| BATCH-03 | Phase 14 | Gap closure (**was** Phase 7 delivery) |
+| BATCH-04 | Phase 14 | Gap closure (**was** Phase 7 delivery) |
+| BATCH-05 | Phase 13 | Gap closure (**was** Phase 7 delivery); integration fix phase |
+| TRUST-01 | Phase 1 | |
+| TRUST-02 | Phase 11 | Gap closure (**was** Phase 5 delivery) |
+| TRUST-03 | Phase 11 | Gap closure (**was** Phase 5 delivery) |
+| TRUST-04 | Phase 1 | |
 
-**Coverage:** 42/42 v1 requirements mapped. No orphaned requirements.
+**Coverage:** 42/42 v1 requirements mapped across original delivery phases + milestone gap closure phases 9–14.

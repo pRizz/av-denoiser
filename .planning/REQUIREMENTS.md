@@ -18,9 +18,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **MEDIA-01**: User can pass a single audio file and receive a cleaned audio output file.
 - [ ] **MEDIA-02**: User can pass a single video file and receive a video output with cleaned audio.
-- [ ] **MEDIA-03**: User can process common audio/video containers through structured probing before any denoise step runs.
-- [ ] **MEDIA-04**: User can choose safe output paths, and the tool protects source files from in-place modification or accidental overwrite.
-- [ ] **MEDIA-05**: User can see whether the planned output is audio-only, video-copy-safe, fallback-required, or unsupported before processing starts.
+- [x] **MEDIA-03**: User can process common audio/video containers through structured probing before any denoise step runs.
+- [x] **MEDIA-04**: User can choose safe output paths, and the tool protects source files from in-place modification or accidental overwrite.
+- [x] **MEDIA-05**: User can see whether the planned output is audio-only, video-copy-safe, fallback-required, or unsupported before processing starts.
 
 ### Video Preservation and Remuxing
 
@@ -28,7 +28,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **VIDEO-02**: User can see explicit fallback reasons when preserving video streams without recompression is impossible.
 - [x] **VIDEO-03**: User can approve or reject any fallback that would re-encode video or change the output container.
 - [ ] **VIDEO-04**: User receives a final report confirming whether video streams were copied, audio was encoded, side streams were preserved or dropped, and which fallbacks were used.
-- [ ] **VIDEO-05**: User can rely on deliberate audio codec/container choices instead of hidden FFmpeg defaults for final outputs.
+- [x] **VIDEO-05**: User can rely on deliberate audio codec/container choices instead of hidden FFmpeg defaults for final outputs.
 
 ### Pipeline and Presets
 
@@ -64,7 +64,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **BATCH-02**: User receives per-file plans, statuses, warnings, outputs, and failure reasons in batch mode.
 - [x] **BATCH-03**: User can run batch processing without one failed file deleting progress or hiding failures for the remaining files.
 - [x] **BATCH-04**: User can rely on collision-safe output naming for batch runs.
-- [x] **BATCH-05**: User can inspect a batch manifest or summary that records effective presets, tool versions, planned commands, and fallback decisions.
+- [ ] **BATCH-05**: User can inspect a batch manifest or summary that records effective presets, tool versions, planned commands, and fallback decisions.
 
 ### Verification and Trust
 
@@ -120,51 +120,51 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CLI-01 | Phase 1 | Complete |
 | CLI-02 | Phase 1 | Complete |
 | CLI-03 | Phase 1 | Complete |
-| CLI-04 | Phase 6 | Pending |
-| MEDIA-01 | Phase 4 | Done |
-| MEDIA-02 | Phase 5 | Pending |
-| MEDIA-03 | Phase 2 | Pending |
-| MEDIA-04 | Phase 2 | Pending |
-| MEDIA-05 | Phase 2 | Pending |
-| VIDEO-01 | Phase 3 | Complete |
-| VIDEO-02 | Phase 3 | Complete |
-| VIDEO-03 | Phase 3 | Complete |
-| VIDEO-04 | Phase 5 | Pending |
-| VIDEO-05 | Phase 2 | Pending |
-| PIPE-01 | Phase 4 | Done |
-| PIPE-02 | Phase 4 | Done |
-| PIPE-03 | Phase 4 | Done |
-| PIPE-04 | Phase 4 | Done |
-| PIPE-05 | Phase 4 | Done |
-| PIPE-06 | Phase 4 | Done |
-| TOOL-01 | Phase 5 | Pending |
-| TOOL-02 | Phase 4 | Done |
-| TOOL-03 | Phase 8 | Pending |
-| TOOL-04 | Phase 8 | Pending |
-| TOOL-05 | Phase 8 | Pending |
-| TOOL-06 | Phase 8 | Pending |
-| TOOL-07 | Phase 8 | Pending |
-| TOOL-08 | Phase 8 | Pending |
-| UX-01 | Phase 6 | Pending |
-| UX-02 | Phase 6 | Pending |
-| UX-03 | Phase 6 | Pending |
-| UX-04 | Phase 6 | Pending |
-| UX-05 | Phase 6 | Pending |
-| BATCH-01 | Phase 7 | Complete |
-| BATCH-02 | Phase 7 | Complete |
-| BATCH-03 | Phase 7 | Complete |
-| BATCH-04 | Phase 7 | Complete |
-| BATCH-05 | Phase 7 | Complete |
+| CLI-04 | Phase 14 | Pending |
+| MEDIA-01 | Phase 10 | Pending |
+| MEDIA-02 | Phase 11 | Pending |
+| MEDIA-03 | Phase 2 | Complete |
+| MEDIA-04 | Phase 2 | Complete |
+| MEDIA-05 | Phase 2 | Complete |
+| VIDEO-01 | Phase 9 | Pending |
+| VIDEO-02 | Phase 9 | Pending |
+| VIDEO-03 | Phase 9 | Pending |
+| VIDEO-04 | Phase 11 | Pending |
+| VIDEO-05 | Phase 2 | Complete |
+| PIPE-01 | Phase 10 | Pending |
+| PIPE-02 | Phase 10 | Pending |
+| PIPE-03 | Phase 10 | Pending |
+| PIPE-04 | Phase 10 | Pending |
+| PIPE-05 | Phase 10 | Pending |
+| PIPE-06 | Phase 10 | Pending |
+| TOOL-01 | Phase 11 | Pending |
+| TOOL-02 | Phase 10 | Pending |
+| TOOL-03 | Phase 12 | Pending |
+| TOOL-04 | Phase 12 | Pending |
+| TOOL-05 | Phase 12 | Pending |
+| TOOL-06 | Phase 12 | Pending |
+| TOOL-07 | Phase 12 | Pending |
+| TOOL-08 | Phase 12 | Pending |
+| UX-01 | Phase 14 | Pending |
+| UX-02 | Phase 14 | Pending |
+| UX-03 | Phase 14 | Pending |
+| UX-04 | Phase 14 | Pending |
+| UX-05 | Phase 14 | Pending |
+| BATCH-01 | Phase 14 | Pending |
+| BATCH-02 | Phase 14 | Pending |
+| BATCH-03 | Phase 14 | Pending |
+| BATCH-04 | Phase 14 | Pending |
+| BATCH-05 | Phase 13 | Pending |
 | TRUST-01 | Phase 1 | Complete |
-| TRUST-02 | Phase 5 | Pending |
-| TRUST-03 | Phase 5 | Pending |
+| TRUST-02 | Phase 11 | Pending |
+| TRUST-03 | Phase 11 | Pending |
 | TRUST-04 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 42 total
-- Mapped to phases: 42
+- Mapped to phases (including milestone gap closure phases 9–14): 42
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-01*
-*Last updated: 2026-05-01 after Phase 7 execution*
+*Last updated: 2026-05-01 after `/gsd-plan-milestone-gaps` (audit closure roadmap)*
