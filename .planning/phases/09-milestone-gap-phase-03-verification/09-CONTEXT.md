@@ -1,6 +1,6 @@
 ---
 generated_by: gsd-plan-phase
-lifecycle_mode: direct-fallback
+lifecycle_mode: interactive
 phase_lifecycle_id: 09-2026-05-02-gap-verification-video
 generated_at: "2026-05-02T04:03:27.623Z"
 ---

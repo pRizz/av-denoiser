@@ -126,9 +126,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MEDIA-03 | Phase 2 | Complete |
 | MEDIA-04 | Phase 2 | Complete |
 | MEDIA-05 | Phase 2 | Complete |
-| VIDEO-01 | Phase 9 | Pending |
-| VIDEO-02 | Phase 9 | Pending |
-| VIDEO-03 | Phase 9 | Pending |
+| VIDEO-01 | Phase 9 | Complete |
+| VIDEO-02 | Phase 9 | Complete |
+| VIDEO-03 | Phase 9 | Complete |
 | VIDEO-04 | Phase 11 | Pending |
 | VIDEO-05 | Phase 2 | Complete |
 | PIPE-01 | Phase 10 | Pending |
@@ -167,4 +167,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-05-01*
-*Last updated: 2026-05-01 after `/gsd-plan-milestone-gaps` (audit closure roadmap)*
+*Last updated: 2026-05-02 after Phase 9 gap verification execution*
