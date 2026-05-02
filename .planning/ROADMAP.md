@@ -25,7 +25,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 9: Milestone Gap — Phase 3 verification** — Author `03-VERIFICATION.md` and reconcile Phase 3 plan summaries (`VIDEO-01`–`VIDEO-03`) against `bun run verify`/code evidence after audit orphan rule. (completed 2026-05-02)
 - [x] **Phase 10: Milestone Gap — Phase 4 verification** — Author `04-VERIFICATION.md`, restore `requirements-completed` metadata on Phase 4 summaries where absent (`MEDIA-01`, `PIPE-01`–`PIPE-06`, `TOOL-02`). (completed 2026-05-02)
-- [ ] **Phase 11: Milestone Gap — Phase 5 verification** — Author `05-VERIFICATION.md`, restore SUMMARY hygiene for Phase 5 (`MEDIA-02`, `VIDEO-04`, `TOOL-01`, `TRUST-02`, `TRUST-03`).
+- [x] **Phase 11: Milestone Gap — Phase 5 verification** — Author `05-VERIFICATION.md`, restore SUMMARY hygiene for Phase 5 (`MEDIA-02`, `VIDEO-04`, `TOOL-01`, `TRUST-02`, `TRUST-03`). (completed 2026-05-02)
 - [ ] **Phase 12: Milestone Gap — Phase 8 verification** — Author `08-VERIFICATION.md`; add or extend app-layer tests wherever audit cited thin execution coverage (`TOOL-03`–`TOOL-08`).
 - [ ] **Phase 13: Milestone Gap — Batch manifest doctor snapshot** — Wire default `batch` CLI path to populate `manifest.maybeDoctorFacts` (reuse doctor/discovery pathway from `clean`/deps) plus regression tests (`BATCH-05`, broken flow batch manifest completeness).
 - [ ] **Phase 14: Milestone Gap — Guided optional-tool parity & Phase 6/7 verification** — Extend guided selections/prompts and argv equivalence for Demucs, Audacity, and LADSPA opt-in parity with `clean`/`batch`; author `06-VERIFICATION.md` and `07-VERIFICATION.md` (`CLI-04`, `UX-01`–`UX-05`, integration guided→heavy tools).
@@ -196,7 +196,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 11-01-PLAN.md — Retroactive **`05-VERIFICATION.md`** + SUMMARY `requirements-completed` + **`bun run verify`** (`MEDIA-02`, `VIDEO-04`, `TOOL-01`, `TRUST-02`, `TRUST-03`).
+- [x] 11-01-PLAN.md — Retroactive **`05-VERIFICATION.md`** + SUMMARY `requirements-completed` + **`bun run verify`** (`MEDIA-02`, `VIDEO-04`, `TOOL-01`, `TRUST-02`, `TRUST-03`).
 
 ### Phase 12: Milestone Gap — Phase 8 verification
 **Goal**: Verification artifact plus stronger execution-path confidence for optional heavy integrations.
@@ -236,7 +236,7 @@ Phases execute in numeric order: 1 … 14. Gap phases **9–14** depend on merge
 | 8. Optional Heavy & Editor Integrations | 4/4 | Complete    | 2026-05-01 |
 | 9. Milestone Gap — Phase 3 verification | 1/1 | Complete    | 2026-05-02 |
 | 10. Milestone Gap — Phase 4 verification | 1/1 | Complete    | 2026-05-02 |
-| 11. Milestone Gap — Phase 5 verification | 0/? | Planned     | |
+| 11. Milestone Gap — Phase 5 verification | 1/1 | Complete    | 2026-05-02 |
 | 12. Milestone Gap — Phase 8 verification | 0/? | Planned     | |
 | 13. Milestone Gap — Batch manifest doctor snapshot | 0/? | Planned     | |
 | 14. Milestone Gap — Guided optional-tool parity & Phase 6/7 verification | 0/? | Planned     | |
