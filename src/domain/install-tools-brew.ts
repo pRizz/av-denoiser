@@ -7,11 +7,12 @@ export type BrewInstallStep = {
 };
 
 export function planBrewInstallSteps(
-  withOptional: boolean,
+  includeOptional: boolean,
 ): readonly BrewInstallStep[] {
-  const formulaPkgs = withOptional
-    ? (["ffmpeg", "sox_ng", "mlt"] as const)
-    : (["ffmpeg"] as const);
+  // `mlt` is omitted: Homebrew's mlt depends on classic `sox`, which conflicts with `sox_ng`.
+  const formulaPkgs = includeOptional
+    ? (["ffmpeg", "sox_ng", "uv"] as const)
+    : (["ffmpeg", "uv"] as const);
 
   const steps: BrewInstallStep[] = [
     {
@@ -20,7 +21,7 @@ export function planBrewInstallSteps(
     },
   ];
 
-  if (withOptional) {
+  if (includeOptional) {
     steps.push({
       argv: ["brew", "install", "--cask", "audacity"],
       label: "Audacity (cask)",
@@ -49,11 +50,13 @@ function quoteArg(a: string): string {
 }
 
 export function manualPostBrewHints(includeDemucsHint: boolean): string {
+  const venvDir = `~/.local/share/av-denoiser/demucs-venv`;
   const lines = [
     "",
     "Manual next steps (not run automatically):",
-    "- Demucs (optional preset): python3 -m pip install -U demucs",
-    "  or install a Demucs CLI another way, then ensure `demucs` or `python3 -m demucs` is on PATH.",
+    "- Demucs (optional preset): `uv tool install demucs` (install `uv` via Homebrew first if needed: `brew install uv`),",
+    `  or as a last resort \`python3 -m venv ${venvDir}\` then that venv's \`pip install -U demucs\` (PEP 668 may block system pip);`,
+    "  ensure `demucs` or `python3 -m demucs` is discoverable (`uv tool`'s bin dir on PATH, or activated venv).",
   ];
 
   if (!includeDemucsHint) {

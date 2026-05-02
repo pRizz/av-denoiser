@@ -43,7 +43,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
     .command("install-tools")
     .alias("install-deps")
     .description(
-      "macOS: install FFmpeg (and optional media tools) via Homebrew",
+      "macOS: install FFmpeg, SoX_ng, and Audacity via Homebrew by default (use --no-optional for FFmpeg only)",
     )
     .option(
       "--dry-run",
@@ -51,25 +51,22 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
       false,
     )
     .option(
-      "--with-optional",
-      "Also install SoX_ng, MLT, Audacity cask; print Demucs pip hint",
-      false,
+      "--no-optional",
+      "Install FFmpeg only (skip SoX_ng, Audacity; omit Demucs automation hint)",
+      true,
     )
     .option(
       "-y, --yes",
-      "Reserved for non-interactive use (brew may still prompt)",
+      "After brew (full tier only), run Demucs install without prompting via `uv tool install demucs` — requires `uv` on PATH after Homebrew (non-interactive runs)",
       false,
     )
     .action(
-      (options: {
-        dryRun?: boolean;
-        withOptional?: boolean;
-        yes?: boolean;
-      }) => {
+      (options: { dryRun?: boolean; optional?: boolean; yes?: boolean }) => {
         handleRequest({
           kind: "install-tools",
           dryRun: Boolean(options.dryRun),
-          withOptional: Boolean(options.withOptional),
+          includeOptional: options.optional !== false,
+          assumeYes: Boolean(options.yes),
         });
       },
     );

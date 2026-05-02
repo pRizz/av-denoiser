@@ -11,7 +11,11 @@ If a required tool is missing or its lightweight version probe fails, `doctor` e
 
 ## macOS: `install-tools`
 
-On macOS, `bun run src/cli/main.ts install-tools` runs Homebrew to install **FFmpeg** (provides both `ffmpeg` and `ffprobe` on PATH). Use **`--with-optional`** to also install **SoX_ng**, **MLT** (`melt`), and the **Audacity** cask; the command then prints a **manual** hint for installing **Demucs** via `pip` (Demucs is not installed automatically). **`--dry-run`** prints the `brew` commands without executing them.
+On macOS, `bun run src/cli/main.ts install-tools` runs Homebrew to install **FFmpeg** (with `ffmpeg` and `ffprobe` on PATH), **`uv`** (required for this command), **SoX_ng**, and the **Audacity** cask by default. With **`--no-optional`**, it installs **FFmpeg** and **`uv`** only. After brew succeeds, **`uv`** must be on PATH; if it is missing, the command fails with **missing tools**. On the **full** tier, the CLI **offers** to install **Demucs** with **`uv tool install demucs`** (PEP 668–safe isolated tooling). Pass **`--yes`** to run that step **without prompting**. **`--dry-run`** prints the `brew` commands without executing them.
+
+If **`demucs`** is not found after **`uv tool install`**, ensure uv's tool bin directory is on PATH (often **`~/.local/bin`**) and open a new shell.
+
+**MLT (`melt`)** is not part of this install: Homebrew’s **`mlt`** formula depends on classic **`sox`**, which conflicts with **`sox_ng`**. Install **`melt`** separately only if you accept classic **`sox`** (for example after **`brew unlink sox_ng`**) or another workflow you control.
 
 ## Optional Tools
 
@@ -33,7 +37,7 @@ User-supplied plugin binaries are not auto-discovered: set **`LADSPA_PATH`** (an
 
 ## Kdenlive / MLT (`melt`)
 
-Optional **`melt`** is listed for future MLT/Kdenlive-style workflows. **TOOL-08:** the supported headless path for Kdenlive-derived style effects in this CLI is **FFmpeg-first** (native filters and the **`ladspa`** filter when present). If **`melt`** is absent, core **FFmpeg / SoX / Demucs** presets still run; doctor reports **`melt`** as an optional gap only.
+Optional **`melt`** is listed for future MLT/Kdenlive-style workflows and is **not** installed by **`install-tools`** (see **macOS: `install-tools`** above). **TOOL-08:** the supported headless path for Kdenlive-derived style effects in this CLI is **FFmpeg-first** (native filters and the **`ladspa`** filter when present). If **`melt`** is absent, core **FFmpeg / SoX / Demucs** presets still run; doctor reports **`melt`** as an optional gap only.
 
 ## Audacity automation (`mod-script-pipe`)
 

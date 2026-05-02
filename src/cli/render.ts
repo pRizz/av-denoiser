@@ -54,7 +54,7 @@ export function renderDefaultGuidance(): string {
 
   if (process.platform === "darwin") {
     lines.push(
-      `On macOS, run "${cliName} install-tools" to install FFmpeg via Homebrew (add --with-optional for SoX_ng, MLT, Audacity, and a Demucs pip hint).`,
+      `On macOS, run "${cliName} install-tools" to install FFmpeg, SoX_ng, Audacity, and uv via Homebrew (use --no-optional for FFmpeg and uv only).`,
     );
   }
 
@@ -111,7 +111,7 @@ export function renderDoctorReport(
     return body;
   }
 
-  return `${body}\n\nTip: "${cliName} install-tools" installs FFmpeg via Homebrew; add --with-optional for SoX_ng, MLT, Audacity, and a Demucs pip hint.`;
+  return `${body}\n\nTip: "${cliName} install-tools" installs FFmpeg, SoX_ng, Audacity, and uv by default; use --no-optional for FFmpeg + uv only. Full tier may offer Demucs via \`uv tool install demucs\` after brew; use --yes without prompting in non-interactive environments.`;
 }
 
 export function renderBatchSummary(payload: BatchCliPayload): string {
@@ -319,7 +319,7 @@ export function renderCliRequest(
       return [
         `${cliName} install-tools`,
         "",
-        "macOS only: runs Homebrew to install FFmpeg (required). For SoX_ng, MLT, and Audacity (cask), pass --with-optional; Demucs still needs a manual pip install (hint printed after brew). Use --dry-run to preview commands.",
+        "macOS only: runs Homebrew to install FFmpeg, SoX_ng, Audacity, and uv by default; pass --no-optional for FFmpeg + uv only. Full tier offers Demucs via `uv tool install demucs` after brew (interactive) or --yes when non-interactive. Use --dry-run to preview commands.",
       ].join("\n");
     case "guided-clean":
       return [
@@ -461,14 +461,6 @@ function renderFailureReason(
 
       if (process.platform === "darwin") {
         text += `\nOn macOS, try: ${cliName} install-tools`;
-
-        const suggestOptional = outcome.reason.tools.some((t) =>
-          ["sox", "sox_ng", "demucs"].includes(t),
-        );
-
-        if (suggestOptional) {
-          text += " --with-optional";
-        }
       }
 
       return text;

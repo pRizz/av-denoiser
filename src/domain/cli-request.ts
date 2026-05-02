@@ -11,7 +11,9 @@ export type CliRequest =
   | {
       readonly kind: "install-tools";
       readonly dryRun: boolean;
-      readonly withOptional: boolean;
+      readonly includeOptional: boolean;
+      /** When true, run optional Demucs install (`uv tool install demucs`) without prompting (non-TTY). */
+      readonly assumeYes: boolean;
     }
   | { readonly kind: "guided-clean" }
   | {

@@ -54,7 +54,8 @@ export async function runCliRequest(
       return runInstallToolsRequest(
         {
           dryRun: request.dryRun,
-          withOptional: request.withOptional,
+          includeOptional: request.includeOptional,
+          assumeYes: request.assumeYes,
         },
         deps.installTools,
       );

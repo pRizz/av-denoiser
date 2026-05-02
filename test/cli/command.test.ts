@@ -164,12 +164,20 @@ test("parses install-tools and install-deps alias", () => {
   expect(parseCliRequest(["install-tools", "--dry-run"])).toEqual({
     kind: "install-tools",
     dryRun: true,
-    withOptional: false,
+    includeOptional: true,
+    assumeYes: false,
   });
-  expect(parseCliRequest(["install-deps", "--with-optional"])).toEqual({
+  expect(parseCliRequest(["install-deps", "--no-optional"])).toEqual({
     kind: "install-tools",
     dryRun: false,
-    withOptional: true,
+    includeOptional: false,
+    assumeYes: false,
+  });
+  expect(parseCliRequest(["install-tools", "--yes", "--dry-run"])).toEqual({
+    kind: "install-tools",
+    dryRun: true,
+    includeOptional: true,
+    assumeYes: true,
   });
 });
 
