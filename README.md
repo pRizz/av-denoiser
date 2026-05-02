@@ -28,6 +28,8 @@ The CLI maps outcomes to stable integers (see `src/domain/exit-codes.ts`):
 
 ## Test fixtures
 
-Short WAV clips for trying `clean` and for automated checks live under [`test/fixtures/audio/`](./test/fixtures/audio/)—see that folder’s README for provenance (CC0 speech excerpt plus synthetic noise). When **`ffmpeg`** and **`ffprobe`** are on `PATH`, the suite runs [`test/app/clean-fixture-audio-integration.test.ts`](./test/app/clean-fixture-audio-integration.test.ts), which drives **`speech-hush-with-brown-noise-cc0.wav`** through a `speech-light` dry-run and a full encode; those tests **`skip`** if the binaries are absent.
+Short **audio** WAVs live under [`test/fixtures/audio/`](./test/fixtures/audio/). Short **video** samples (Commons sourced OGV + an H.264 MP4 derivative) live under [`test/fixtures/video/`](./test/fixtures/video/). Each folder has a README with licenses and regeneration commands.
+
+When **`ffmpeg`** and **`ffprobe`** are on `PATH`, the suite runs [`test/app/clean-fixture-audio-integration.test.ts`](./test/app/clean-fixture-audio-integration.test.ts), which drives **`speech-hush-with-brown-noise-cc0.wav`** through a `speech-light` dry-run and a full encode; those tests **`skip`** if the binaries are absent.
 
 Run **`bun run verify`** locally or in CI as the aggregate gate: Biome checks, TypeScript `tsc --noEmit`, and the full `bun test` suite (including parser, domain, CLI, adapter, and optional integration tests above).

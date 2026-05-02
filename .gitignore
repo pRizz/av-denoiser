@@ -1,3 +1,8 @@
+# Root-only transient artifacts from local `av-denoiser` runs (not under paths like test/fixtures)
+/out-*
+
+.DS_Store
+
 # Logs
 logs
 *.log
