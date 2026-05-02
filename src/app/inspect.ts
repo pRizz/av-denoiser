@@ -107,7 +107,7 @@ export async function runInspectRequest(
   };
 }
 
-function describeFfprobeFailure(error: FfprobeProbeError): string {
+export function describeFfprobeFailure(error: FfprobeProbeError): string {
   switch (error.kind) {
     case "invalid-json":
       return "FFprobe returned invalid JSON.";
@@ -126,7 +126,7 @@ function describeFfprobeFailure(error: FfprobeProbeError): string {
   }
 }
 
-function describePathFailure(failure: OutputPathFailure): string {
+export function describePathFailure(failure: OutputPathFailure): string {
   switch (failure.kind) {
     case "output-equals-input":
       return "Refusing to plan in-place output: resolved output path matches input path.";

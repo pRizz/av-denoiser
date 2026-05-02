@@ -1,3 +1,4 @@
+import type { CleanCliSuccess } from "../app/clean";
 import type { InspectCliSuccess } from "../app/inspect";
 import type { CliRequest } from "../domain/cli-request";
 import {
@@ -17,7 +18,8 @@ const DEFAULT_GUIDANCE_LINES = [
   "av-denoiser CLI foundation is installed.",
   'Run "av-denoiser doctor" to inspect local tool readiness.',
   'Run "av-denoiser inspect <path>" to probe media and preview planned outputs.',
-  "Heavy transcoding and denoise pipelines are not wired yet.",
+  'Use "av-denoiser clean <path>" for audio-only cleanup presets when tools are ready.',
+  "Heavy full-file transcoding for video inputs is not wired in clean yet (audio-only).",
 ];
 
 const DOCTOR_GUIDANCE_LINES = [
@@ -38,6 +40,7 @@ export type RuntimeInfo = {
 export type RenderableOutcome = CommandOutcome & {
   readonly doctorReport?: DoctorReport;
   readonly inspect?: InspectCliSuccess;
+  readonly clean?: CleanCliSuccess;
 };
 
 export function renderDefaultGuidance(): string {
@@ -53,7 +56,7 @@ export function renderHelpGuidance(helpText: string): string {
     helpText.trimEnd(),
     "",
     "Current phase note:",
-    "Heavy transcoding and denoise pipelines are not wired yet.",
+    "You can run clean on audio-only inputs; heavy video+audio remux ships in Phase 5.",
   ].join("\n");
 }
 
@@ -86,6 +89,33 @@ export function renderDoctorReport(
       ...summary.warnings.map((warning) => `- ${warning}`),
     );
   }
+
+  return lines.join("\n");
+}
+
+export function renderCleanPlanText(success: CleanCliSuccess): string {
+  const { summary } = success;
+  const lines = [
+    "av-denoiser clean",
+    "",
+    "Preset",
+    `- ${summary.presetId}`,
+    "",
+    "Input",
+    `- ${summary.inputPath}`,
+    "",
+    "Output path",
+    `- ${summary.outputPath}`,
+    "",
+    "Modality",
+    `- ${summary.modality}`,
+    "",
+    "Warnings",
+    ...summary.pipelineWarnings.map((w) => `- ${w.title} (${w.id})`),
+    "",
+    "Steps",
+    ...summary.steps.map((s) => `- ${s.tool}: ${s.displayCommand}`),
+  ];
 
   return lines.join("\n");
 }
@@ -156,6 +186,16 @@ export function renderCommandOutcome(
     return appendFailureDetails("av-denoiser inspect failed.", outcome);
   }
 
+  if (request.kind === "clean") {
+    if (outcome.kind === "success" && outcome.clean !== undefined) {
+      return outcome.clean.json
+        ? `${JSON.stringify(cleanSummaryForJson(outcome.clean.summary), null, 2)}\n`
+        : renderCleanPlanText(outcome.clean);
+    }
+
+    return appendFailureDetails("av-denoiser clean failed.", outcome);
+  }
+
   if (outcome.doctorReport !== undefined) {
     return appendFailureDetails(
       renderDoctorReport(outcome.doctorReport, runtimeInfo),
@@ -187,7 +227,26 @@ export function renderCliRequest(
         "",
         "Runs ffprobe and prints planned output modality and paths.",
       ].join("\n");
+    case "clean":
+      return [
+        "av-denoiser clean <path>",
+        "",
+        "Runs preset FFmpeg/SoX cleanup on audio-only inputs (use inspect first for video files).",
+      ].join("\n");
   }
+}
+
+function cleanSummaryForJson(
+  summary: CleanCliSuccess["summary"],
+): Record<string, unknown> {
+  return {
+    presetId: summary.presetId,
+    inputPath: summary.inputPath,
+    outputPath: summary.outputPath,
+    modality: summary.modality,
+    warnings: summary.pipelineWarnings,
+    steps: summary.steps,
+  };
 }
 
 function createRuntimeInfo(): RuntimeInfo {

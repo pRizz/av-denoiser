@@ -1,3 +1,5 @@
+import type { CleanPresetKnobs, PresetId } from "./audio-pipeline-plan";
+
 export type CliRequest =
   | { readonly kind: "show-default" }
   | { readonly kind: "show-help" }
@@ -9,6 +11,16 @@ export type CliRequest =
       readonly force: boolean;
       readonly json: boolean;
       readonly allowVideoFallback: boolean;
+    }
+  | {
+      readonly kind: "clean";
+      readonly inputPath: string;
+      readonly maybeOutputPath?: string;
+      readonly force: boolean;
+      readonly dryRun: boolean;
+      readonly json: boolean;
+      readonly presetId: PresetId;
+      readonly knobs: CleanPresetKnobs;
     };
 
 export type CliRequestResult =

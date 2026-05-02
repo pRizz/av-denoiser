@@ -4,6 +4,7 @@ import {
   type DoctorReport,
   doctorReportToOutcome,
 } from "../domain/doctor-report";
+import { type CleanCliSuccess, type CleanDeps, runCleanRequest } from "./clean";
 import { createDoctorReport } from "./doctor";
 import {
   type InspectCliSuccess,
@@ -14,11 +15,13 @@ import {
 export type CliCommandOutcome = CommandOutcome & {
   readonly doctorReport?: DoctorReport;
   readonly inspect?: InspectCliSuccess;
+  readonly clean?: CleanCliSuccess;
 };
 
 export type CliRequestDeps = {
   readonly discoverTools?: () => Promise<DoctorReport>;
   readonly inspect?: Partial<InspectDeps>;
+  readonly clean?: Partial<CleanDeps>;
 };
 
 export async function runCliRequest(
@@ -37,5 +40,7 @@ export async function runCliRequest(
     }
     case "inspect":
       return runInspectRequest(request, deps.inspect);
+    case "clean":
+      return runCleanRequest(request, deps.clean);
   }
 }

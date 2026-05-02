@@ -28,6 +28,44 @@ test("rejects excess root arguments (unknown command surface)", () => {
   );
 });
 
+test("parses clean dry-run with default preset speech-light", () => {
+  expect(parseCliRequest(["clean", "--dry-run", "x.m4a"])).toEqual({
+    kind: "clean",
+    inputPath: "x.m4a",
+    force: false,
+    dryRun: true,
+    json: false,
+    presetId: "speech-light",
+    knobs: { noiseStrength: 0.35 },
+  });
+});
+
+test("parses clean with speech-soft-sox preset", () => {
+  expect(
+    parseCliRequest([
+      "clean",
+      "--preset",
+      "speech-soft-sox",
+      "--dry-run",
+      "x.m4a",
+    ]),
+  ).toEqual({
+    kind: "clean",
+    inputPath: "x.m4a",
+    force: false,
+    dryRun: true,
+    json: false,
+    presetId: "speech-soft-sox",
+    knobs: { noiseStrength: 0.35 },
+  });
+});
+
+test("clean rejects noise-strength outside 0..1", () => {
+  expect(() =>
+    parseCliRequest(["clean", "x.m4a", "--noise-strength", "2"]),
+  ).toThrow();
+});
+
 test("parses inspect command into a typed request", () => {
   // Arrange
   const rawArgs = ["inspect", "clip.m4a", "--force", "--json"];
@@ -58,7 +96,8 @@ test("renders default guidance without promising unavailable pipelines", () => {
   // Assert
   expect(output).toContain(expectedDoctorHint);
   expect(output).toContain(expectedInspectHint);
+  expect(output).toContain("clean");
   expect(output).toContain(
-    "Heavy transcoding and denoise pipelines are not wired yet.",
+    "Heavy full-file transcoding for video inputs is not wired in clean yet",
   );
 });

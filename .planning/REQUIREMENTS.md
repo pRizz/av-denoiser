@@ -16,7 +16,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Media Input and Safety
 
-- [ ] **MEDIA-01**: User can pass a single audio file and receive a cleaned audio output file.
+- [x] **MEDIA-01**: User can pass a single audio file and receive a cleaned audio output file.
 - [ ] **MEDIA-02**: User can pass a single video file and receive a video output with cleaned audio.
 - [ ] **MEDIA-03**: User can process common audio/video containers through structured probing before any denoise step runs.
 - [ ] **MEDIA-04**: User can choose safe output paths, and the tool protects source files from in-place modification or accidental overwrite.
@@ -32,17 +32,17 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Pipeline and Presets
 
-- [ ] **PIPE-01**: User can choose from simple recommended cleanup presets rather than building a raw filter graph.
-- [ ] **PIPE-02**: User can inspect how a preset resolves into ordered pipeline steps before the run starts.
-- [ ] **PIPE-03**: User can enable, disable, or tune practical v1 options for each pipeline step.
-- [ ] **PIPE-04**: User can run a sequential pipeline where each enabled step consumes the previous step's output.
-- [ ] **PIPE-05**: User benefits from lossless or PCM-oriented intermediate files by default, avoiding lossy re-encoding inside the denoise pipeline.
-- [ ] **PIPE-06**: User receives warnings when a selected preset may be aggressive, slow, model-backed, or likely to introduce artifacts.
+- [x] **PIPE-01**: User can choose from simple recommended cleanup presets rather than building a raw filter graph.
+- [x] **PIPE-02**: User can inspect how a preset resolves into ordered pipeline steps before the run starts.
+- [x] **PIPE-03**: User can enable, disable, or tune practical v1 options for each pipeline step.
+- [x] **PIPE-04**: User can run a sequential pipeline where each enabled step consumes the previous step's output.
+- [x] **PIPE-05**: User benefits from lossless or PCM-oriented intermediate files by default, avoiding lossy re-encoding inside the denoise pipeline.
+- [x] **PIPE-06**: User receives warnings when a selected preset may be aggressive, slow, model-backed, or likely to introduce artifacts.
 
 ### Tool Integrations
 
 - [ ] **TOOL-01**: User can run FFmpeg/FFprobe-backed media probing, extraction, filtering, and remuxing as the required core media path.
-- [ ] **TOOL-02**: User can run SoX or SoX_ng cleanup steps when the tool is installed and its required effects are available.
+- [x] **TOOL-02**: User can run SoX or SoX_ng cleanup steps when the tool is installed and its required effects are available.
 - [ ] **TOOL-03**: User can run a Demucs voice/source isolation step when Demucs and its runtime dependencies are installed.
 - [ ] **TOOL-04**: User receives clear warnings before Demucs uses significant CPU/GPU resources, downloads models, or runs slowly.
 - [ ] **TOOL-05**: User can run an Audacity automation step when Audacity scripting or macro prerequisites are installed, enabled, and accepted by the user.
@@ -121,7 +121,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CLI-02 | Phase 1 | Complete |
 | CLI-03 | Phase 1 | Complete |
 | CLI-04 | Phase 6 | Pending |
-| MEDIA-01 | Phase 4 | Pending |
+| MEDIA-01 | Phase 4 | Done |
 | MEDIA-02 | Phase 5 | Pending |
 | MEDIA-03 | Phase 2 | Pending |
 | MEDIA-04 | Phase 2 | Pending |
@@ -131,14 +131,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VIDEO-03 | Phase 3 | Complete |
 | VIDEO-04 | Phase 5 | Pending |
 | VIDEO-05 | Phase 2 | Pending |
-| PIPE-01 | Phase 4 | Pending |
-| PIPE-02 | Phase 4 | Pending |
-| PIPE-03 | Phase 4 | Pending |
-| PIPE-04 | Phase 4 | Pending |
-| PIPE-05 | Phase 4 | Pending |
-| PIPE-06 | Phase 4 | Pending |
+| PIPE-01 | Phase 4 | Done |
+| PIPE-02 | Phase 4 | Done |
+| PIPE-03 | Phase 4 | Done |
+| PIPE-04 | Phase 4 | Done |
+| PIPE-05 | Phase 4 | Done |
+| PIPE-06 | Phase 4 | Done |
 | TOOL-01 | Phase 5 | Pending |
-| TOOL-02 | Phase 4 | Pending |
+| TOOL-02 | Phase 4 | Done |
 | TOOL-03 | Phase 8 | Pending |
 | TOOL-04 | Phase 8 | Pending |
 | TOOL-05 | Phase 8 | Pending |

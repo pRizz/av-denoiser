@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Bun CLI Foundation & Trust Model** - Users can install, run, diagnose, and verify the safe CLI shell. (completed 2026-05-01)
 - [x] **Phase 2: Media Probing & Output Planning** - Users can inspect input media facts and safe output decisions before processing.
 - [x] **Phase 3: Video Preservation & Fallback Control** - Users can understand and control when video stream copy is possible or impossible. (completed 2026-05-02)
-- [ ] **Phase 4: Core Audio Pipeline & SoX Cleanup** - Users can clean single audio files through transparent presets and sequential FFmpeg/SoX steps.
+- [x] **Phase 4: Core Audio Pipeline & SoX Cleanup** - Users can clean single audio files through transparent presets and sequential FFmpeg/SoX steps. (completed 2026-05-02)
 - [ ] **Phase 5: Final Media Output & Reporting** - Users can receive cleaned audio/video outputs with verified FFmpeg remuxing and human-readable reports.
 - [ ] **Phase 6: Guided & Repeatable Workflows** - Users can choose guided prompts or equivalent flags for the same dry-run and execution behavior.
 - [ ] **Phase 7: Batch Processing & Manifests** - Users can process many files safely with per-file status, summaries, and failure isolation.
@@ -84,10 +84,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Domain preset registry, `expandPreset`, knobs + `pipelineWarnings[]` (PIPE-01, PIPE-02, PIPE-03, PIPE-05, PIPE-06).
-- [ ] 04-02-PLAN.md — Argv builders (`LogicalPipelineStep` → `ProcessCommand`) + WAV PCM interchange tests (PIPE-04, PIPE-05, TOOL-02).
-- [ ] 04-03-PLAN.md — `runCleanRequest` orchestration: modality gate, dry-run, sequential `ProcessRunner`, SoX readiness errors (MEDIA-01, PIPE-02, PIPE-04, TOOL-02).
-- [ ] 04-04-PLAN.md — `clean` CLI + `CliRequest` routing + render/guidance updates (MEDIA-01, PIPE-02, PIPE-03).
+- [x] 04-01-PLAN.md — Domain preset registry, `expandPreset`, knobs + `pipelineWarnings[]` (PIPE-01, PIPE-02, PIPE-03, PIPE-05, PIPE-06).
+- [x] 04-02-PLAN.md — Argv builders (`LogicalPipelineStep` → `ProcessCommand`) + WAV PCM interchange tests (PIPE-04, PIPE-05, TOOL-02).
+- [x] 04-03-PLAN.md — `runCleanRequest` orchestration: modality gate, dry-run, sequential `ProcessRunner`, SoX readiness errors (MEDIA-01, PIPE-02, PIPE-04, TOOL-02).
+- [x] 04-04-PLAN.md — `clean` CLI + `CliRequest` routing + render/guidance updates (MEDIA-01, PIPE-02, PIPE-03).
 
 ### Phase 5: Final Media Output & Reporting
 **Goal**: Users can receive cleaned audio/video outputs with verified FFmpeg extraction, filtering, remuxing, and clear final reports.
@@ -159,7 +159,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 1. Bun CLI Foundation & Trust Model | 4/4 | Complete    | 2026-05-01 |
 | 2. Media Probing & Output Planning | 3/3 | Complete    | 2026-05-01 |
 | 3. Video Preservation & Fallback Control | 2/2 | Complete    | 2026-05-02 |
-| 4. Core Audio Pipeline & SoX Cleanup | 0/4 | Not started | - |
+| 4. Core Audio Pipeline & SoX Cleanup | 4/4 | Complete    | 2026-05-02 |
 | 5. Final Media Output & Reporting | 0/1 | Not started | - |
 | 6. Guided & Repeatable Workflows | 0/1 | Not started | - |
 | 7. Batch Processing & Manifests | 0/1 | Not started | - |

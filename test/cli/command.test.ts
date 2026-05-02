@@ -1,7 +1,35 @@
 import { expect, test } from "bun:test";
 
-import { parseCliRequest } from "../../src/cli/main";
+import { parseCliRequest, runCli } from "../../src/cli/main";
 import { ExitCode } from "../../src/domain/exit-codes";
+
+test("parses clean dry-run with default speech-light preset", () => {
+  expect(parseCliRequest(["clean", "--dry-run", "clip.wav"])).toMatchObject({
+    kind: "clean",
+    presetId: "speech-light",
+  });
+});
+
+test("parses clean --preset speech-soft-sox", () => {
+  expect(
+    parseCliRequest([
+      "clean",
+      "--dry-run",
+      "--preset",
+      "speech-soft-sox",
+      "clip.wav",
+    ]),
+  ).toMatchObject({
+    kind: "clean",
+    presetId: "speech-soft-sox",
+  });
+});
+
+test("invalid clean --noise-strength exits invalidInput via runCli", async () => {
+  const code = await runCli(["clean", "clip.wav", "--noise-strength", "2"]);
+
+  expect(code).toBe(ExitCode.invalidInput);
+});
 
 test("parses inspect argv into typed inspect request", () => {
   expect(parseCliRequest(["inspect", "clip.m4a"])).toEqual({
