@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Phase 8 context gathered
-last_updated: "2026-05-02T03:41:58.065Z"
-last_activity: 2026-05-02 -- Phase 8 planning complete
+status: milestone-complete
+stopped_at: Phase 8 executed; v1 milestone plans complete
+last_updated: "2026-05-01T12:00:00.000Z"
+last_activity: 2026-05-01 -- Phase 8 implementation and verification
 progress:
   total_phases: 8
-  completed_phases: 6
+  completed_phases: 8
   total_plans: 27
-  completed_plans: 20
-  percent: 74
+  completed_plans: 27
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-01)
 
 **Core value:** Users can pass an audio or video file through a guided denoise pipeline and get a cleaned output while avoiding video recompression whenever possible.
-**Current focus:** Phase 8 — Optional Heavy & Editor Integrations (next)
+**Current focus:** v1 milestone closed — optional integrations landed behind explicit flags and doctor probes.
 
 ## Current Position
 
 Phase: 8
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-05-02 -- Phase 8 planning complete
+Plan: Complete (08-01 through 08-04)
+Status: Milestone complete
+Last activity: 2026-05-01 -- Phase 8 executed; `bun run verify` green
 
-Progress: [███████░░░] 88% (7/8 phases complete)
+Progress: [██████████] 100% (8/8 phases complete)
 
 ## Performance Metrics
 
@@ -86,10 +86,10 @@ None yet.
 
 - [Phase 4]: SoX versus SoX_ng install names and effects availability need validation on real machines (tests use mocks).
 - [Phase 5]: Codec/container compatibility matrix needs fixture-backed verification on real diverse inputs.
-- [Phase 8]: Demucs package/fork, Audacity automation, and Kdenlive/MLT headless feasibility need implementation-time research.
+- [Phase 8]: Real-machine validation still useful for Demucs installs, Audacity mod-script-pipe enablement, and distro-specific LADSPA plugin paths.
 
 ## Session Continuity
 
-Last session: 2026-05-02T03:40:11.019Z
-Stopped at: Phase 8 context gathered
+Last session: 2026-05-01
+Stopped at: Phase 8 complete
 Resume file: .planning/phases/08-optional-heavy-editor-integrations/08-CONTEXT.md

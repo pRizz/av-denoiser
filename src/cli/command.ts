@@ -1,6 +1,8 @@
 import { Command } from "@commander-js/extra-typings";
 import {
   DEFAULT_CLEAN_PRESET_ID,
+  type LadspaIntegration,
+  parseLadspaCliTriple,
   parsePresetId,
 } from "../domain/audio-pipeline-plan";
 import type { CliRequest } from "../domain/cli-request";
@@ -102,7 +104,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
     )
     .option(
       "--preset <id>",
-      "Preset id (speech-light | speech-soft-sox)",
+      "Preset id (speech-light | speech-soft-sox | speech-vocals-demucs)",
       DEFAULT_CLEAN_PRESET_ID,
     )
     .option(
@@ -111,6 +113,21 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
       parseNoiseStrength,
       0.35,
     )
+    .option(
+      "--accept-audacity-pipe-risk",
+      "Acknowledge mod-script-pipe risk when using --audacity-macro",
+      false,
+    )
+    .option(
+      "--audacity-macro <name>",
+      "Run Audacity macro on intermediate WAV (requires risk flag; see doctor docs)",
+    )
+    .option(
+      "--ladspa-plugin-path <file>",
+      "LADSPA plugin path for optional FFmpeg ladspa step (pair with --ladspa-label)",
+    )
+    .option("--ladspa-label <label>", "LADSPA label= for FFmpeg ladspa filter")
+    .option("--ladspa-controls <string>", "Optional ladspa c= control string")
     .action(
       (
         input: string,
@@ -122,6 +139,11 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
           allowVideoFallback?: boolean;
           preset?: string;
           noiseStrength?: number;
+          acceptAudacityPipeRisk?: boolean;
+          audacityMacro?: string;
+          ladspaPluginPath?: string;
+          ladspaLabel?: string;
+          ladspaControls?: string;
         },
       ) => {
         const rawPreset = options.preset ?? DEFAULT_CLEAN_PRESET_ID;
@@ -129,9 +151,11 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
 
         if (presetId === null) {
           throw new Error(
-            `Invalid --preset "${rawPreset}". Use speech-light or speech-soft-sox.`,
+            `Invalid --preset "${rawPreset}". Use speech-light, speech-soft-sox, or speech-vocals-demucs.`,
           );
         }
+
+        const integrations = integrationFieldsFromCliOptions(options);
 
         handleRequest({
           kind: "clean",
@@ -143,6 +167,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
           allowVideoFallback: Boolean(options.allowVideoFallback),
           presetId,
           knobs: { noiseStrength: options.noiseStrength ?? 0.35 },
+          ...integrations,
         });
       },
     );
@@ -190,7 +215,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
     )
     .option(
       "--preset <id>",
-      "Preset id (speech-light | speech-soft-sox)",
+      "Preset id (speech-light | speech-soft-sox | speech-vocals-demucs)",
       DEFAULT_CLEAN_PRESET_ID,
     )
     .option(
@@ -199,6 +224,21 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
       parseNoiseStrength,
       0.35,
     )
+    .option(
+      "--accept-audacity-pipe-risk",
+      "Acknowledge mod-script-pipe risk when using --audacity-macro",
+      false,
+    )
+    .option(
+      "--audacity-macro <name>",
+      "Run Audacity macro on intermediate WAV in each batch item (requires risk flag)",
+    )
+    .option(
+      "--ladspa-plugin-path <file>",
+      "LADSPA plugin path for optional FFmpeg ladspa step (pair with --ladspa-label)",
+    )
+    .option("--ladspa-label <label>", "LADSPA label= for FFmpeg ladspa filter")
+    .option("--ladspa-controls <string>", "Optional ladspa c= control string")
     .action(
       (options: {
         input?: string[];
@@ -215,6 +255,11 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
         allowVideoFallback?: boolean;
         preset?: string;
         noiseStrength?: number;
+        acceptAudacityPipeRisk?: boolean;
+        audacityMacro?: string;
+        ladspaPluginPath?: string;
+        ladspaLabel?: string;
+        ladspaControls?: string;
       }) => {
         const inputs = options.input ?? [];
         const globs = options.glob ?? [];
@@ -229,9 +274,11 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
 
         if (presetId === null) {
           throw new Error(
-            `Invalid --preset "${rawPreset}". Use speech-light or speech-soft-sox.`,
+            `Invalid --preset "${rawPreset}". Use speech-light, speech-soft-sox, or speech-vocals-demucs.`,
           );
         }
+
+        const integrations = integrationFieldsFromCliOptions(options);
 
         handleRequest({
           kind: "batch",
@@ -249,6 +296,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
           allowVideoFallback: Boolean(options.allowVideoFallback),
           presetId,
           knobs: { noiseStrength: options.noiseStrength ?? 0.35 },
+          ...integrations,
         });
       },
     );
@@ -258,4 +306,48 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
 
 function collectPaths(value: string, previous: string[]): string[] {
   return [...previous, value];
+}
+
+function integrationFieldsFromCliOptions(options: {
+  readonly acceptAudacityPipeRisk?: boolean;
+  readonly audacityMacro?: string;
+  readonly ladspaPluginPath?: string;
+  readonly ladspaLabel?: string;
+  readonly ladspaControls?: string;
+}): {
+  readonly acceptAudacityPipeRisk: boolean;
+  readonly maybeAudacityMacro?: string;
+  readonly maybeLadspa?: LadspaIntegration;
+} {
+  const acceptAudacityPipeRisk = Boolean(options.acceptAudacityPipeRisk);
+  const rawMacro =
+    options.audacityMacro === undefined
+      ? undefined
+      : options.audacityMacro.trim();
+
+  if (rawMacro !== undefined && rawMacro !== "" && !acceptAudacityPipeRisk) {
+    throw new Error(
+      "--audacity-macro requires --accept-audacity-pipe-risk (see docs/doctor.md).",
+    );
+  }
+
+  const maybeAudacityMacro =
+    rawMacro === undefined || rawMacro === "" ? undefined : rawMacro;
+
+  const ladspaParsed = parseLadspaCliTriple({
+    pluginPath: options.ladspaPluginPath,
+    label: options.ladspaLabel,
+    controls: options.ladspaControls,
+  });
+
+  if (ladspaParsed !== null && ladspaParsed.kind === "error") {
+    throw new Error(ladspaParsed.message);
+  }
+
+  const maybeLadspa =
+    ladspaParsed !== null && ladspaParsed.kind === "ok"
+      ? ladspaParsed.value
+      : undefined;
+
+  return { acceptAudacityPipeRisk, maybeAudacityMacro, maybeLadspa };
 }

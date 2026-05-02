@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Final Media Output & Reporting** - Users can receive cleaned audio/video outputs with verified FFmpeg remuxing and human-readable reports. (completed 2026-05-01)
 - [x] **Phase 6: Guided & Repeatable Workflows** - Users can choose guided prompts or equivalent flags for the same dry-run and execution behavior. (completed 2026-05-02)
 - [x] **Phase 7: Batch Processing & Manifests** - Users can process many files safely with per-file status, summaries, and failure isolation. (completed 2026-05-01)
-- [ ] **Phase 8: Optional Heavy & Editor Integrations** - Users can opt into Demucs, Audacity, and Kdenlive/MLT paths when prerequisites are available.
+- [x] **Phase 8: Optional Heavy & Editor Integrations** - Users can opt into Demucs, Audacity, and Kdenlive/MLT paths when prerequisites are available. (completed 2026-05-01)
 
 ## Phase Details
 
@@ -154,10 +154,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — Demucs logical step, preset expansion, argv builder, TOOL-04 warnings (TOOL-03, TOOL-04).
-- [ ] 08-02-PLAN.md — Wire Demucs into `runCleanRequest` / CLI / batch summary parity (TOOL-03, TOOL-04).
-- [ ] 08-03-PLAN.md — Audacity pipe adapter, opt-in CLI, diagnostics (TOOL-05, TOOL-06).
-- [ ] 08-04-PLAN.md — Demucs doctor (D-16), ladspa/melt probes, **runnable FFmpeg LADSPA step** (TOOL-07), docs TOOL-08 (`clean.ts` after 08-03).
+- [x] 08-01-PLAN.md — Demucs logical step, preset expansion, argv builder, TOOL-04 warnings (TOOL-03, TOOL-04).
+- [x] 08-02-PLAN.md — Wire Demucs into `runCleanRequest` / CLI / batch summary parity (TOOL-03, TOOL-04).
+- [x] 08-03-PLAN.md — Audacity pipe adapter, opt-in CLI, diagnostics (TOOL-05, TOOL-06).
+- [x] 08-04-PLAN.md — Demucs doctor (D-16), ladspa/melt probes, **runnable FFmpeg LADSPA step** (TOOL-07), docs TOOL-08 (`clean.ts` after 08-03).
 
 ## Progress
 
@@ -173,7 +173,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 5. Final Media Output & Reporting | 4/4 | Complete    | 2026-05-01 |
 | 6. Guided & Repeatable Workflows | 3/3 | Complete    | 2026-05-02 |
 | 7. Batch Processing & Manifests | 3/3 | Complete    | 2026-05-01 |
-| 8. Optional Heavy & Editor Integrations | 0/4 | Ready to execute | - |
+| 8. Optional Heavy & Editor Integrations | 4/4 | Complete    | 2026-05-01 |
 
 ## Requirement Coverage
 

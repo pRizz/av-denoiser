@@ -214,6 +214,9 @@ export async function runBatchRequest(
         presetId: request.presetId,
         knobs: request.knobs,
         allowVideoFallback: request.allowVideoFallback,
+        acceptAudacityPipeRisk: request.acceptAudacityPipeRisk,
+        maybeAudacityMacro: request.maybeAudacityMacro,
+        maybeLadspa: request.maybeLadspa,
       },
       deps.clean,
     );

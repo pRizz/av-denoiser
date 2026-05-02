@@ -4,6 +4,8 @@ import {
   type AudioArgvContext,
   afftdnNoiseFloor,
   buildLogicalStepCommand,
+  demucsTrackStemFromWavPath,
+  resolveDemucsVocalsWavPath,
 } from "../../src/domain/audio-pipeline-argv";
 import type { LogicalPipelineStep } from "../../src/domain/audio-pipeline-plan";
 
@@ -19,6 +21,11 @@ const baseCtx = (): AudioArgvContext => ({
   finalOutputPath: "/out/final.mp4",
 });
 
+const demucsOff = {
+  demucsExecutable: "",
+  demucsModulePrefix: [] as const,
+};
+
 test("extract step argv includes pcm_s16le map and stream 0:2", () => {
   const step: LogicalPipelineStep = {
     tool: "ffmpeg",
@@ -30,6 +37,7 @@ test("extract step argv includes pcm_s16le map and stream 0:2", () => {
     ctx: baseCtx(),
     ffmpegExecutable: "/bin/ffmpeg",
     maybeSoxExecutable: null,
+    ...demucsOff,
   });
 
   expect(result.kind).toBe("created");
@@ -62,6 +70,7 @@ test("afftdn at noiseStrength 0 produces deterministic nf substring", () => {
     ctx: baseCtx(),
     ffmpegExecutable: "/bin/ffmpeg",
     maybeSoxExecutable: null,
+    ...demucsOff,
   });
 
   expect(result.kind).toBe("created");
@@ -89,6 +98,7 @@ test("encode aac mp4 includes 192k and aac codec", () => {
     ctx: baseCtx(),
     ffmpegExecutable: "/bin/ffmpeg",
     maybeSoxExecutable: null,
+    ...demucsOff,
   });
 
   expect(result.kind).toBe("created");
@@ -113,6 +123,7 @@ test("SoX gentle dynamics prefixes executable and includes highpass and compand"
     ctx: baseCtx(),
     ffmpegExecutable: "/bin/ffmpeg",
     maybeSoxExecutable: "/tmp/mock-sox",
+    ...demucsOff,
   });
 
   expect(result.kind).toBe("created");
@@ -136,7 +147,108 @@ test("SoX step invalid when executable missing", () => {
     ctx: baseCtx(),
     ffmpegExecutable: "/bin/ffmpeg",
     maybeSoxExecutable: null,
+    ...demucsOff,
   });
 
   expect(result.kind).toBe("invalid");
+});
+
+test("Demucs two-stems argv uses -o out dir and --two-stems vocals", () => {
+  const step: LogicalPipelineStep = {
+    tool: "demucs",
+    step: { kind: "two-stems-vocals", model: "htdemucs" },
+  };
+
+  const result = buildLogicalStepCommand({
+    step,
+    ctx: {
+      ...baseCtx(),
+      intermediateInPath: "/w/in/track.wav",
+      intermediateOutPath: "/w/outdir",
+    },
+    ffmpegExecutable: "/bin/ffmpeg",
+    maybeSoxExecutable: null,
+    demucsExecutable: "/usr/bin/demucs",
+    demucsModulePrefix: [],
+  });
+
+  expect(result.kind).toBe("created");
+  if (result.kind !== "created") {
+    return;
+  }
+
+  expect(result.command.executable).toBe("/usr/bin/demucs");
+  const { args } = result.command;
+  expect(args).toContain("-n");
+  expect(args).toContain("htdemucs");
+  expect(args).toContain("--two-stems");
+  expect(args).toContain("vocals");
+  expect(args).toContain("-o");
+  expect(args).toContain("/w/outdir");
+  expect(args).toContain("/w/in/track.wav");
+});
+
+test("Demucs via python3 -m demucs prefixes module args", () => {
+  const step: LogicalPipelineStep = {
+    tool: "demucs",
+    step: { kind: "two-stems-vocals", model: "htdemucs" },
+  };
+
+  const result = buildLogicalStepCommand({
+    step,
+    ctx: {
+      ...baseCtx(),
+      intermediateInPath: "/w/x.wav",
+      intermediateOutPath: "/w/d",
+    },
+    ffmpegExecutable: "/bin/ffmpeg",
+    maybeSoxExecutable: null,
+    demucsExecutable: "/usr/bin/python3",
+    demucsModulePrefix: ["-m", "demucs"],
+  });
+
+  expect(result.kind).toBe("created");
+  if (result.kind !== "created") {
+    return;
+  }
+
+  expect(result.command.args.slice(0, 3)).toEqual(["-m", "demucs", "-n"]);
+});
+
+test("ladspa-apply builds -af ladspa= with label and optional c=", () => {
+  const step: LogicalPipelineStep = {
+    tool: "ffmpeg",
+    step: {
+      kind: "ladspa-apply",
+      pluginPath: "/opt/lv2/foo.so",
+      label: "tap_limiter",
+      controls: "0|1",
+    },
+  };
+
+  const result = buildLogicalStepCommand({
+    step,
+    ctx: baseCtx(),
+    ffmpegExecutable: "/bin/ffmpeg",
+    maybeSoxExecutable: null,
+    ...demucsOff,
+  });
+
+  expect(result.kind).toBe("created");
+  if (result.kind !== "created") {
+    return;
+  }
+
+  const ix = result.command.args.indexOf("-af");
+  expect(ix).toBeGreaterThan(-1);
+  expect(result.command.args[ix + 1]).toBe(
+    "ladspa=file=/opt/lv2/foo.so:label=tap_limiter:c=0|1",
+  );
+});
+
+test("resolveDemucsVocalsWavPath ends with vocals.wav", () => {
+  const p = resolveDemucsVocalsWavPath("/out", "song", "htdemucs");
+
+  expect(p.endsWith(`${"/"}htdemucs${"/"}song${"/"}vocals.wav`)).toBe(true);
+  expect(demucsTrackStemFromWavPath("/a/b/foo.wav")).toBe("foo");
 });

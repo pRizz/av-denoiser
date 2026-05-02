@@ -61,6 +61,7 @@ function baseCleanInput(overrides: Partial<CleanRunInput>): CleanRunInput {
     presetId: "speech-light" as const,
     knobs: { noiseStrength: 0.3 },
     allowVideoFallback: false,
+    acceptAudacityPipeRisk: false,
     ...overrides,
   };
 }

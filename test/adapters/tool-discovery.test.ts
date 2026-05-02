@@ -33,6 +33,16 @@ test("runs ffmpeg version probes with spaced paths as discrete argv arrays", asy
     maybeWhich: (name) => (name === "ffmpeg" ? spacedPath : null),
     runProcess: async (command) => {
       captured.push(command);
+
+      if (command.args.includes("-filters")) {
+        return {
+          kind: "exited",
+          exitCode: 0,
+          stdout: " ALSA ladspa ",
+          stderr: "",
+        };
+      }
+
       return {
         kind: "exited",
         exitCode: 0,
@@ -49,6 +59,12 @@ test("runs ffmpeg version probes with spaced paths as discrete argv arrays", asy
       executable: spacedPath,
       args: ["-version"],
       timeoutMs: 5_000,
+      stdin: "ignore",
+    },
+    {
+      executable: spacedPath,
+      args: ["-hide_banner", "-filters"],
+      timeoutMs: 8_000,
       stdin: "ignore",
     },
   ]);
@@ -111,6 +127,23 @@ test("marks planned capability checks as not checked yet", async () => {
   // Arrange
   const deps = fakeDiscoveryDeps({
     maybeWhich: (name) => `/opt/bin/${name}`,
+    runProcess: async (command) => {
+      if (command.args.includes("-filters")) {
+        return {
+          kind: "exited",
+          exitCode: 0,
+          stdout: " ... ladspa ...\n",
+          stderr: "",
+        };
+      }
+
+      return {
+        kind: "exited",
+        exitCode: 0,
+        stdout: "tool version 1.0",
+        stderr: "",
+      };
+    },
   });
 
   // Act
@@ -118,10 +151,78 @@ test("marks planned capability checks as not checked yet", async () => {
 
   // Assert
   expect(capabilityIds(report, "ffmpeg")).toContain("ffmpeg.filters");
+  expect(capabilityIds(report, "ffmpeg")).toContain("ffmpeg.ladspa-filter");
   expect(capabilityIds(report, "sox")).toContain("sox.effects");
+  const ffmpegCaps = availableToolFact(report, "ffmpeg").capabilities;
   expect(
-    availableToolFact(report, "ffmpeg").capabilities.every(
-      (capability) => capability.kind === "not-checked-yet",
+    ffmpegCaps
+      .filter((capability) => capability.kind === "not-checked-yet")
+      .map((c) => c.id),
+  ).toEqual(["ffmpeg.filters"]);
+  expect(ffmpegCaps.some((c) => c.id === "ffmpeg.ladspa-filter")).toBe(true);
+  expect(ffmpegCaps.find((c) => c.id === "ffmpeg.ladspa-filter")?.kind).toBe(
+    "available",
+  );
+});
+
+test("falls back to python3 -m demucs when demucs binary is absent", async () => {
+  const captured: ProcessCommand[] = [];
+
+  const deps = fakeDiscoveryDeps({
+    maybeWhich: (name) => {
+      if (name === "ffmpeg" || name === "ffprobe") {
+        return `/opt/bin/${name}`;
+      }
+
+      if (name === "python3") {
+        return "/usr/bin/python3";
+      }
+
+      return null;
+    },
+    runProcess: async (command) => {
+      captured.push(command);
+
+      if (command.args[0] === "-m" && command.args[1] === "demucs") {
+        return {
+          kind: "exited",
+          exitCode: 0,
+          stdout: "usage: demucs ...\n",
+          stderr: "",
+        };
+      }
+
+      if (command.args.includes("-filters")) {
+        return {
+          kind: "exited",
+          exitCode: 0,
+          stdout: " ladspa ",
+          stderr: "",
+        };
+      }
+
+      return {
+        kind: "exited",
+        exitCode: 0,
+        stdout: "ok 1.0\n",
+        stderr: "",
+      };
+    },
+  });
+
+  const report = await discoverTools(deps);
+
+  expect(toolFact(report, "demucs")).toMatchObject({
+    kind: "available",
+    path: "/usr/bin/python3",
+  });
+
+  expect(
+    captured.some(
+      (c) =>
+        c.executable === "/usr/bin/python3" &&
+        c.args[0] === "-m" &&
+        c.args[1] === "demucs",
     ),
   ).toBe(true);
 });

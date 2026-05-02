@@ -1,19 +1,33 @@
 import { existsSync, mkdtempSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import {
+  defaultAudacityPipePathsFromEnv,
+  runAudacityMacro,
+} from "../adapters/audacity-pipe";
+import { probeFfmpegLadspaFilter } from "../adapters/ffmpeg-ladspa-probe";
 import { runFfprobeProbe } from "../adapters/ffprobe";
 import {
   type ProcessResult,
   type ProcessRunner,
   runProcessCommand,
 } from "../adapters/process-runner";
-import { buildLogicalStepCommand } from "../domain/audio-pipeline-argv";
+import type { AudacityPipePaths } from "../domain/audacity";
+import { formatAudacityDiagnostic } from "../domain/audacity";
 import {
+  buildLogicalStepCommand,
+  demucsTrackStemFromWavPath,
+  resolveDemucsVocalsWavPath,
+} from "../domain/audio-pipeline-argv";
+import {
+  applyIntegrationsToLogicalSteps,
   type CleanPresetKnobs,
   expandPreset,
+  type LadspaIntegration,
   type LogicalPipelineStep,
   type PipelineWarning,
   type PresetId,
+  presetRequiresDemucs,
   presetRequiresSox,
 } from "../domain/audio-pipeline-plan";
 import { verifyCleanOutput } from "../domain/clean-output-verify";
@@ -45,6 +59,11 @@ export type CleanRunInput = {
   readonly presetId: PresetId;
   readonly knobs: CleanPresetKnobs;
   readonly allowVideoFallback: boolean;
+  /** Opt-in Audacity mod-script-pipe macro (`--audacity-macro`); requires `acceptAudacityPipeRisk`. */
+  readonly maybeAudacityMacro?: string;
+  readonly acceptAudacityPipeRisk: boolean;
+  /** Optional FFmpeg `ladspa` step before encode (`--ladspa-*`); requires `ladspa` support in FFmpeg. */
+  readonly maybeLadspa?: LadspaIntegration;
 };
 
 export type CleanStepSummary = {
@@ -83,6 +102,7 @@ export type CleanDeps = {
   readonly outputFileSize?: (absolutePath: string) => number;
   /** Coarse milestones during non–dry-run execution (`probe`, `step:N`, `verify`). */
   readonly reportProgress?: (phase: string) => void;
+  readonly audacityPipes?: AudacityPipePaths;
 };
 
 type ExecutableOutputPlan = Exclude<OutputPlan, { modality: "unsupported" }>;
@@ -114,8 +134,27 @@ function audioLayoutForStream(
   };
 }
 
+function resolveDemucsInvocation(maybeWhich: (name: string) => string | null): {
+  readonly executable: string;
+  readonly modulePrefix: readonly string[];
+} | null {
+  const direct = maybeWhich("demucs");
+
+  if (direct !== null && direct.trim() !== "") {
+    return { executable: direct, modulePrefix: [] };
+  }
+
+  const py = maybeWhich("python3");
+
+  if (py !== null && py.trim() !== "") {
+    return { executable: py, modulePrefix: ["-m", "demucs"] };
+  }
+
+  return null;
+}
+
 function mapProcessFailure(
-  label: "ffmpeg" | "sox",
+  label: "ffmpeg" | "sox" | "demucs",
   result: ProcessResult,
 ): string {
   if (result.kind === "spawn-failed") {
@@ -153,6 +192,8 @@ function buildStepSummariesFromLogicalSteps(params: {
   readonly bootstrapIntermediatePath: string;
   readonly ctxInputMediaPath: string;
   readonly finalDeliverablePath: string;
+  readonly demucsExecutable: string;
+  readonly demucsModulePrefix: readonly string[];
 }): { readonly steps: readonly CleanStepSummary[] } {
   const summaries: CleanStepSummary[] = [];
   let inputPathForStep = params.bootstrapIntermediatePath;
@@ -166,14 +207,27 @@ function buildStepSummariesFromLogicalSteps(params: {
 
     const isEncode =
       logical.tool === "ffmpeg" && logical.step.kind === "encode-deliverable";
+    const isDemucs = logical.tool === "demucs";
     const outPath = isEncode
       ? params.finalDeliverablePath
-      : join(params.tempDirForPreview, `step-${i}.wav`);
+      : isDemucs
+        ? join(params.tempDirForPreview, `step-${i}-demucs-out`)
+        : join(params.tempDirForPreview, `step-${i}.wav`);
 
     const audioMeta = audioLayoutForStream(
       params.probe,
       params.plan.selectedAudioStreamIndex,
     );
+
+    if (logical.tool === "audacity") {
+      summaries.push({
+        tool: "audacity",
+        displayCommand: `audacity macro:${logical.step.macroName} (mod-script-pipe)`,
+      });
+      inputPathForStep = outPath;
+
+      continue;
+    }
 
     const maybeSoxExecutable =
       logical.tool === "sox"
@@ -195,6 +249,8 @@ function buildStepSummariesFromLogicalSteps(params: {
       },
       ffmpegExecutable: params.ffmpegPath,
       maybeSoxExecutable,
+      demucsExecutable: params.demucsExecutable,
+      demucsModulePrefix: params.demucsModulePrefix,
     });
 
     if (built.kind !== "created") {
@@ -209,30 +265,34 @@ function buildStepSummariesFromLogicalSteps(params: {
       });
     }
 
-    inputPathForStep = outPath;
+    const stepInputPath = inputPathForStep;
+
+    if (logical.tool === "demucs" && logical.step.kind === "two-stems-vocals") {
+      inputPathForStep = resolveDemucsVocalsWavPath(
+        outPath,
+        demucsTrackStemFromWavPath(stepInputPath),
+        logical.step.model,
+      );
+    } else {
+      inputPathForStep = outPath;
+    }
   }
 
   return { steps: summaries };
 }
 
 function buildAudioOnlyStepSummaries(params: {
+  readonly logicalSteps: readonly LogicalPipelineStep[];
   readonly probe: MediaProbe;
   readonly plan: AudioOnlyOutputPlan;
-  readonly presetId: PresetId;
-  readonly knobs: CleanPresetKnobs;
   readonly ffmpegPath: string;
   readonly maybeWhich: (name: string) => string | null;
   readonly tempDirForPreview: string;
+  readonly demucsExecutable: string;
+  readonly demucsModulePrefix: readonly string[];
 }): { readonly steps: readonly CleanStepSummary[] } {
-  const expanded = expandPreset({
-    presetId: params.presetId,
-    knobs: params.knobs,
-    plannedAudioCodec: params.plan.plannedAudioCodec,
-    plannedContainer: params.plan.plannedContainer,
-  });
-
   return buildStepSummariesFromLogicalSteps({
-    logicalSteps: expanded.steps,
+    logicalSteps: params.logicalSteps,
     probe: params.probe,
     plan: params.plan,
     ffmpegPath: params.ffmpegPath,
@@ -241,6 +301,8 @@ function buildAudioOnlyStepSummaries(params: {
     bootstrapIntermediatePath: params.plan.resolvedInputPath,
     ctxInputMediaPath: params.plan.resolvedInputPath,
     finalDeliverablePath: params.plan.resolvedOutputPath,
+    demucsExecutable: params.demucsExecutable,
+    demucsModulePrefix: params.demucsModulePrefix,
   });
 }
 
@@ -255,6 +317,9 @@ async function runSequentialPipeline(params: {
   readonly bootstrapIntermediatePath: string;
   readonly ctxInputMediaPath: string;
   readonly finalDeliverablePath: string;
+  readonly demucsExecutable: string;
+  readonly demucsModulePrefix: readonly string[];
+  readonly audacityPipes?: AudacityPipePaths;
   readonly reportProgress?: (phase: string) => void;
   readonly stepIndexOffset?: number;
 }): Promise<CleanCliOutcome | null> {
@@ -271,14 +336,51 @@ async function runSequentialPipeline(params: {
     params.reportProgress?.(`step:${offset + i}`);
     const isEncode =
       logical.tool === "ffmpeg" && logical.step.kind === "encode-deliverable";
+    const isDemucs = logical.tool === "demucs";
     const outPath = isEncode
       ? params.finalDeliverablePath
-      : join(params.tempRoot, `step-${i}.wav`);
+      : isDemucs
+        ? join(params.tempRoot, `step-${i}-demucs-out`)
+        : join(params.tempRoot, `step-${i}.wav`);
 
     const audioMeta = audioLayoutForStream(
       params.probe,
       params.plan.selectedAudioStreamIndex,
     );
+
+    if (logical.tool === "audacity") {
+      if (logical.step.kind !== "macro") {
+        return {
+          kind: "failure",
+          reason: {
+            kind: "processing-failure",
+            message: "Unexpected Audacity logical step shape.",
+          },
+        };
+      }
+
+      const pipes = params.audacityPipes ?? defaultAudacityPipePathsFromEnv();
+      const macro = await runAudacityMacro({
+        macroName: logical.step.macroName,
+        inputAudioPath: inputPathForStep,
+        outputAudioPath: outPath,
+        pipes,
+      });
+
+      if (macro.kind !== "ok") {
+        return {
+          kind: "failure",
+          reason: {
+            kind: "processing-failure",
+            message: formatAudacityDiagnostic(macro.diagnostic, macro.detail),
+          },
+        };
+      }
+
+      inputPathForStep = outPath;
+
+      continue;
+    }
 
     const maybeSoxExecutable =
       logical.tool === "sox"
@@ -300,6 +402,8 @@ async function runSequentialPipeline(params: {
       },
       ffmpegExecutable: params.ffmpegPath,
       maybeSoxExecutable,
+      demucsExecutable: params.demucsExecutable,
+      demucsModulePrefix: params.demucsModulePrefix,
     });
 
     if (built.kind !== "created") {
@@ -312,11 +416,30 @@ async function runSequentialPipeline(params: {
       };
     }
 
-    const label = logical.tool === "sox" ? "sox" : "ffmpeg";
+    const label: "ffmpeg" | "sox" | "demucs" =
+      logical.tool === "sox"
+        ? "sox"
+        : logical.tool === "demucs"
+          ? "demucs"
+          : "ffmpeg";
     const processResult = await params.runProcess(built.command);
 
     if (processResult.kind === "exited" && processResult.exitCode === 0) {
-      inputPathForStep = outPath;
+      const stepInputPath = inputPathForStep;
+
+      if (
+        logical.tool === "demucs" &&
+        logical.step.kind === "two-stems-vocals"
+      ) {
+        inputPathForStep = resolveDemucsVocalsWavPath(
+          outPath,
+          demucsTrackStemFromWavPath(stepInputPath),
+          logical.step.model,
+        );
+      } else {
+        inputPathForStep = outPath;
+      }
+
       continue;
     }
 
@@ -535,6 +658,39 @@ export async function runCleanRequest(
     }
   }
 
+  const demucsInvoke = resolveDemucsInvocation(maybeWhich);
+
+  if (presetRequiresDemucs(request.presetId) && demucsInvoke === null) {
+    return {
+      kind: "failure",
+      reason: {
+        kind: "missing-tools",
+        tools: ["demucs"],
+      },
+    };
+  }
+
+  const demucsExecutable = demucsInvoke?.executable ?? "";
+  const demucsModulePrefix = demucsInvoke?.modulePrefix ?? [];
+
+  if (request.maybeLadspa !== undefined) {
+    const hasLadspa = await probeFfmpegLadspaFilter({
+      ffmpegPath,
+      runProcess,
+    });
+
+    if (!hasLadspa) {
+      return {
+        kind: "failure",
+        reason: {
+          kind: "planning-failure",
+          message:
+            "FFmpeg does not list the ladspa filter (or the probe failed). Run `av-denoiser doctor`, install FFmpeg with LADSPA enabled, and set LADSPA_PATH when using plugins.",
+        },
+      };
+    }
+  }
+
   const expanded = expandPreset({
     presetId: request.presetId,
     knobs: request.knobs,
@@ -542,7 +698,24 @@ export async function runCleanRequest(
     plannedContainer: executablePlan.plannedContainer,
   });
 
-  const { steps: logicalSteps, warnings: pipelineWarnings } = expanded;
+  const mergedSteps = applyIntegrationsToLogicalSteps(expanded.steps, {
+    maybeLadspa: request.maybeLadspa,
+    maybeAudacityMacro: request.maybeAudacityMacro,
+    acceptAudacityPipeRisk: request.acceptAudacityPipeRisk,
+  });
+
+  if (mergedSteps.kind === "error") {
+    return {
+      kind: "failure",
+      reason: {
+        kind: "planning-failure",
+        message: mergedSteps.message,
+      },
+    };
+  }
+
+  const logicalSteps = mergedSteps.steps;
+  const { warnings: pipelineWarnings } = expanded;
 
   const previewDir = join(cwd, "av-denoiser-clean-preview");
 
@@ -589,6 +762,8 @@ export async function runCleanRequest(
       bootstrapIntermediatePath: extractPathPreview,
       ctxInputMediaPath: extractPathPreview,
       finalDeliverablePath: pipelineAudioPreviewPath,
+      demucsExecutable,
+      demucsModulePrefix,
     }).steps;
 
     const remuxBuilt = buildRemuxVideoCopyCommand({
@@ -613,13 +788,14 @@ export async function runCleanRequest(
     stepSummaries = [extractSummary, ...pipelineSummaries, remuxSummary];
   } else {
     stepSummaries = buildAudioOnlyStepSummaries({
+      logicalSteps,
       probe: probeResult.value,
       plan: executablePlan as AudioOnlyOutputPlan,
-      presetId: request.presetId,
-      knobs: request.knobs,
       ffmpegPath,
       maybeWhich,
       tempDirForPreview: previewDir,
+      demucsExecutable,
+      demucsModulePrefix,
     }).steps;
   }
 
@@ -721,6 +897,9 @@ export async function runCleanRequest(
         bootstrapIntermediatePath: extractPath,
         ctxInputMediaPath: extractPath,
         finalDeliverablePath: pipelineAudioPath,
+        demucsExecutable,
+        demucsModulePrefix,
+        audacityPipes: deps.audacityPipes,
         reportProgress: deps.reportProgress,
         stepIndexOffset: 1,
       });
@@ -808,6 +987,9 @@ export async function runCleanRequest(
       bootstrapIntermediatePath: audioOnlyPlan.resolvedInputPath,
       ctxInputMediaPath: audioOnlyPlan.resolvedInputPath,
       finalDeliverablePath: audioOnlyPlan.resolvedOutputPath,
+      demucsExecutable,
+      demucsModulePrefix,
+      audacityPipes: deps.audacityPipes,
       reportProgress: deps.reportProgress,
       stepIndexOffset: 0,
     });

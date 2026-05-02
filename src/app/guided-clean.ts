@@ -36,6 +36,7 @@ function selectionsToCleanRunInput(s: GuidedCleanSelections): CleanRunInput {
     presetId: s.presetId,
     knobs: { noiseStrength: s.noiseStrength },
     allowVideoFallback: s.allowVideoFallback,
+    acceptAudacityPipeRisk: false,
   };
 }
 

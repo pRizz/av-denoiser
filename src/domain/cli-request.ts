@@ -1,4 +1,8 @@
-import type { CleanPresetKnobs, PresetId } from "./audio-pipeline-plan";
+import type {
+  CleanPresetKnobs,
+  LadspaIntegration,
+  PresetId,
+} from "./audio-pipeline-plan";
 
 export type CliRequest =
   | { readonly kind: "show-default" }
@@ -23,6 +27,9 @@ export type CliRequest =
       readonly presetId: PresetId;
       readonly knobs: CleanPresetKnobs;
       readonly allowVideoFallback: boolean;
+      readonly acceptAudacityPipeRisk: boolean;
+      readonly maybeAudacityMacro?: string;
+      readonly maybeLadspa?: LadspaIntegration;
     }
   | {
       readonly kind: "batch";
@@ -40,6 +47,9 @@ export type CliRequest =
       readonly presetId: PresetId;
       readonly knobs: CleanPresetKnobs;
       readonly allowVideoFallback: boolean;
+      readonly acceptAudacityPipeRisk: boolean;
+      readonly maybeAudacityMacro?: string;
+      readonly maybeLadspa?: LadspaIntegration;
     };
 
 export type CliRequestResult =

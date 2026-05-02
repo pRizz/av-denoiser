@@ -2,6 +2,7 @@
  * PCM WAV s16le interchange: every FFmpeg/SoX step in the middle of the pipeline uses
  * WAV container + pcm_s16le so steps can be chained without lossy re-encode (PIPE-05).
  */
+import { basename, extname, join } from "node:path";
 import type { LogicalPipelineStep } from "./audio-pipeline-plan";
 import type { PlannedAudioCodec, PlannedContainer } from "./output-plan";
 import {
@@ -26,6 +27,13 @@ export type BuildLogicalStepCommandInput = {
   readonly ctx: AudioArgvContext;
   readonly ffmpegExecutable: string;
   readonly maybeSoxExecutable: string | null;
+  /**
+   * Demucs binary (`demucs`) or `python3` when `demucsModulePrefix` is `["-m","demucs"]`.
+   * Ignored when step is not `demucs` (pass "").
+   */
+  readonly demucsExecutable: string;
+  /** Args between executable and Demucs flags, e.g. `[]` or `["-m","demucs"]`. */
+  readonly demucsModulePrefix: readonly string[];
 };
 
 /** Maps afftdn `nf` from noise strength; literals frozen for tests (04-02). */
@@ -35,10 +43,73 @@ export function afftdnNoiseFloor(noiseStrength: number): number {
   return Math.min(-10, Math.max(-80, raw));
 }
 
+/** Track stem from a WAV path inside the pipeline (basename without extension). */
+export function demucsTrackStemFromWavPath(wavPath: string): string {
+  const base = basename(wavPath);
+  const ext = extname(base);
+
+  return ext.length > 0 ? base.slice(0, -ext.length) : base;
+}
+
+/**
+ * Expected Demucs v4 output when using `-o <dir>`, two-stems vocals, and model `-n <model>`.
+ * Resolves to `<dir>/<model>/<trackStem>/vocals.wav`.
+ */
+export function resolveDemucsVocalsWavPath(
+  outputDirBase: string,
+  trackStem: string,
+  model: string,
+): string {
+  return join(outputDirBase, model, trackStem, "vocals.wav");
+}
+
 export function buildLogicalStepCommand(
   input: BuildLogicalStepCommandInput,
 ): ProcessCommandResult {
-  const { step, ctx, ffmpegExecutable, maybeSoxExecutable } = input;
+  const {
+    step,
+    ctx,
+    ffmpegExecutable,
+    maybeSoxExecutable,
+    demucsExecutable,
+    demucsModulePrefix,
+  } = input;
+
+  if (step.tool === "demucs") {
+    if (step.step.kind !== "two-stems-vocals") {
+      return { kind: "invalid", reason: { kind: "empty-executable" } };
+    }
+
+    const exe = demucsExecutable.trim();
+
+    if (exe.length === 0) {
+      return { kind: "invalid", reason: { kind: "empty-executable" } };
+    }
+
+    const model = step.step.model.trim();
+
+    if (model.length === 0) {
+      return { kind: "invalid", reason: { kind: "empty-executable" } };
+    }
+
+    return createProcessCommand({
+      executable: exe,
+      args: [
+        ...demucsModulePrefix,
+        "-n",
+        model,
+        "--two-stems",
+        "vocals",
+        "-o",
+        ctx.intermediateOutPath,
+        ctx.intermediateInPath,
+      ],
+    });
+  }
+
+  if (step.tool === "audacity") {
+    return { kind: "invalid", reason: { kind: "empty-executable" } };
+  }
 
   if (step.tool === "sox") {
     if (step.step.kind !== "gentle-dynamics") {
@@ -112,6 +183,53 @@ export function buildLogicalStepCommand(
           "-vn",
           "-af",
           `afftdn=nf=${nf}`,
+          "-acodec",
+          "pcm_s16le",
+          "-ar",
+          String(ctx.sampleRate),
+          "-ac",
+          String(ctx.channelCount),
+          "-f",
+          "wav",
+          ctx.intermediateOutPath,
+        ],
+      });
+    }
+
+    case "ladspa-apply": {
+      const pluginPath = ff.pluginPath.trim();
+
+      if (pluginPath.length === 0) {
+        return { kind: "invalid", reason: { kind: "empty-executable" } };
+      }
+
+      const label = ff.label.trim();
+
+      if (label.length === 0) {
+        return { kind: "invalid", reason: { kind: "empty-executable" } };
+      }
+
+      /** Colons and backslashes in paths must survive FFmpeg `ladspa=` option parsing (see ffmpeg ladspa filter). */
+      const fileEsc = pluginPath.replace(/\\/g, "/").replace(/:/g, "\\:");
+      const controls = ff.controls.trim();
+      const ladspaFilter =
+        controls === ""
+          ? `ladspa=file=${fileEsc}:label=${label}`
+          : `ladspa=file=${fileEsc}:label=${label}:c=${controls}`;
+
+      return createProcessCommand({
+        executable: ffmpegExecutable,
+        args: [
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-y",
+          "-i",
+          ctx.intermediateInPath,
+          "-vn",
+          "-af",
+          ladspaFilter,
           "-acodec",
           "pcm_s16le",
           "-ar",

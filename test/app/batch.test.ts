@@ -28,6 +28,7 @@ describe("runBatchRequest", () => {
       presetId: "speech-light",
       knobs: { noiseStrength: 0.35 },
       allowVideoFallback: false,
+      acceptAudacityPipeRisk: false,
     };
 
     const runClean = mock(
@@ -87,6 +88,7 @@ describe("runBatchRequest", () => {
       presetId: "speech-light",
       knobs: { noiseStrength: 0.35 },
       allowVideoFallback: false,
+      acceptAudacityPipeRisk: false,
     };
 
     let call = 0;

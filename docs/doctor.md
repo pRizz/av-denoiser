@@ -15,11 +15,27 @@ The following tools are optional warnings in Phase 1:
 
 - `sox_ng`
 - `sox`
-- `demucs`
+- `demucs` (also probed as `python3 -m demucs` when the `demucs` binary is absent)
 - `audacity`
 - `melt`
 
 Missing optional tools do not fail Phase 1 doctor. They are reported as warnings because later phases may use them for SoX cleanup, Demucs isolation, Audacity automation, or Kdenlive/MLT compatibility.
+
+## FFmpeg `ladspa` filter
+
+When `ffmpeg` is available, doctor runs `ffmpeg -hide_banner -filters` and records a separate capability row for the **`ladspa`** audio filter (TOOL-07 readiness). A **missing** row means this build cannot load LADSPA plugins through FFmpeg; headless **`clean --ladspa-*`** planning will fail with a message to run doctor.
+
+User-supplied plugin binaries are not auto-discovered: set **`LADSPA_PATH`** (and pass an explicit plugin file path on the CLI) per your platform and FFmpeg build.
+
+## Kdenlive / MLT (`melt`)
+
+Optional **`melt`** is listed for future MLT/Kdenlive-style workflows. **TOOL-08:** the supported headless path for Kdenlive-derived style effects in this CLI is **FFmpeg-first** (native filters and the **`ladspa`** filter when present). If **`melt`** is absent, core **FFmpeg / SoX / Demucs** presets still run; doctor reports **`melt`** as an optional gap only.
+
+## Audacity automation (`mod-script-pipe`)
+
+Optional **Audacity** integration uses **`mod-script-pipe`** (disabled by default in Audacity; see the [Audacity scripting manual](https://manual.audacityteam.org/man/scripting.html)). You must enable the module and know the named pipe paths; override defaults with **`AUDACITY_PIPE_TO`** and **`AUDACITY_PIPE_FROM`** if needed.
+
+**Security / responsibility:** `clean` only runs an Audacity macro when you pass **`--audacity-macro`** and **`--accept-audacity-pipe-risk`**. See the same Audacity documentation for security implications of enabling the pipe.
 
 ## Runtime Information
 
@@ -32,15 +48,15 @@ The runtime line is informational. Phase 1 avoids requiring Bun 1.3.13-only beha
 
 ## Capability Rows
 
-Capability rows such as `not-checked-yet` are intentionally unverified in Phase 1. They are reminders that PATH and version checks are not proof of deeper media readiness.
+Capability rows such as `not-checked-yet` are intentionally unverified in Phase 1 for some dimensions. They are reminders that PATH and version checks are not proof of deeper media readiness.
 
-Examples of intentionally deferred checks:
+Examples of intentionally deferred or partial checks:
 
-- FFmpeg filters such as `afftdn`, `anlmdn`, `arnndn`, and `ladspa`
+- Many individual FFmpeg filters (`afftdn`, `anlmdn`, …) remain `not-checked-yet`; **`ladspa`** is an exception when `-filters` is probed successfully.
 - FFprobe JSON probe behavior
 - SoX effect availability
 - Demucs model cache and runtime behavior
-- Audacity `mod-script-pipe` availability
+- Audacity `mod-script-pipe` reachability beyond file existence (pipe protocol is exercised only when you run a macro step)
 - MLT/Kdenlive render presets
 
 ## Command Behavior

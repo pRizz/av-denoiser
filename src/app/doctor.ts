@@ -9,5 +9,6 @@ export type DoctorDeps = Partial<ToolDiscoveryDeps>;
 export async function createDoctorReport(
   deps: DoctorDeps = {},
 ): Promise<DoctorReport> {
+  // Optional FFmpeg `ladspa` filter facts (plus Demucs python fallback, etc.) are emitted from discoverTools / tool-discovery.ts.
   return discoverTools(deps);
 }

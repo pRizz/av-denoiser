@@ -28,6 +28,7 @@ test("argvTokensForEquivalentClean round-trips through parseCliRequest", () => {
     presetId: "speech-soft-sox",
     knobs: { noiseStrength: 0.25 },
     allowVideoFallback: true,
+    acceptAudacityPipeRisk: false,
   });
 });
 
@@ -84,6 +85,7 @@ test("parses batch with two --input paths and dry-run", () => {
     dryRun: true,
     concurrency: 1,
     presetId: "speech-light",
+    acceptAudacityPipeRisk: false,
   });
 });
 

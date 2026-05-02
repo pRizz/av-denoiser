@@ -66,6 +66,7 @@ test("parses clean dry-run with default preset speech-light", () => {
     allowVideoFallback: false,
     presetId: "speech-light",
     knobs: { noiseStrength: 0.35 },
+    acceptAudacityPipeRisk: false,
   });
 });
 
@@ -87,6 +88,7 @@ test("parses clean with speech-soft-sox preset", () => {
     allowVideoFallback: false,
     presetId: "speech-soft-sox",
     knobs: { noiseStrength: 0.35 },
+    acceptAudacityPipeRisk: false,
   });
 });
 

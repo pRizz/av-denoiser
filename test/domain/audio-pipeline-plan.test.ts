@@ -1,9 +1,12 @@
 import { expect, test } from "bun:test";
 
 import {
+  applyIntegrationsToLogicalSteps,
   DEFAULT_CLEAN_PRESET_ID,
   expandPreset,
+  parseLadspaCliTriple,
   parsePresetId,
+  presetRequiresDemucs,
   presetRequiresSox,
 } from "../../src/domain/audio-pipeline-plan";
 
@@ -69,6 +72,31 @@ test("expandPreset speech-soft-sox inserts SoX step and extra warning id", () =>
   );
 });
 
+test("parsePresetId accepts speech-vocals-demucs", () => {
+  expect(parsePresetId("speech-vocals-demucs")).toBe("speech-vocals-demucs");
+});
+
+test("presetRequiresDemucs only for speech-vocals-demucs", () => {
+  expect(presetRequiresDemucs("speech-light")).toBe(false);
+  expect(presetRequiresDemucs("speech-vocals-demucs")).toBe(true);
+});
+
+test("expandPreset speech-vocals-demucs inserts demucs step and warnings", () => {
+  const { steps, warnings } = expandPreset({
+    presetId: "speech-vocals-demucs",
+    knobs: { noiseStrength: 0.5 },
+    plannedAudioCodec: "aac",
+    plannedContainer: "mp4",
+  });
+
+  expect(steps.some((s) => s.tool === "demucs")).toBe(true);
+  expect(warnings.some((w) => w.id === "warn-demucs-model-download")).toBe(
+    true,
+  );
+  expect(warnings.some((w) => w.id === "warn-demucs-heavy-runtime")).toBe(true);
+  expect(warnings.some((w) => w.id === "warn-demucs-resource")).toBe(true);
+});
+
 test("noiseStrength beyond 1 clamps to 1 on afftdn step", () => {
   const { steps } = expandPreset({
     presetId: "speech-light",
@@ -84,4 +112,70 @@ test("noiseStrength beyond 1 clamps to 1 on afftdn step", () => {
   }
 
   expect(afftdn.noiseStrength).toBe(1);
+});
+
+test("parseLadspaCliTriple accepts paired path+label and rejects partial flags", () => {
+  expect(parseLadspaCliTriple({})).toBeNull();
+
+  const partial = parseLadspaCliTriple({ pluginPath: "/opt/p.so" });
+
+  expect(partial?.kind).toBe("error");
+
+  const ok = parseLadspaCliTriple({
+    pluginPath: "/opt/p.so",
+    label: "amp",
+    controls: "1|2",
+  });
+
+  expect(ok?.kind).toBe("ok");
+  if (ok?.kind === "ok") {
+    expect(ok.value.controls).toBe("1|2");
+  }
+});
+
+test("applyIntegrationsToLogicalSteps orders ladspa ffmpeg before audacity before encode", () => {
+  const { steps } = expandPreset({
+    presetId: "speech-light",
+    knobs: { noiseStrength: 0.2 },
+    plannedAudioCodec: "aac",
+    plannedContainer: "mp4",
+  });
+
+  const merged = applyIntegrationsToLogicalSteps(steps, {
+    maybeLadspa: { pluginPath: "/p.so", label: "lbl", controls: "" },
+    maybeAudacityMacro: "MyMacro",
+    acceptAudacityPipeRisk: true,
+  });
+
+  expect(merged.kind).toBe("ok");
+  if (merged.kind !== "ok") {
+    return;
+  }
+
+  const encodeIdx = merged.steps.findIndex(
+    (s) => s.tool === "ffmpeg" && s.step.kind === "encode-deliverable",
+  );
+
+  expect(encodeIdx).toBe(merged.steps.length - 1);
+  expect(merged.steps[encodeIdx - 1]).toEqual({
+    tool: "audacity",
+    step: { kind: "macro", macroName: "MyMacro" },
+  });
+  expect(merged.steps[encodeIdx - 2]?.step.kind).toBe("ladspa-apply");
+});
+
+test("applyIntegrationsToLogicalSteps rejects audacity macro without risk flag", () => {
+  const { steps } = expandPreset({
+    presetId: "speech-light",
+    knobs: { noiseStrength: 0.2 },
+    plannedAudioCodec: "aac",
+    plannedContainer: "mp4",
+  });
+
+  const merged = applyIntegrationsToLogicalSteps(steps, {
+    maybeAudacityMacro: "X",
+    acceptAudacityPipeRisk: false,
+  });
+
+  expect(merged.kind).toBe("error");
 });
