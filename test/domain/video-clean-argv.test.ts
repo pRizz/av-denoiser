@@ -3,6 +3,7 @@ import { renderDisplayCommand } from "../../src/domain/process-command";
 import {
   buildExtractPrimaryAudioWavCommand,
   buildRemuxVideoCopyCommand,
+  buildRemuxVideoWithProcessedAudioCommand,
 } from "../../src/domain/video-clean-argv";
 
 describe("buildExtractPrimaryAudioWavCommand", () => {
@@ -61,5 +62,33 @@ describe("buildRemuxVideoCopyCommand", () => {
     expect(argv).toContain("copy");
     expect(argv).toContain("-c:a");
     expect(argv).toContain("aac");
+  });
+});
+
+describe("buildRemuxVideoWithProcessedAudioCommand", () => {
+  test("reencode-h264 argv uses libx264 and yuv420p, not stream copy", () => {
+    const built = buildRemuxVideoWithProcessedAudioCommand({
+      ffmpegExecutable: "/bin/ffmpeg",
+      originalVideoPath: "/in/w.ogv",
+      processedAudioPath: "/tmp/audio.m4a",
+      resolvedOutputPath: "/out/final.mp4",
+      plannedAudioCodec: "aac",
+      videoStreamMode: "reencode-h264",
+    });
+
+    expect(built.kind).toBe("created");
+    if (built.kind !== "created") {
+      return;
+    }
+
+    const argv = built.command.args;
+    const joined = argv.join(" ");
+
+    expect(argv).toContain("-c:v");
+    expect(argv).toContain("libx264");
+    expect(argv).toContain("-pix_fmt");
+    expect(argv).toContain("yuv420p");
+    expect(joined).not.toContain(" copy");
+    expect(joined.indexOf("-c:v")).toBeLessThan(joined.indexOf("libx264"));
   });
 });

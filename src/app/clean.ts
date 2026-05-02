@@ -48,7 +48,7 @@ import { type OutputPlan, planMediaOutput } from "../domain/output-plan";
 import { renderDisplayCommand } from "../domain/process-command";
 import {
   buildExtractPrimaryAudioWavCommand,
-  buildRemuxVideoCopyCommand,
+  buildRemuxVideoWithProcessedAudioCommand,
 } from "../domain/video-clean-argv";
 
 import { describeFfprobeFailure, describePathFailure } from "./inspect";
@@ -786,12 +786,16 @@ export async function runCleanRequest(
       demucsModulePrefix,
     }).steps;
 
-    const remuxBuilt = buildRemuxVideoCopyCommand({
+    const remuxBuilt = buildRemuxVideoWithProcessedAudioCommand({
       ffmpegExecutable: ffmpegPath,
       originalVideoPath: executablePlan.resolvedInputPath,
       processedAudioPath: pipelineAudioPreviewPath,
       resolvedOutputPath: executablePlan.resolvedOutputPath,
       plannedAudioCodec: executablePlan.plannedAudioCodec,
+      videoStreamMode:
+        executablePlan.modality === "fallback-required"
+          ? "reencode-h264"
+          : "copy",
     });
 
     const remuxSummary: CleanStepSummary =
@@ -928,12 +932,16 @@ export async function runCleanRequest(
         return pipeFail;
       }
 
-      const remuxCmd = buildRemuxVideoCopyCommand({
+      const remuxCmd = buildRemuxVideoWithProcessedAudioCommand({
         ffmpegExecutable: ffmpegPath,
         originalVideoPath: executablePlan.resolvedInputPath,
         processedAudioPath: pipelineAudioPath,
         resolvedOutputPath: executablePlan.resolvedOutputPath,
         plannedAudioCodec: executablePlan.plannedAudioCodec,
+        videoStreamMode:
+          executablePlan.modality === "fallback-required"
+            ? "reencode-h264"
+            : "copy",
       });
 
       if (remuxCmd.kind !== "created") {
@@ -967,6 +975,9 @@ export async function runCleanRequest(
         executablePlan.selectedAudioStreamIndex,
       );
 
+      const isVideoFallbackRemux =
+        executablePlan.modality === "fallback-required";
+
       return await finalizeCleanSuccess({
         outputPath: executablePlan.resolvedOutputPath,
         inputProbe: probeResult.value,
@@ -975,14 +986,14 @@ export async function runCleanRequest(
         outputExists,
         outputFileSize: resolveOutputFileSize,
         plannedModality: executablePlan.modality,
-        claimedVideoCopied: true,
+        claimedVideoCopied: !isVideoFallbackRemux,
         baseSuccess: {
           json: request.json,
           dryRun: false,
           summary,
         },
         report: {
-          videoPolicy: "copied",
+          videoPolicy: isVideoFallbackRemux ? "re-encoded" : "copied",
           audioCodecSummary: executablePlan.plannedAudioCodec,
           droppedStreamsLabels: dropped,
           fallbackReasonCodes:

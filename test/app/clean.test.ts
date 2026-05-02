@@ -11,6 +11,29 @@ const minimalVideoAudioFixture = await Bun.file(
   `${import.meta.dir}/../fixtures/ffprobe/minimal-video-audio.json`,
 ).text();
 
+const theoraVorbisVideoProbe = JSON.stringify({
+  streams: [
+    {
+      index: 0,
+      codec_name: "theora",
+      codec_type: "video",
+      disposition: { default: 1 },
+    },
+    {
+      index: 1,
+      codec_name: "vorbis",
+      codec_type: "audio",
+      channels: 2,
+      sample_rate: "48000",
+      disposition: { default: 1 },
+    },
+  ],
+  format: {
+    duration: "2.840000",
+    format_name: "ogg",
+  },
+});
+
 const fallbackMultiVideoProbe = JSON.stringify({
   streams: [
     {
@@ -415,4 +438,60 @@ test("runCleanRequest video-copy-safe execute runs extract remux and output prob
   expect(ffprobeCalls).toBe(2);
   expect(ffmpegArgsJoined).toContain("-vn");
   expect(ffmpegArgsJoined).toContain("copy");
+});
+
+test("runCleanRequest fallback-required execute remuxes video with libx264 when allowVideoFallback", async () => {
+  let ffprobeCalls = 0;
+  let ffmpegArgsJoined = "";
+
+  const outcome = await runCleanRequest(
+    baseCleanInput({
+      inputPath: "clip.ogv",
+      dryRun: false,
+      knobs: { noiseStrength: 0.2 },
+      force: true,
+      allowVideoFallback: true,
+    }),
+    {
+      cwd: "/project",
+      maybeWhich: fakeWhichVideoScenario(),
+      mkdtempSync: () => "/tmp/av-test-clean-theora",
+      rmSync: () => {},
+      outputExists: () => true,
+      outputFileSize: () => 4096,
+      runProcess: async (cmd) => {
+        if (cmd.executable.includes("ffprobe")) {
+          ffprobeCalls += 1;
+
+          return {
+            kind: "exited",
+            exitCode: 0,
+            stdout:
+              ffprobeCalls === 1
+                ? theoraVorbisVideoProbe
+                : minimalVideoAudioFixture,
+            stderr: "",
+          };
+        }
+
+        ffmpegArgsJoined += cmd.args.join(" ");
+
+        return {
+          kind: "exited",
+          exitCode: 0,
+          stdout: "",
+          stderr: "",
+        };
+      },
+    },
+  );
+
+  expect(outcome.kind).toBe("success");
+  expect(ffprobeCalls).toBe(2);
+  expect(ffmpegArgsJoined).toContain("-vn");
+  expect(ffmpegArgsJoined).toContain("libx264");
+  if (outcome.kind === "success" && outcome.clean !== undefined) {
+    expect(outcome.clean.maybeReportText).toContain("re-encoded");
+    expect(outcome.clean.maybeReportText).toContain("Video: re-encoded");
+  }
 });

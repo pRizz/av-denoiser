@@ -18,6 +18,13 @@ export type RemuxVideoCopyParams = {
   readonly plannedAudioCodec: PlannedAudioCodec;
 };
 
+/** `copy` for H.264 in MP4; `reencode-h264` when the source codec is incompatible with MP4 (e.g. Theora → MP4 fallback). */
+export type RemuxVideoStreamMode = "copy" | "reencode-h264";
+
+export type RemuxVideoWithProcessedAudioParams = RemuxVideoCopyParams & {
+  readonly videoStreamMode: RemuxVideoStreamMode;
+};
+
 export type VideoArgvBuildResult =
   | { readonly kind: "created"; readonly command: ProcessCommand }
   | { readonly kind: "invalid"; readonly reason: string };
@@ -63,8 +70,8 @@ export function buildExtractPrimaryAudioWavCommand(
   return created;
 }
 
-export function buildRemuxVideoCopyCommand(
-  params: RemuxVideoCopyParams,
+export function buildRemuxVideoWithProcessedAudioCommand(
+  params: RemuxVideoWithProcessedAudioParams,
 ): VideoArgvBuildResult {
   const ff = params.ffmpegExecutable.trim();
 
@@ -91,6 +98,20 @@ export function buildRemuxVideoCopyCommand(
     }
   }
 
+  const videoArgs: string[] =
+    params.videoStreamMode === "copy"
+      ? ["-c:v", "copy"]
+      : [
+          "-c:v",
+          "libx264",
+          "-pix_fmt",
+          "yuv420p",
+          "-crf",
+          "23",
+          "-preset",
+          "fast",
+        ];
+
   const created = createProcessCommand({
     executable: ff,
     args: [
@@ -107,8 +128,7 @@ export function buildRemuxVideoCopyCommand(
       "0:v:0",
       "-map",
       "1:a:0",
-      "-c:v",
-      "copy",
+      ...videoArgs,
       ...audioArgs,
       params.resolvedOutputPath,
     ],
@@ -119,4 +139,13 @@ export function buildRemuxVideoCopyCommand(
   }
 
   return created;
+}
+
+export function buildRemuxVideoCopyCommand(
+  params: RemuxVideoCopyParams,
+): VideoArgvBuildResult {
+  return buildRemuxVideoWithProcessedAudioCommand({
+    ...params,
+    videoStreamMode: "copy",
+  });
 }
