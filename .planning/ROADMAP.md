@@ -183,7 +183,10 @@ Plans:
 **Depends on**: Phase 9 *(recommended — keeps gap work ordered; may execute in parallel with caution)*
 **Gap closure**: v1.0-MILESTONE-AUDIT orphaned `PIPE-*`, `TOOL-02`, `MEDIA-01`
 **Requirements**: MEDIA-01, PIPE-01, PIPE-02, PIPE-03, PIPE-04, PIPE-05, PIPE-06, TOOL-02
-**Plans**: Plans TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 10-01-PLAN.md — Retroactive **`04-VERIFICATION.md`** + SUMMARY `requirements-completed` + **`bun run verify`** (`MEDIA-01`, `PIPE-01`–`PIPE-06`, `TOOL-02`).
 
 ### Phase 11: Milestone Gap — Phase 5 verification
 **Goal**: Formalize finalized media/remux/reporting requirement evidence (`MEDIA-02`, `VIDEO-04`, FFmpeg path, trust summaries/post-run verification).
@@ -229,7 +232,7 @@ Phases execute in numeric order: 1 … 14. Gap phases **9–14** depend on merge
 | 7. Batch Processing & Manifests | 3/3 | Complete    | 2026-05-01 |
 | 8. Optional Heavy & Editor Integrations | 4/4 | Complete    | 2026-05-01 |
 | 9. Milestone Gap — Phase 3 verification | 1/1 | Complete    | 2026-05-02 |
-| 10. Milestone Gap — Phase 4 verification | 0/? | Planned     | |
+| 10. Milestone Gap — Phase 4 verification | 1/1 | Ready to execute | |
 | 11. Milestone Gap — Phase 5 verification | 0/? | Planned     | |
 | 12. Milestone Gap — Phase 8 verification | 0/? | Planned     | |
 | 13. Milestone Gap — Batch manifest doctor snapshot | 0/? | Planned     | |
