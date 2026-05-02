@@ -81,10 +81,13 @@ Plans:
   3. User can enable, disable, or tune practical v1 options for each pipeline step.
   4. User can run a sequential pipeline where each enabled step consumes the previous step's output using lossless or PCM-oriented intermediates by default.
   5. User can run SoX or SoX_ng cleanup steps when the tool is installed, and receives warnings for aggressive, slow, model-backed, or artifact-prone presets.
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 04-01: TBD
+- [ ] 04-01-PLAN.md — Domain preset registry, `expandPreset`, knobs + `pipelineWarnings[]` (PIPE-01, PIPE-02, PIPE-03, PIPE-05, PIPE-06).
+- [ ] 04-02-PLAN.md — Argv builders (`LogicalPipelineStep` → `ProcessCommand`) + WAV PCM interchange tests (PIPE-04, PIPE-05, TOOL-02).
+- [ ] 04-03-PLAN.md — `runCleanRequest` orchestration: modality gate, dry-run, sequential `ProcessRunner`, SoX readiness errors (MEDIA-01, PIPE-02, PIPE-04, TOOL-02).
+- [ ] 04-04-PLAN.md — `clean` CLI + `CliRequest` routing + render/guidance updates (MEDIA-01, PIPE-02, PIPE-03).
 
 ### Phase 5: Final Media Output & Reporting
 **Goal**: Users can receive cleaned audio/video outputs with verified FFmpeg extraction, filtering, remuxing, and clear final reports.
@@ -156,7 +159,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 1. Bun CLI Foundation & Trust Model | 4/4 | Complete    | 2026-05-01 |
 | 2. Media Probing & Output Planning | 3/3 | Complete    | 2026-05-01 |
 | 3. Video Preservation & Fallback Control | 2/2 | Complete    | 2026-05-02 |
-| 4. Core Audio Pipeline & SoX Cleanup | 0/1 | Not started | - |
+| 4. Core Audio Pipeline & SoX Cleanup | 0/4 | Not started | - |
 | 5. Final Media Output & Reporting | 0/1 | Not started | - |
 | 6. Guided & Repeatable Workflows | 0/1 | Not started | - |
 | 7. Batch Processing & Manifests | 0/1 | Not started | - |
