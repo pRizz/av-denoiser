@@ -47,6 +47,35 @@ export function argvTokensForEquivalentClean(
     formatNoiseStrength(selections.noiseStrength),
   );
 
+  if (selections.acceptAudacityPipeRisk) {
+    tokens.push("--accept-audacity-pipe-risk");
+  }
+
+  const trimmedMacro =
+    selections.maybeAudacityMacro === undefined
+      ? ""
+      : selections.maybeAudacityMacro.trim();
+
+  if (trimmedMacro !== "") {
+    tokens.push("--audacity-macro", quoteArgvSegment(trimmedMacro));
+  }
+
+  if (selections.maybeLadspa !== undefined) {
+    tokens.push(
+      "--ladspa-plugin-path",
+      quoteArgvSegment(selections.maybeLadspa.pluginPath),
+      "--ladspa-label",
+      quoteArgvSegment(selections.maybeLadspa.label),
+    );
+
+    if (selections.maybeLadspa.controls !== "") {
+      tokens.push(
+        "--ladspa-controls",
+        quoteArgvSegment(selections.maybeLadspa.controls),
+      );
+    }
+  }
+
   return tokens;
 }
 

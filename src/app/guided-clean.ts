@@ -8,7 +8,11 @@ import {
   text,
 } from "@clack/prompts";
 import { renderCleanPlanText } from "../cli/render";
-import type { PresetId } from "../domain/audio-pipeline-plan";
+import {
+  type LadspaIntegration,
+  type PresetId,
+  parseLadspaCliTriple,
+} from "../domain/audio-pipeline-plan";
 import { argvTokensForEquivalentClean } from "../domain/guided-clean-equivalent";
 import { parseGuidedNoiseStrength } from "../domain/guided-clean-parse";
 import type { GuidedCleanSelections } from "../domain/guided-clean-selection";
@@ -27,6 +31,15 @@ export type GuidedCleanDeps = {
 };
 
 function selectionsToCleanRunInput(s: GuidedCleanSelections): CleanRunInput {
+  const trimmedMacro =
+    s.maybeAudacityMacro === undefined
+      ? undefined
+      : s.maybeAudacityMacro.trim();
+  const maybeAudacityMacro =
+    trimmedMacro === undefined || trimmedMacro === ""
+      ? undefined
+      : trimmedMacro;
+
   return {
     inputPath: s.inputPath,
     maybeOutputPath: s.maybeOutputPath,
@@ -36,7 +49,9 @@ function selectionsToCleanRunInput(s: GuidedCleanSelections): CleanRunInput {
     presetId: s.presetId,
     knobs: { noiseStrength: s.noiseStrength },
     allowVideoFallback: s.allowVideoFallback,
-    acceptAudacityPipeRisk: false,
+    acceptAudacityPipeRisk: s.acceptAudacityPipeRisk,
+    ...(maybeAudacityMacro !== undefined ? { maybeAudacityMacro } : {}),
+    ...(s.maybeLadspa !== undefined ? { maybeLadspa: s.maybeLadspa } : {}),
   };
 }
 
@@ -77,6 +92,7 @@ async function defaultCollectSelections(): Promise<GuidedCleanSelections | null>
     options: [
       { value: "speech-light", label: "speech-light" },
       { value: "speech-soft-sox", label: "speech-soft-sox" },
+      { value: "speech-vocals-demucs", label: "speech-vocals-demucs" },
     ],
     initialValue: "speech-light",
   });
@@ -125,6 +141,125 @@ async function defaultCollectSelections(): Promise<GuidedCleanSelections | null>
     return null;
   }
 
+  let audacityAcknowledged = false;
+  let maybeAudacityMacro: string | undefined;
+
+  const audacityMacroPick = await confirm({
+    message: "Add an Audacity macro step (--audacity-macro)?",
+    initialValue: false,
+  });
+
+  if (isCancel(audacityMacroPick)) {
+    outro("Cancelled.");
+    return null;
+  }
+
+  if (audacityMacroPick) {
+    const macroRaw = await text({
+      message: "Audacity macro name",
+      placeholder: "noise-reduction",
+      validate: (value) =>
+        value === undefined || value.trim() === ""
+          ? "Macro name is required"
+          : undefined,
+    });
+
+    if (isCancel(macroRaw)) {
+      outro("Cancelled.");
+      return null;
+    }
+
+    const macroName = macroRaw.trim();
+
+    const riskPick = await confirm({
+      message:
+        "Audacity mod-script-pipe automates a running GUI instance and weakens local isolation (see docs/doctor.md). Acknowledge --accept-audacity-pipe-risk?",
+      initialValue: false,
+    });
+
+    if (isCancel(riskPick)) {
+      outro("Cancelled.");
+      return null;
+    }
+
+    if (!riskPick) {
+      outro("Cancelled — macro requires accepting Audacity pipe risk.");
+      return null;
+    }
+
+    audacityAcknowledged = true;
+    maybeAudacityMacro = macroName;
+  }
+
+  let maybeLadspa: LadspaIntegration | undefined;
+
+  const ladspaPick = await confirm({
+    message:
+      "Add FFmpeg LADSPA filtering (--ladspa-plugin-path / --ladspa-label)?",
+    initialValue: false,
+  });
+
+  if (isCancel(ladspaPick)) {
+    outro("Cancelled.");
+    return null;
+  }
+
+  if (ladspaPick) {
+    const pluginPathAns = await text({
+      message: "LADSPA plugin path (--ladspa-plugin-path)",
+      placeholder: "/path/to/plugin.so",
+      validate: (value) =>
+        value === undefined || value.trim() === ""
+          ? "Plugin path is required"
+          : undefined,
+    });
+
+    if (isCancel(pluginPathAns)) {
+      outro("Cancelled.");
+      return null;
+    }
+
+    const labelAns = await text({
+      message: "LADSPA label (--ladspa-label)",
+      placeholder: "my_plugin_label",
+      validate: (value) =>
+        value === undefined || value.trim() === ""
+          ? "Label is required"
+          : undefined,
+    });
+
+    if (isCancel(labelAns)) {
+      outro("Cancelled.");
+      return null;
+    }
+
+    const controlsAns = await text({
+      message: "LADSPA controls (--ladspa-controls, optional)",
+      placeholder: "",
+    });
+
+    if (isCancel(controlsAns)) {
+      outro("Cancelled.");
+      return null;
+    }
+
+    const controlsTrimmed = controlsAns.trim();
+    const ladspaParsed = parseLadspaCliTriple({
+      pluginPath: pluginPathAns.trim(),
+      label: labelAns.trim(),
+      controls: controlsTrimmed === "" ? undefined : controlsTrimmed,
+    });
+
+    if (ladspaParsed !== null && ladspaParsed.kind === "error") {
+      outro(ladspaParsed.message);
+      return null;
+    }
+
+    if (ladspaParsed !== null && ladspaParsed.kind === "ok") {
+      maybeLadspa = ladspaParsed.value;
+    }
+  }
+
   outro("Selections captured.");
 
   return {
@@ -135,6 +270,9 @@ async function defaultCollectSelections(): Promise<GuidedCleanSelections | null>
     presetId: presetPick,
     noiseStrength,
     allowVideoFallback: fallbackPick,
+    acceptAudacityPipeRisk: audacityAcknowledged,
+    ...(maybeAudacityMacro !== undefined ? { maybeAudacityMacro } : {}),
+    ...(maybeLadspa !== undefined ? { maybeLadspa } : {}),
   };
 }
 

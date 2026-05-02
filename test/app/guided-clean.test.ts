@@ -27,6 +27,7 @@ describe("runGuidedCleanRequest", () => {
       presetId: "speech-light",
       noiseStrength: 0.35,
       allowVideoFallback: false,
+      acceptAudacityPipeRisk: false,
     };
 
     const calls: { dryRun: boolean }[] = [];

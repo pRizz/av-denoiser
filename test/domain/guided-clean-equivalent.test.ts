@@ -11,6 +11,7 @@ describe("argvTokensForEquivalentClean", () => {
       presetId: "speech-light",
       noiseStrength: 0.35,
       allowVideoFallback: false,
+      acceptAudacityPipeRisk: false,
     };
 
     expect(argvTokensForEquivalentClean(s)).toEqual([
@@ -33,6 +34,7 @@ describe("argvTokensForEquivalentClean", () => {
       presetId: "speech-soft-sox",
       noiseStrength: 0.35,
       allowVideoFallback: true,
+      acceptAudacityPipeRisk: false,
     };
 
     expect(argvTokensForEquivalentClean(s)).toEqual([
@@ -58,6 +60,7 @@ describe("argvTokensForEquivalentClean", () => {
       presetId: "speech-light",
       noiseStrength: 0.35,
       allowVideoFallback: false,
+      acceptAudacityPipeRisk: false,
     };
 
     expect(argvTokensForEquivalentClean(s)).toEqual([
@@ -79,8 +82,46 @@ describe("argvTokensForEquivalentClean", () => {
       presetId: "speech-light",
       noiseStrength: 0.35,
       allowVideoFallback: false,
+      acceptAudacityPipeRisk: false,
     };
 
     expect(argvTokensForEquivalentClean(s)).toContain("--dry-run");
+  });
+
+  test("speech-vocals-demucs with Audacity + LADSPA argv snapshot", () => {
+    const s: GuidedCleanSelections = {
+      inputPath: "./in.wav",
+      force: false,
+      dryRun: false,
+      presetId: "speech-vocals-demucs",
+      noiseStrength: 0.35,
+      allowVideoFallback: false,
+      acceptAudacityPipeRisk: true,
+      maybeAudacityMacro: "noise-reduction",
+      maybeLadspa: {
+        pluginPath: "/tmp/plugin.so",
+        label: "rnnoise",
+        controls: "gain=-10",
+      },
+    };
+
+    expect(argvTokensForEquivalentClean(s)).toEqual([
+      "av-denoiser",
+      "clean",
+      "./in.wav",
+      "--preset",
+      "speech-vocals-demucs",
+      "--noise-strength",
+      "0.35",
+      "--accept-audacity-pipe-risk",
+      "--audacity-macro",
+      "noise-reduction",
+      "--ladspa-plugin-path",
+      "/tmp/plugin.so",
+      "--ladspa-label",
+      "rnnoise",
+      "--ladspa-controls",
+      "gain=-10",
+    ]);
   });
 });

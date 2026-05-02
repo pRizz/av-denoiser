@@ -13,6 +13,7 @@ test("argvTokensForEquivalentClean round-trips through parseCliRequest", () => {
     presetId: "speech-soft-sox",
     noiseStrength: 0.25,
     allowVideoFallback: true,
+    acceptAudacityPipeRisk: false,
   };
 
   const tokens = argvTokensForEquivalentClean(selections);
@@ -29,6 +30,46 @@ test("argvTokensForEquivalentClean round-trips through parseCliRequest", () => {
     knobs: { noiseStrength: 0.25 },
     allowVideoFallback: true,
     acceptAudacityPipeRisk: false,
+  });
+});
+
+test("argvTokensForEquivalentClean round-trip with optional integrations", () => {
+  const selections: GuidedCleanSelections = {
+    inputPath: "fixture.wav",
+    force: false,
+    dryRun: false,
+    presetId: "speech-vocals-demucs",
+    noiseStrength: 0.25,
+    allowVideoFallback: false,
+    acceptAudacityPipeRisk: true,
+    maybeAudacityMacro: "noise-reduction",
+    maybeLadspa: {
+      pluginPath: "/tmp/plugin.so",
+      label: "rnnoise",
+      controls: "gain=-10",
+    },
+  };
+
+  const tokens = argvTokensForEquivalentClean(selections);
+  const parsed = parseCliRequest([...tokens.slice(1)]);
+
+  expect(parsed).toEqual({
+    kind: "clean",
+    inputPath: "fixture.wav",
+    maybeOutputPath: undefined,
+    force: false,
+    dryRun: false,
+    json: false,
+    presetId: "speech-vocals-demucs",
+    knobs: { noiseStrength: 0.25 },
+    allowVideoFallback: false,
+    acceptAudacityPipeRisk: true,
+    maybeAudacityMacro: "noise-reduction",
+    maybeLadspa: {
+      pluginPath: "/tmp/plugin.so",
+      label: "rnnoise",
+      controls: "gain=-10",
+    },
   });
 });
 
