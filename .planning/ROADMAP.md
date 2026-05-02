@@ -27,7 +27,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 10: Milestone Gap — Phase 4 verification** — Author `04-VERIFICATION.md`, restore `requirements-completed` metadata on Phase 4 summaries where absent (`MEDIA-01`, `PIPE-01`–`PIPE-06`, `TOOL-02`). (completed 2026-05-02)
 - [x] **Phase 11: Milestone Gap — Phase 5 verification** — Author `05-VERIFICATION.md`, restore SUMMARY hygiene for Phase 5 (`MEDIA-02`, `VIDEO-04`, `TOOL-01`, `TRUST-02`, `TRUST-03`). (completed 2026-05-02)
 - [x] **Phase 12: Milestone Gap — Phase 8 verification** — Author `08-VERIFICATION.md`; add or extend app-layer tests wherever audit cited thin execution coverage (`TOOL-03`–`TOOL-08`). (completed 2026-05-02)
-- [ ] **Phase 13: Milestone Gap — Batch manifest doctor snapshot** — Wire default `batch` CLI path to populate `manifest.maybeDoctorFacts` (reuse doctor/discovery pathway from `clean`/deps) plus regression tests (`BATCH-05`, broken flow batch manifest completeness).
+- [x] **Phase 13: Milestone Gap — Batch manifest doctor snapshot** — Wire default `batch` CLI path to populate `manifest.maybeDoctorFacts` (reuse doctor/discovery pathway from `clean`/deps) plus regression tests (`BATCH-05`, broken flow batch manifest completeness). (completed 2026-05-02)
 - [ ] **Phase 14: Milestone Gap — Guided optional-tool parity & Phase 6/7 verification** — Extend guided selections/prompts and argv equivalence for Demucs, Audacity, and LADSPA opt-in parity with `clean`/`batch`; author `06-VERIFICATION.md` and `07-VERIFICATION.md` (`CLI-04`, `UX-01`–`UX-05`, integration guided→heavy tools).
 
 ## Phase Details
@@ -213,7 +213,10 @@ Plans:
 **Depends on**: Phase 7 *(delivered batch surface; executable before heavier verification phases if desired)*
 **Gap closure**: v1.0-MILESTONE-AUDIT integration `batch → manifest.maybeDoctorFacts`, flow batch manifest completeness
 **Requirements**: BATCH-05 (plus regression guard for BATCH-01–BATCH-04)
-**Plans**: Plans TBD
+**Plans**: 1 plan
+
+Plans:
+- [x] 13-01-PLAN.md — **`runCliRequest`** default **`discoverTools`** for **`batch`**, discovery **`try/catch`**, **`test/app/run-command.test.ts`** (**BATCH-05**, BATCH-01–BATCH-04 regression).
 
 ### Phase 14: Milestone Gap — Guided optional-tool parity & Phase 6/7 verification
 **Goal**: Guided mode reaches parity with flagged `clean`/`batch` optional heavy surfaces; finalize guided/batch UX verification artifacts (`06-VERIFICATION.md`, `07-VERIFICATION.md`).
@@ -241,7 +244,7 @@ Phases execute in numeric order: 1 … 14. Gap phases **9–14** depend on merge
 | 10. Milestone Gap — Phase 4 verification | 1/1 | Complete    | 2026-05-02 |
 | 11. Milestone Gap — Phase 5 verification | 1/1 | Complete    | 2026-05-02 |
 | 12. Milestone Gap — Phase 8 verification | 1/1 | Complete    | 2026-05-02 |
-| 13. Milestone Gap — Batch manifest doctor snapshot | 0/? | Planned     | |
+| 13. Milestone Gap — Batch manifest doctor snapshot | 1/1 | Complete    | 2026-05-02 |
 | 14. Milestone Gap — Guided optional-tool parity & Phase 6/7 verification | 0/? | Planned     | |
 
 ## Requirement Coverage

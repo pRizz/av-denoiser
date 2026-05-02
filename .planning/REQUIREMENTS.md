@@ -64,7 +64,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **BATCH-02**: User receives per-file plans, statuses, warnings, outputs, and failure reasons in batch mode.
 - [x] **BATCH-03**: User can run batch processing without one failed file deleting progress or hiding failures for the remaining files.
 - [x] **BATCH-04**: User can rely on collision-safe output naming for batch runs.
-- [ ] **BATCH-05**: User can inspect a batch manifest or summary that records effective presets, tool versions, planned commands, and fallback decisions.
+- [x] **BATCH-05**: User can inspect a batch manifest or summary that records effective presets, tool versions, planned commands, and fallback decisions.
 
 ### Verification and Trust
 
@@ -154,7 +154,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BATCH-02 | Phase 14 | Pending |
 | BATCH-03 | Phase 14 | Pending |
 | BATCH-04 | Phase 14 | Pending |
-| BATCH-05 | Phase 13 | Pending |
+| BATCH-05 | Phase 13 | Complete |
 | TRUST-01 | Phase 1 | Complete |
 | TRUST-02 | Phase 11 | Pending |
 | TRUST-03 | Phase 11 | Pending |

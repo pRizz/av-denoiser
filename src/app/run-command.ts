@@ -74,6 +74,10 @@ export async function runCliRequest(
         deps.clean,
       );
     case "batch":
-      return runBatchRequest(request, deps);
+      return runBatchRequest(request, {
+        discoverTools: deps.discoverTools ?? createDoctorReport,
+        clean: deps.clean,
+        batch: deps.batch,
+      });
   }
 }

@@ -176,7 +176,11 @@ export async function runBatchRequest(
   let doctorFacts: unknown | null = null;
 
   if (deps.discoverTools !== undefined) {
-    doctorFacts = await deps.discoverTools();
+    try {
+      doctorFacts = await deps.discoverTools();
+    } catch (error: unknown) {
+      return outcomeFromMaybeThrow(error);
+    }
   }
 
   const pairs = allocateBatchOutputPaths({
