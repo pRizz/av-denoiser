@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Phase 5 executed — verification green
-last_updated: "2026-05-01T12:00:00.000Z"
-last_activity: 2026-05-01 -- Phase 5 execution complete
+status: planning
+stopped_at: Phase 05 context gathered (yolo reopen)
+last_updated: "2026-05-02T00:46:59.215Z"
+last_activity: 2026-05-01 -- Phase 5 complete (reports, video clean path, CLI fallback flag)
 progress:
   total_phases: 8
   completed_phases: 5
@@ -88,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-01T12:00:00.000Z
-Stopped at: Phase 5 executed — ready for Phase 6
-Resume file: .planning/ROADMAP.md (Phase 6 — plans TBD)
+Last session: 2026-05-02T00:46:59.210Z
+Stopped at: Phase 05 context gathered (yolo reopen)
+Resume file: .planning/phases/05-final-media-output-reporting/05-CONTEXT.md
