@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runFfprobeProbe } from "../adapters/ffprobe";
@@ -11,15 +11,26 @@ import { buildLogicalStepCommand } from "../domain/audio-pipeline-argv";
 import {
   type CleanPresetKnobs,
   expandPreset,
+  type LogicalPipelineStep,
   type PipelineWarning,
   type PresetId,
   presetRequiresSox,
 } from "../domain/audio-pipeline-plan";
+import { verifyCleanOutput } from "../domain/clean-output-verify";
+import {
+  type CleanRunReport,
+  labelsForDroppedStreams,
+  renderCleanRunReportText,
+} from "../domain/clean-run-report";
 import type { CommandOutcome } from "../domain/command-outcome";
 import type { MediaProbe } from "../domain/media-probe";
 import { resolveOutputPath } from "../domain/output-path";
 import { type OutputPlan, planMediaOutput } from "../domain/output-plan";
 import { renderDisplayCommand } from "../domain/process-command";
+import {
+  buildExtractPrimaryAudioWavCommand,
+  buildRemuxVideoCopyCommand,
+} from "../domain/video-clean-argv";
 
 import { describeFfprobeFailure, describePathFailure } from "./inspect";
 
@@ -33,6 +44,7 @@ export type CleanRunInput = {
   readonly json: boolean;
   readonly presetId: PresetId;
   readonly knobs: CleanPresetKnobs;
+  readonly allowVideoFallback: boolean;
 };
 
 export type CleanStepSummary = {
@@ -53,6 +65,7 @@ export type CleanCliSuccess = {
   readonly json: boolean;
   readonly dryRun: boolean;
   readonly summary: CleanPlanSummary;
+  readonly maybeReportText?: string;
 };
 
 export type CleanCliOutcome = CommandOutcome & {
@@ -66,7 +79,13 @@ export type CleanDeps = {
   readonly outputExists: (absolutePath: string) => boolean;
   readonly mkdtempSync?: (prefix: string) => string;
   readonly rmSync?: (path: string, options?: { recursive?: boolean }) => void;
+  /** Test injection for post-run verification without real output files. */
+  readonly outputFileSize?: (absolutePath: string) => number;
 };
+
+type ExecutableOutputPlan = Exclude<OutputPlan, { modality: "unsupported" }>;
+
+type AudioOnlyOutputPlan = OutputPlan & { modality: "audio-only" };
 
 function audioLayoutForStream(
   probe: MediaProbe,
@@ -112,38 +131,41 @@ function mapProcessFailure(
   return `${label}: exited with code ${result.exitCode}: ${snippet}`;
 }
 
-type AudioOnlyOutputPlan = OutputPlan & { modality: "audio-only" };
+function isVideoCleanModality(
+  plan: ExecutableOutputPlan,
+): plan is ExecutableOutputPlan & {
+  readonly modality: "video-copy-safe" | "fallback-required";
+} {
+  return (
+    plan.modality === "video-copy-safe" || plan.modality === "fallback-required"
+  );
+}
 
-function buildStepSummaries(params: {
+function buildStepSummariesFromLogicalSteps(params: {
+  readonly logicalSteps: readonly LogicalPipelineStep[];
   readonly probe: MediaProbe;
-  readonly plan: AudioOnlyOutputPlan;
-  readonly presetId: PresetId;
-  readonly knobs: CleanPresetKnobs;
+  readonly plan: ExecutableOutputPlan;
   readonly ffmpegPath: string;
   readonly maybeWhich: (name: string) => string | null;
   readonly tempDirForPreview: string;
+  readonly bootstrapIntermediatePath: string;
+  readonly ctxInputMediaPath: string;
+  readonly finalDeliverablePath: string;
 }): { readonly steps: readonly CleanStepSummary[] } {
-  const expanded = expandPreset({
-    presetId: params.presetId,
-    knobs: params.knobs,
-    plannedAudioCodec: params.plan.plannedAudioCodec,
-    plannedContainer: params.plan.plannedContainer,
-  });
-
-  const { steps: logicalSteps } = expanded;
   const summaries: CleanStepSummary[] = [];
-  let inputPathForStep = params.plan.resolvedInputPath;
+  let inputPathForStep = params.bootstrapIntermediatePath;
 
-  for (let i = 0; i < logicalSteps.length; i++) {
-    const logical = logicalSteps[i];
+  for (let i = 0; i < params.logicalSteps.length; i++) {
+    const logical = params.logicalSteps[i];
 
     if (logical === undefined) {
       break;
     }
+
     const isEncode =
       logical.tool === "ffmpeg" && logical.step.kind === "encode-deliverable";
     const outPath = isEncode
-      ? params.plan.resolvedOutputPath
+      ? params.finalDeliverablePath
       : join(params.tempDirForPreview, `step-${i}.wav`);
 
     const audioMeta = audioLayoutForStream(
@@ -164,10 +186,10 @@ function buildStepSummaries(params: {
         channelCount: audioMeta.channelCount,
         plannedAudioCodec: params.plan.plannedAudioCodec,
         plannedContainer: params.plan.plannedContainer,
-        inputMediaPath: params.plan.resolvedInputPath,
+        inputMediaPath: params.ctxInputMediaPath,
         intermediateInPath: inputPathForStep,
         intermediateOutPath: outPath,
-        finalOutputPath: params.plan.resolvedOutputPath,
+        finalOutputPath: params.finalDeliverablePath,
       },
       ffmpegExecutable: params.ffmpegPath,
       maybeSoxExecutable,
@@ -191,6 +213,200 @@ function buildStepSummaries(params: {
   return { steps: summaries };
 }
 
+function buildAudioOnlyStepSummaries(params: {
+  readonly probe: MediaProbe;
+  readonly plan: AudioOnlyOutputPlan;
+  readonly presetId: PresetId;
+  readonly knobs: CleanPresetKnobs;
+  readonly ffmpegPath: string;
+  readonly maybeWhich: (name: string) => string | null;
+  readonly tempDirForPreview: string;
+}): { readonly steps: readonly CleanStepSummary[] } {
+  const expanded = expandPreset({
+    presetId: params.presetId,
+    knobs: params.knobs,
+    plannedAudioCodec: params.plan.plannedAudioCodec,
+    plannedContainer: params.plan.plannedContainer,
+  });
+
+  return buildStepSummariesFromLogicalSteps({
+    logicalSteps: expanded.steps,
+    probe: params.probe,
+    plan: params.plan,
+    ffmpegPath: params.ffmpegPath,
+    maybeWhich: params.maybeWhich,
+    tempDirForPreview: params.tempDirForPreview,
+    bootstrapIntermediatePath: params.plan.resolvedInputPath,
+    ctxInputMediaPath: params.plan.resolvedInputPath,
+    finalDeliverablePath: params.plan.resolvedOutputPath,
+  });
+}
+
+async function runSequentialPipeline(params: {
+  readonly logicalSteps: readonly LogicalPipelineStep[];
+  readonly probe: MediaProbe;
+  readonly plan: ExecutableOutputPlan;
+  readonly tempRoot: string;
+  readonly ffmpegPath: string;
+  readonly maybeWhich: (name: string) => string | null;
+  readonly runProcess: ProcessRunner;
+  readonly bootstrapIntermediatePath: string;
+  readonly ctxInputMediaPath: string;
+  readonly finalDeliverablePath: string;
+}): Promise<CleanCliOutcome | null> {
+  let inputPathForStep = params.bootstrapIntermediatePath;
+
+  for (let i = 0; i < params.logicalSteps.length; i++) {
+    const logical = params.logicalSteps[i];
+
+    if (logical === undefined) {
+      break;
+    }
+
+    const isEncode =
+      logical.tool === "ffmpeg" && logical.step.kind === "encode-deliverable";
+    const outPath = isEncode
+      ? params.finalDeliverablePath
+      : join(params.tempRoot, `step-${i}.wav`);
+
+    const audioMeta = audioLayoutForStream(
+      params.probe,
+      params.plan.selectedAudioStreamIndex,
+    );
+
+    const maybeSoxExecutable =
+      logical.tool === "sox"
+        ? (params.maybeWhich("sox_ng") ?? params.maybeWhich("sox"))
+        : null;
+
+    const built = buildLogicalStepCommand({
+      step: logical,
+      ctx: {
+        streamIndex: params.plan.selectedAudioStreamIndex,
+        sampleRate: audioMeta.sampleRate,
+        channelCount: audioMeta.channelCount,
+        plannedAudioCodec: params.plan.plannedAudioCodec,
+        plannedContainer: params.plan.plannedContainer,
+        inputMediaPath: params.ctxInputMediaPath,
+        intermediateInPath: inputPathForStep,
+        intermediateOutPath: outPath,
+        finalOutputPath: params.finalDeliverablePath,
+      },
+      ffmpegExecutable: params.ffmpegPath,
+      maybeSoxExecutable,
+    });
+
+    if (built.kind !== "created") {
+      return {
+        kind: "failure",
+        reason: {
+          kind: "processing-failure",
+          message: `Could not build ${logical.tool} command for step ${i}.`,
+        },
+      };
+    }
+
+    const label = logical.tool === "sox" ? "sox" : "ffmpeg";
+    const processResult = await params.runProcess(built.command);
+
+    if (processResult.kind === "exited" && processResult.exitCode === 0) {
+      inputPathForStep = outPath;
+      continue;
+    }
+
+    return {
+      kind: "failure",
+      reason: {
+        kind: "processing-failure",
+        message: mapProcessFailure(label, processResult),
+      },
+    };
+  }
+
+  return null;
+}
+
+async function finalizeCleanSuccess(params: {
+  readonly outputPath: string;
+  readonly inputProbe: MediaProbe;
+  readonly ffprobePath: string;
+  readonly runProcess: ProcessRunner;
+  readonly outputExists: (p: string) => boolean;
+  readonly outputFileSize: (p: string) => number;
+  readonly plannedModality: ExecutableOutputPlan["modality"];
+  readonly claimedVideoCopied: boolean;
+  readonly baseSuccess: CleanCliSuccess;
+  readonly report: Omit<CleanRunReport, "verificationOk">;
+}): Promise<CleanCliOutcome> {
+  const outProbe = await runFfprobeProbe({
+    ffprobePath: params.ffprobePath,
+    inputPath: params.outputPath,
+    runProcess: params.runProcess,
+  });
+
+  if (!outProbe.ok) {
+    return {
+      kind: "failure",
+      reason: {
+        kind: "processing-failure",
+        message: `Output probe failed: ${describeFfprobeFailure(outProbe.error)}`,
+      },
+    };
+  }
+
+  let measuredSize: number;
+
+  try {
+    measuredSize = params.outputFileSize(params.outputPath);
+  } catch (error: unknown) {
+    return {
+      kind: "failure",
+      reason: {
+        kind: "processing-failure",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Could not stat output file after write.",
+      },
+    };
+  }
+
+  const verify = verifyCleanOutput({
+    outputPath: params.outputPath,
+    outputExists: params.outputExists,
+    outputFileSize: () => measuredSize,
+    inputProbe: params.inputProbe,
+    outputProbe: outProbe.value,
+    plannedModality:
+      params.plannedModality === "audio-only"
+        ? "audio-only"
+        : params.plannedModality === "video-copy-safe"
+          ? "video-copy-safe"
+          : "fallback-required",
+    claimedVideoCopied: params.claimedVideoCopied,
+  });
+
+  const verificationOk = verify.kind === "ok";
+
+  const fullReport: CleanRunReport = {
+    ...params.report,
+    verificationOk,
+  };
+
+  const reportText =
+    verify.kind === "failure"
+      ? `${renderCleanRunReportText(fullReport).trimEnd()}\nVerify: ${verify.detail}\n`
+      : renderCleanRunReportText(fullReport);
+
+  return {
+    kind: "success",
+    clean: {
+      ...params.baseSuccess,
+      maybeReportText: reportText,
+    },
+  };
+}
+
 export async function runCleanRequest(
   request: CleanRunInput,
   deps: Partial<CleanDeps> = {},
@@ -199,6 +415,8 @@ export async function runCleanRequest(
   const maybeWhich = deps.maybeWhich ?? ((name: string) => Bun.which(name));
   const runProcess = deps.runProcess ?? runProcessCommand;
   const outputExists = deps.outputExists ?? ((p: string) => existsSync(p));
+  const resolveOutputFileSize =
+    deps.outputFileSize ?? ((p: string) => statSync(p).size);
   const mkdtemp =
     deps.mkdtempSync ??
     ((prefix: string) => mkdtempSync(join(tmpdir(), prefix)));
@@ -276,45 +494,23 @@ export async function runCleanRequest(
       reason: {
         kind: "invalid-input",
         message:
-          "Unsupported input for the audio-only clean command. Run av-denoiser inspect to review this file and confirm modality before processing.",
+          "Unsupported input for clean. Run av-denoiser inspect to review this file and confirm modality before processing.",
       },
     };
   }
 
-  if (plan.modality === "video-copy-safe") {
-    return {
-      kind: "failure",
-      reason: {
-        kind: "invalid-input",
-        message:
-          "Video-containing inputs are not supported by clean yet. Run av-denoiser inspect for a full plan; Phase 5 will add remux execution for this modality.",
-      },
-    };
-  }
-
-  if (plan.modality === "fallback-required") {
+  if (plan.modality === "fallback-required" && !request.allowVideoFallback) {
     return {
       kind: "failure",
       reason: {
         kind: "fallback-required",
         message:
-          "Planned output requires video preservation fallback approval. The clean command does not run mixed A/V pipelines in this phase. Use av-denoiser inspect with --allow-video-fallback to preview, or wait for Phase 5.",
+          "Planned output requires video preservation fallback approval. Run av-denoiser clean with --allow-video-fallback (or av-denoiser inspect with --allow-video-fallback to preview).",
       },
     };
   }
 
-  if (plan.modality !== "audio-only") {
-    return {
-      kind: "failure",
-      reason: {
-        kind: "invalid-input",
-        message:
-          "Internal error: clean path expected audio-only modality after gating.",
-      },
-    };
-  }
-
-  const audioOnlyPlan = plan as AudioOnlyOutputPlan;
+  const executablePlan = plan as ExecutableOutputPlan;
 
   if (presetRequiresSox(request.presetId)) {
     const soxPath = maybeWhich("sox_ng") ?? maybeWhich("sox");
@@ -333,41 +529,110 @@ export async function runCleanRequest(
   const expanded = expandPreset({
     presetId: request.presetId,
     knobs: request.knobs,
-    plannedAudioCodec: audioOnlyPlan.plannedAudioCodec,
-    plannedContainer: audioOnlyPlan.plannedContainer,
+    plannedAudioCodec: executablePlan.plannedAudioCodec,
+    plannedContainer: executablePlan.plannedContainer,
   });
 
   const { steps: logicalSteps, warnings: pipelineWarnings } = expanded;
 
   const previewDir = join(cwd, "av-denoiser-clean-preview");
 
-  const stepSummaries = buildStepSummaries({
-    probe: probeResult.value,
-    plan: audioOnlyPlan,
-    presetId: request.presetId,
-    knobs: request.knobs,
-    ffmpegPath,
-    maybeWhich,
-    tempDirForPreview: previewDir,
-  }).steps;
+  let stepSummaries: readonly CleanStepSummary[];
+
+  if (isVideoCleanModality(executablePlan)) {
+    const audioMeta = audioLayoutForStream(
+      probeResult.value,
+      executablePlan.selectedAudioStreamIndex,
+    );
+
+    const extractPathPreview = join(previewDir, "extracted.wav");
+    const pipelineAudioPreviewPath = join(previewDir, "pipeline-audio-out.mp4");
+
+    const extractBuilt = buildExtractPrimaryAudioWavCommand({
+      ffmpegExecutable: ffmpegPath,
+      inputVideoPath: executablePlan.resolvedInputPath,
+      selectedAudioStreamIndex: executablePlan.selectedAudioStreamIndex,
+      sampleRate: audioMeta.sampleRate,
+      channelCount: audioMeta.channelCount,
+      outputWavPath: extractPathPreview,
+    });
+
+    const extractSummary: CleanStepSummary =
+      extractBuilt.kind === "created"
+        ? {
+            tool: "ffmpeg",
+            displayCommand: renderDisplayCommand(extractBuilt.command),
+          }
+        : {
+            tool: "ffmpeg",
+            displayCommand: "(invalid extract command build)",
+          };
+
+    const sliced = logicalSteps.slice(1);
+
+    const pipelineSummaries = buildStepSummariesFromLogicalSteps({
+      logicalSteps: sliced,
+      probe: probeResult.value,
+      plan: executablePlan,
+      ffmpegPath,
+      maybeWhich,
+      tempDirForPreview: previewDir,
+      bootstrapIntermediatePath: extractPathPreview,
+      ctxInputMediaPath: extractPathPreview,
+      finalDeliverablePath: pipelineAudioPreviewPath,
+    }).steps;
+
+    const remuxBuilt = buildRemuxVideoCopyCommand({
+      ffmpegExecutable: ffmpegPath,
+      originalVideoPath: executablePlan.resolvedInputPath,
+      processedAudioPath: pipelineAudioPreviewPath,
+      resolvedOutputPath: executablePlan.resolvedOutputPath,
+      plannedAudioCodec: executablePlan.plannedAudioCodec,
+    });
+
+    const remuxSummary: CleanStepSummary =
+      remuxBuilt.kind === "created"
+        ? {
+            tool: "ffmpeg",
+            displayCommand: renderDisplayCommand(remuxBuilt.command),
+          }
+        : {
+            tool: "ffmpeg",
+            displayCommand: "(invalid remux command build)",
+          };
+
+    stepSummaries = [extractSummary, ...pipelineSummaries, remuxSummary];
+  } else {
+    stepSummaries = buildAudioOnlyStepSummaries({
+      probe: probeResult.value,
+      plan: executablePlan as AudioOnlyOutputPlan,
+      presetId: request.presetId,
+      knobs: request.knobs,
+      ffmpegPath,
+      maybeWhich,
+      tempDirForPreview: previewDir,
+    }).steps;
+  }
 
   const summary: CleanPlanSummary = {
     presetId: request.presetId,
     inputPath: request.inputPath,
-    outputPath: audioOnlyPlan.resolvedOutputPath,
-    modality: audioOnlyPlan.modality,
+    outputPath: executablePlan.resolvedOutputPath,
+    modality: executablePlan.modality,
     pipelineWarnings,
     steps: stepSummaries,
+  };
+
+  const baseDrySuccess: CleanCliSuccess = {
+    json: request.json,
+    dryRun: request.dryRun,
+    summary,
   };
 
   if (request.dryRun) {
     return {
       kind: "success",
-      clean: {
-        json: request.json,
-        dryRun: true,
-        summary,
-      },
+      clean: baseDrySuccess,
     };
   }
 
@@ -387,77 +652,172 @@ export async function runCleanRequest(
     };
   }
 
-  let inputPathForStep = audioOnlyPlan.resolvedInputPath;
   let executionOk = false;
 
   try {
-    for (let i = 0; i < logicalSteps.length; i++) {
-      const logical = logicalSteps[i];
-
-      if (logical === undefined) {
-        break;
-      }
-      const isEncode =
-        logical.tool === "ffmpeg" && logical.step.kind === "encode-deliverable";
-      const outPath = isEncode
-        ? audioOnlyPlan.resolvedOutputPath
-        : join(tempRoot, `step-${i}.wav`);
-
+    if (isVideoCleanModality(executablePlan)) {
       const audioMeta = audioLayoutForStream(
         probeResult.value,
-        audioOnlyPlan.selectedAudioStreamIndex,
+        executablePlan.selectedAudioStreamIndex,
       );
 
-      const maybeSoxExecutable =
-        logical.tool === "sox"
-          ? (maybeWhich("sox_ng") ?? maybeWhich("sox"))
-          : null;
+      const extractPath = join(tempRoot, "extracted.wav");
+      const pipelineAudioPath = join(tempRoot, "pipeline-audio-out.mp4");
 
-      const built = buildLogicalStepCommand({
-        step: logical,
-        ctx: {
-          streamIndex: audioOnlyPlan.selectedAudioStreamIndex,
-          sampleRate: audioMeta.sampleRate,
-          channelCount: audioMeta.channelCount,
-          plannedAudioCodec: audioOnlyPlan.plannedAudioCodec,
-          plannedContainer: audioOnlyPlan.plannedContainer,
-          inputMediaPath: audioOnlyPlan.resolvedInputPath,
-          intermediateInPath: inputPathForStep,
-          intermediateOutPath: outPath,
-          finalOutputPath: audioOnlyPlan.resolvedOutputPath,
-        },
+      const extractCmd = buildExtractPrimaryAudioWavCommand({
         ffmpegExecutable: ffmpegPath,
-        maybeSoxExecutable,
+        inputVideoPath: executablePlan.resolvedInputPath,
+        selectedAudioStreamIndex: executablePlan.selectedAudioStreamIndex,
+        sampleRate: audioMeta.sampleRate,
+        channelCount: audioMeta.channelCount,
+        outputWavPath: extractPath,
       });
 
-      if (built.kind !== "created") {
+      if (extractCmd.kind !== "created") {
         return {
           kind: "failure",
           reason: {
             kind: "processing-failure",
-            message: `Could not build ${logical.tool} command for step ${i}.`,
+            message: `Could not build extract command: ${extractCmd.reason}`,
           },
         };
       }
 
-      const label = logical.tool === "sox" ? "sox" : "ffmpeg";
-      const processResult = await runProcess(built.command);
+      const extractRun = await runProcess(extractCmd.command);
 
-      if (processResult.kind === "exited" && processResult.exitCode === 0) {
-        inputPathForStep = outPath;
-        continue;
+      if (extractRun.kind !== "exited" || extractRun.exitCode !== 0) {
+        return {
+          kind: "failure",
+          reason: {
+            kind: "processing-failure",
+            message: mapProcessFailure("ffmpeg", extractRun),
+          },
+        };
       }
 
-      return {
-        kind: "failure",
-        reason: {
-          kind: "processing-failure",
-          message: mapProcessFailure(label, processResult),
+      const sliced = logicalSteps.slice(1);
+
+      const pipeFail = await runSequentialPipeline({
+        logicalSteps: sliced,
+        probe: probeResult.value,
+        plan: executablePlan,
+        tempRoot,
+        ffmpegPath,
+        maybeWhich,
+        runProcess,
+        bootstrapIntermediatePath: extractPath,
+        ctxInputMediaPath: extractPath,
+        finalDeliverablePath: pipelineAudioPath,
+      });
+
+      if (pipeFail !== null) {
+        return pipeFail;
+      }
+
+      const remuxCmd = buildRemuxVideoCopyCommand({
+        ffmpegExecutable: ffmpegPath,
+        originalVideoPath: executablePlan.resolvedInputPath,
+        processedAudioPath: pipelineAudioPath,
+        resolvedOutputPath: executablePlan.resolvedOutputPath,
+        plannedAudioCodec: executablePlan.plannedAudioCodec,
+      });
+
+      if (remuxCmd.kind !== "created") {
+        return {
+          kind: "failure",
+          reason: {
+            kind: "processing-failure",
+            message: `Could not build remux command: ${remuxCmd.reason}`,
+          },
+        };
+      }
+
+      const remuxRun = await runProcess(remuxCmd.command);
+
+      if (remuxRun.kind !== "exited" || remuxRun.exitCode !== 0) {
+        return {
+          kind: "failure",
+          reason: {
+            kind: "processing-failure",
+            message: mapProcessFailure("ffmpeg", remuxRun),
+          },
+        };
+      }
+
+      executionOk = true;
+
+      const dropped = labelsForDroppedStreams(
+        probeResult.value,
+        executablePlan.selectedAudioStreamIndex,
+      );
+
+      return await finalizeCleanSuccess({
+        outputPath: executablePlan.resolvedOutputPath,
+        inputProbe: probeResult.value,
+        ffprobePath,
+        runProcess,
+        outputExists,
+        outputFileSize: resolveOutputFileSize,
+        plannedModality: executablePlan.modality,
+        claimedVideoCopied: true,
+        baseSuccess: {
+          json: request.json,
+          dryRun: false,
+          summary,
         },
-      };
+        report: {
+          videoPolicy: "copied",
+          audioCodecSummary: executablePlan.plannedAudioCodec,
+          droppedStreamsLabels: dropped,
+          fallbackReasonCodes:
+            executablePlan.reasonCodes.length > 0
+              ? [...executablePlan.reasonCodes]
+              : undefined,
+        },
+      });
+    }
+
+    const audioOnlyPlan = executablePlan as AudioOnlyOutputPlan;
+
+    const pipeFailAudio = await runSequentialPipeline({
+      logicalSteps,
+      probe: probeResult.value,
+      plan: audioOnlyPlan,
+      tempRoot,
+      ffmpegPath,
+      maybeWhich,
+      runProcess,
+      bootstrapIntermediatePath: audioOnlyPlan.resolvedInputPath,
+      ctxInputMediaPath: audioOnlyPlan.resolvedInputPath,
+      finalDeliverablePath: audioOnlyPlan.resolvedOutputPath,
+    });
+
+    if (pipeFailAudio !== null) {
+      return pipeFailAudio;
     }
 
     executionOk = true;
+
+    return await finalizeCleanSuccess({
+      outputPath: audioOnlyPlan.resolvedOutputPath,
+      inputProbe: probeResult.value,
+      ffprobePath,
+      runProcess,
+      outputExists,
+      outputFileSize: resolveOutputFileSize,
+      plannedModality: "audio-only",
+      claimedVideoCopied: false,
+      baseSuccess: {
+        json: request.json,
+        dryRun: false,
+        summary,
+      },
+      report: {
+        videoPolicy: "n/a-audio-only",
+        audioCodecSummary: audioOnlyPlan.plannedAudioCodec,
+        droppedStreamsLabels: [],
+      },
+    });
   } finally {
     if (executionOk) {
       try {
@@ -467,13 +827,4 @@ export async function runCleanRequest(
       }
     }
   }
-
-  return {
-    kind: "success",
-    clean: {
-      json: request.json,
-      dryRun: false,
-      summary,
-    },
-  };
 }

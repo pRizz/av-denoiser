@@ -35,6 +35,7 @@ test("parses clean dry-run with default preset speech-light", () => {
     force: false,
     dryRun: true,
     json: false,
+    allowVideoFallback: false,
     presetId: "speech-light",
     knobs: { noiseStrength: 0.35 },
   });
@@ -55,6 +56,7 @@ test("parses clean with speech-soft-sox preset", () => {
     force: false,
     dryRun: true,
     json: false,
+    allowVideoFallback: false,
     presetId: "speech-soft-sox",
     knobs: { noiseStrength: 0.35 },
   });
@@ -83,7 +85,7 @@ test("parses inspect command into a typed request", () => {
   });
 });
 
-test("renders default guidance without promising unavailable pipelines", () => {
+test("renders default guidance without stale phase promises", () => {
   // Arrange
   const expectedDoctorHint =
     'Run "av-denoiser doctor" to inspect local tool readiness.';
@@ -97,7 +99,5 @@ test("renders default guidance without promising unavailable pipelines", () => {
   expect(output).toContain(expectedDoctorHint);
   expect(output).toContain(expectedInspectHint);
   expect(output).toContain("clean");
-  expect(output).toContain(
-    "Heavy full-file transcoding for video inputs is not wired in clean yet",
-  );
+  expect(output).not.toContain("Phase 5 will add");
 });

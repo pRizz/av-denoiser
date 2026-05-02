@@ -31,6 +31,15 @@ test("invalid clean --noise-strength exits invalidInput via runCli", async () =>
   expect(code).toBe(ExitCode.invalidInput);
 });
 
+test("parses clean --allow-video-fallback", () => {
+  expect(
+    parseCliRequest(["clean", "--dry-run", "--allow-video-fallback", "in.mp4"]),
+  ).toMatchObject({
+    kind: "clean",
+    allowVideoFallback: true,
+  });
+});
+
 test("parses inspect argv into typed inspect request", () => {
   expect(parseCliRequest(["inspect", "clip.m4a"])).toEqual({
     kind: "inspect",

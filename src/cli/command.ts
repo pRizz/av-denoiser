@@ -75,9 +75,9 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
   program
     .command("clean")
     .description(
-      "Run preset audio cleanup on an audio-only input (probe + sequential FFmpeg/SoX)",
+      "Run preset cleanup: audio-only inputs, or video inputs when inspect reports video-copy-safe / approved fallback",
     )
-    .argument("<input>", "Path to the input audio file")
+    .argument("<input>", "Path to the input audio or video file")
     .option("-o, --output <path>", "Explicit output path (optional)")
     .option("--force", "Allow overwriting an existing output file", false)
     .option(
@@ -86,6 +86,11 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
       false,
     )
     .option("--json", "Print machine-readable JSON instead of text", false)
+    .option(
+      "--allow-video-fallback",
+      "Allow executing fallback-required preservation plans (same semantics as inspect)",
+      false,
+    )
     .option(
       "--preset <id>",
       "Preset id (speech-light | speech-soft-sox)",
@@ -105,6 +110,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
           force?: boolean;
           dryRun?: boolean;
           json?: boolean;
+          allowVideoFallback?: boolean;
           preset?: string;
           noiseStrength?: number;
         },
@@ -125,6 +131,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
           force: Boolean(options.force),
           dryRun: Boolean(options.dryRun),
           json: Boolean(options.json),
+          allowVideoFallback: Boolean(options.allowVideoFallback),
           presetId,
           knobs: { noiseStrength: options.noiseStrength ?? 0.35 },
         });

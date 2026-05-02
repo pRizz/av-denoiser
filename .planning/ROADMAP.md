@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Media Probing & Output Planning** - Users can inspect input media facts and safe output decisions before processing.
 - [x] **Phase 3: Video Preservation & Fallback Control** - Users can understand and control when video stream copy is possible or impossible. (completed 2026-05-02)
 - [x] **Phase 4: Core Audio Pipeline & SoX Cleanup** - Users can clean single audio files through transparent presets and sequential FFmpeg/SoX steps. (completed 2026-05-02)
-- [ ] **Phase 5: Final Media Output & Reporting** - Users can receive cleaned audio/video outputs with verified FFmpeg remuxing and human-readable reports.
+- [x] **Phase 5: Final Media Output & Reporting** - Users can receive cleaned audio/video outputs with verified FFmpeg remuxing and human-readable reports. (completed 2026-05-01)
 - [ ] **Phase 6: Guided & Repeatable Workflows** - Users can choose guided prompts or equivalent flags for the same dry-run and execution behavior.
 - [ ] **Phase 7: Batch Processing & Manifests** - Users can process many files safely with per-file status, summaries, and failure isolation.
 - [ ] **Phase 8: Optional Heavy & Editor Integrations** - Users can opt into Demucs, Audacity, and Kdenlive/MLT paths when prerequisites are available.
@@ -102,10 +102,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Run report + post-run verify pure domain (`VIDEO-04`, `TRUST-03`).
-- [ ] 05-02-PLAN.md — FFmpeg argv builders extract WAV + remux `-c:v copy` (`TOOL-01`).
-- [ ] 05-03-PLAN.md — `runCleanRequest` video path + verification + report assembly (`MEDIA-02`, `TOOL-01`, `TRUST-02`, `TRUST-03`).
-- [ ] 05-04-PLAN.md — `clean --allow-video-fallback`, render checklist, help copy (`MEDIA-02`, `VIDEO-04`, `TRUST-02`).
+- [x] 05-01-PLAN.md — Run report + post-run verify pure domain (`VIDEO-04`, `TRUST-03`).
+- [x] 05-02-PLAN.md — FFmpeg argv builders extract WAV + remux `-c:v copy` (`TOOL-01`).
+- [x] 05-03-PLAN.md — `runCleanRequest` video path + verification + report assembly (`MEDIA-02`, `TOOL-01`, `TRUST-02`, `TRUST-03`).
+- [x] 05-04-PLAN.md — `clean --allow-video-fallback`, render checklist, help copy (`MEDIA-02`, `VIDEO-04`, `TRUST-02`).
 
 ### Phase 6: Guided & Repeatable Workflows
 **Goal**: Users can choose between a friendly guided workflow and equivalent non-interactive commands for the same execution model.

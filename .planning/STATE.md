@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 5 context gathered
-last_updated: "2026-05-02T00:39:39.069Z"
-last_activity: 2026-05-02 -- Phase 5 planning complete
+stopped_at: Phase 5 executed — verification green
+last_updated: "2026-05-01T12:00:00.000Z"
+last_activity: 2026-05-01 -- Phase 5 execution complete
 progress:
   total_phases: 8
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 17
-  completed_plans: 13
-  percent: 76
+  completed_plans: 17
+  percent: 100
 ---
 
 # Project State
@@ -21,22 +21,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-01)
 
 **Core value:** Users can pass an audio or video file through a guided denoise pipeline and get a cleaned output while avoiding video recompression whenever possible.
-**Current focus:** Phase 5 — Final Media Output & Reporting (next)
+**Current focus:** Phase 6 — Guided & Repeatable Workflows (next)
 
 ## Current Position
 
-Phase: 5
+Phase: 6
 Plan: Not started
-Status: Ready to execute
-Last activity: 2026-05-02 -- Phase 5 planning complete
+Status: Ready to plan or execute
+Last activity: 2026-05-01 -- Phase 5 complete (reports, video clean path, CLI fallback flag)
 
-Progress: [████░░░░░░] 50% (4/8 phases complete)
+Progress: [█████░░░░░] 62% (5/8 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 13
+- Total plans completed: 17
 - Average duration: N/A
 - Total execution time: 0.0 hours
 
@@ -53,6 +53,7 @@ Progress: [████░░░░░░] 50% (4/8 phases complete)
 | 1 | 4 | - | - |
 | 3 | 2 | - | - |
 | 4 | 4 | - | - |
+| 5 | 4 | - | - |
 
 ## Accumulated Context
 
@@ -73,6 +74,7 @@ Recent decisions affecting current work:
 - [Phase 01]: Kept Commander syntax-only and routed executable behavior through runCliRequest outcomes.
 - [Phase 01]: Rendered doctor output from structured DoctorReport facts instead of overclaiming capability readiness.
 - [Phase 01]: Documented target/current Bun runtime information as informational for Phase 1 compatibility.
+- [Phase 5]: Post-run verification uses duration tolerance and optional video codec match when modality is video-copy-safe and copy is claimed.
 
 ### Pending Todos
 
@@ -81,11 +83,11 @@ None yet.
 ### Blockers/Concerns
 
 - [Phase 4]: SoX versus SoX_ng install names and effects availability need validation on real machines (tests use mocks).
-- [Phase 5]: Codec/container compatibility matrix needs fixture-backed verification.
+- [Phase 5]: Codec/container compatibility matrix needs fixture-backed verification on real diverse inputs.
 - [Phase 8]: Demucs package/fork, Audacity automation, and Kdenlive/MLT headless feasibility need implementation-time research.
 
 ## Session Continuity
 
-Last session: 2026-05-02T00:38:14.952Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-final-media-output-reporting/05-CONTEXT.md
+Last session: 2026-05-01T12:00:00.000Z
+Stopped at: Phase 5 executed — ready for Phase 6
+Resume file: .planning/ROADMAP.md (Phase 6 — plans TBD)

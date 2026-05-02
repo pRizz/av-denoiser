@@ -18,8 +18,8 @@ const DEFAULT_GUIDANCE_LINES = [
   "av-denoiser CLI foundation is installed.",
   'Run "av-denoiser doctor" to inspect local tool readiness.',
   'Run "av-denoiser inspect <path>" to probe media and preview planned outputs.',
-  'Use "av-denoiser clean <path>" for audio-only cleanup presets when tools are ready.',
-  "Heavy full-file transcoding for video inputs is not wired in clean yet (audio-only).",
+  'Use "av-denoiser clean <path>" for preset FFmpeg/SoX cleanup when tools are ready.',
+  'Use "av-denoiser clean <path>" after inspect for video inputs when stream-copy-safe or when you pass --allow-video-fallback for fallback plans.',
 ];
 
 const DOCTOR_GUIDANCE_LINES = [
@@ -56,7 +56,7 @@ export function renderHelpGuidance(helpText: string): string {
     helpText.trimEnd(),
     "",
     "Current phase note:",
-    "You can run clean on audio-only inputs; heavy video+audio remux ships in Phase 5.",
+    "Video inputs use extract → preset pipeline → remux with video stream copy when inspect reports video-copy-safe.",
   ].join("\n");
 }
 
@@ -116,6 +116,13 @@ export function renderCleanPlanText(success: CleanCliSuccess): string {
     "Steps",
     ...summary.steps.map((s) => `- ${s.tool}: ${s.displayCommand}`),
   ];
+
+  if (
+    success.maybeReportText !== undefined &&
+    success.maybeReportText.length > 0
+  ) {
+    lines.push("", "Verified:", success.maybeReportText.trimEnd());
+  }
 
   return lines.join("\n");
 }
@@ -189,7 +196,7 @@ export function renderCommandOutcome(
   if (request.kind === "clean") {
     if (outcome.kind === "success" && outcome.clean !== undefined) {
       return outcome.clean.json
-        ? `${JSON.stringify(cleanSummaryForJson(outcome.clean.summary), null, 2)}\n`
+        ? `${JSON.stringify(cleanSummaryForJson(outcome.clean), null, 2)}\n`
         : renderCleanPlanText(outcome.clean);
     }
 
@@ -231,15 +238,16 @@ export function renderCliRequest(
       return [
         "av-denoiser clean <path>",
         "",
-        "Runs preset FFmpeg/SoX cleanup on audio-only inputs (use inspect first for video files).",
+        "Runs preset FFmpeg/SoX cleanup on audio or supported video inputs (inspect first; use --allow-video-fallback when needed).",
       ].join("\n");
   }
 }
 
 function cleanSummaryForJson(
-  summary: CleanCliSuccess["summary"],
+  success: CleanCliSuccess,
 ): Record<string, unknown> {
-  return {
+  const summary = success.summary;
+  const base: Record<string, unknown> = {
     presetId: summary.presetId,
     inputPath: summary.inputPath,
     outputPath: summary.outputPath,
@@ -247,6 +255,12 @@ function cleanSummaryForJson(
     warnings: summary.pipelineWarnings,
     steps: summary.steps,
   };
+
+  if (success.maybeReportText !== undefined) {
+    base.reportText = success.maybeReportText;
+  }
+
+  return base;
 }
 
 function createRuntimeInfo(): RuntimeInfo {

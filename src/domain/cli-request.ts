@@ -21,6 +21,7 @@ export type CliRequest =
       readonly json: boolean;
       readonly presetId: PresetId;
       readonly knobs: CleanPresetKnobs;
+      readonly allowVideoFallback: boolean;
     };
 
 export type CliRequestResult =

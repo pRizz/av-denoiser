@@ -41,6 +41,18 @@ export async function runCliRequest(
     case "inspect":
       return runInspectRequest(request, deps.inspect);
     case "clean":
-      return runCleanRequest(request, deps.clean);
+      return runCleanRequest(
+        {
+          inputPath: request.inputPath,
+          maybeOutputPath: request.maybeOutputPath,
+          force: request.force,
+          dryRun: request.dryRun,
+          json: request.json,
+          presetId: request.presetId,
+          knobs: request.knobs,
+          allowVideoFallback: request.allowVideoFallback,
+        },
+        deps.clean,
+      );
   }
 }
