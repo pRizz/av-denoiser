@@ -151,10 +151,13 @@ Plans:
   3. User can run an Audacity automation step when scripting or macro prerequisites are installed, enabled, and accepted.
   4. User receives actionable diagnostics when Audacity cannot be automated because scripting, macro, pipe, GUI, or export settings are unavailable.
   5. User can run a Kdenlive/MLT or Kdenlive-derived audio-filter integration when a practical headless path and required plugins are available, and can still complete supported FFmpeg/SoX/Demucs pipelines when it is unavailable.
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 08-01: TBD
+- [ ] 08-01-PLAN.md — Demucs logical step, preset expansion, argv builder, TOOL-04 warnings (TOOL-03, TOOL-04).
+- [ ] 08-02-PLAN.md — Wire Demucs into `runCleanRequest` / CLI / batch summary parity (TOOL-03, TOOL-04).
+- [ ] 08-03-PLAN.md — Audacity pipe adapter, opt-in CLI, diagnostics (TOOL-05, TOOL-06).
+- [ ] 08-04-PLAN.md — Doctor ladspa/melt probes, docs for TOOL-07 / TOOL-08.
 
 ## Progress
 
@@ -170,7 +173,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 5. Final Media Output & Reporting | 4/4 | Complete    | 2026-05-01 |
 | 6. Guided & Repeatable Workflows | 3/3 | Complete    | 2026-05-02 |
 | 7. Batch Processing & Manifests | 3/3 | Complete    | 2026-05-01 |
-| 8. Optional Heavy & Editor Integrations | 0/1 | Not started | - |
+| 8. Optional Heavy & Editor Integrations | 0/4 | Ready to execute | - |
 
 ## Requirement Coverage
 
