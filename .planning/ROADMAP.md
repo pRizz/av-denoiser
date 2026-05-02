@@ -223,7 +223,11 @@ Plans:
 **Depends on**: Phase 12 *(optional-heavy verification artifact complete)* and Phase 13 *(batch manifest doctor snapshot landed)*
 **Gap closure**: v1.0-MILESTONE-AUDIT guided→heavy integration gap, orphaned `CLI-04` process gap (implementation already), `UX-*`/`BATCH-*` verification absent
 **Requirements**: CLI-04, UX-01, UX-02, UX-03, UX-04, UX-05, BATCH-01, BATCH-02, BATCH-03, BATCH-04
-**Plans**: Plans TBD
+**Plans**: 2 plans
+
+Plans:
+- [x] 14-01-PLAN.md — Guided **`clean`** parity: Demucs preset, Audacity macro + pipe-risk confirm, LADSPA triple validation; **`argvTokensForEquivalentClean`** + tests (**CLI-04**, **UX-01–UX-05**).
+- [x] 14-02-PLAN.md — **`06-VERIFICATION.md`** / **`07-VERIFICATION.md`** + SUMMARY **`requirements-completed`** hygiene (**CLI-04**, **UX-*** , **BATCH-01–BATCH-04**).
 
 ## Progress
 
