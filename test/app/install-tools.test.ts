@@ -91,6 +91,9 @@ describe("runInstallToolsRequest", () => {
       expect(outcome.message).toContain("brew install ffmpeg");
       expect(outcome.message).toContain("uv");
       expect(outcome.message).toContain("uv tool install demucs");
+      expect(outcome.message).toContain(
+        "If `demucs` is already on PATH, that step is skipped.",
+      );
       expect(outcome.message).not.toContain("pipx");
     }
   });
@@ -168,6 +171,8 @@ describe("runInstallToolsRequest", () => {
         maybeWhich: stubWhich({
           brew: "/opt/homebrew/bin/brew",
           uv: "/opt/homebrew/bin/uv",
+          ffmpeg: "/opt/homebrew/bin/ffmpeg",
+          ffprobe: "/opt/homebrew/bin/ffprobe",
         }),
         runBrewInherit: async () => 0,
         runProcess: brewOkRunProcess(),
@@ -175,6 +180,11 @@ describe("runInstallToolsRequest", () => {
     );
 
     expect(outcome.kind).toBe("success");
+    if (outcome.kind === "success") {
+      expect(outcome.message).toContain("Summary:");
+      expect(outcome.message).toContain("FFmpeg");
+      expect(outcome.message).toContain("uv");
+    }
   });
 
   test("full tier non-TTY without assumeYes skips Demucs automation and keeps manual hint", async () => {
@@ -205,8 +215,9 @@ describe("runInstallToolsRequest", () => {
     expect(demucsStepCalls).toBe(0);
     expect(outcome.kind).toBe("success");
     if (outcome.kind === "success") {
-      expect(outcome.message).toContain("uv tool install");
-      expect(outcome.message).toContain("Demucs");
+      expect(outcome.message).toContain("Optional Demucs:");
+      expect(outcome.message).toContain("Summary:");
+      expect(outcome.message).toContain("Demucs: not installed");
       expect(outcome.message).not.toContain("installed via uv");
     }
   });
@@ -239,6 +250,143 @@ describe("runInstallToolsRequest", () => {
     ]);
     if (outcome.kind === "success") {
       expect(outcome.message).toContain("uv tool install demucs");
+      expect(outcome.message).toContain("~/.local/bin");
+      expect(outcome.message).not.toContain("good to go");
+      expect(outcome.message).toContain("Summary:");
+    }
+  });
+
+  test("full tier skips uv tool install when demucs already on PATH", async () => {
+    const calls: string[][] = [];
+    const demucsBin = "/Users/example/.local/bin/demucs";
+
+    const outcome = await runInstallToolsRequest(
+      { dryRun: false, includeOptional: true, assumeYes: true },
+      {
+        platform: "darwin",
+        maybeWhich: stubWhich({
+          brew: "/opt/homebrew/bin/brew",
+          uv: "/opt/homebrew/bin/uv",
+          demucs: demucsBin,
+        }),
+        runBrewInherit: async () => 0,
+        runProcess: brewOkRunProcess(),
+        isTTY: false,
+        useStdoutColor: false,
+        runPythonPipInherit: async (argv) => {
+          calls.push([...argv]);
+
+          return 0;
+        },
+      },
+    );
+
+    expect(calls).toEqual([]);
+    expect(outcome.kind).toBe("success");
+    if (outcome.kind === "success") {
+      expect(outcome.message).toContain("\u2713 ");
+      expect(outcome.message).toContain("skipped install");
+      expect(outcome.message).toContain(demucsBin);
+      expect(outcome.message).toContain("Summary:");
+      expect(outcome.message).toContain("Demucs already on PATH");
+      expect(outcome.message).not.toContain("good to go");
+    }
+  });
+
+  test("full tier assumeYes reports good to go when demucs appears on PATH after install", async () => {
+    const calls: string[][] = [];
+    const demucsBin = "/Users/example/.local/bin/demucs";
+    let demucsProbes = 0;
+
+    const outcome = await runInstallToolsRequest(
+      { dryRun: false, includeOptional: true, assumeYes: true },
+      {
+        platform: "darwin",
+        maybeWhich: (name) => {
+          if (name === "demucs") {
+            demucsProbes += 1;
+
+            return demucsProbes >= 2 ? demucsBin : null;
+          }
+
+          return stubWhich({
+            brew: "/opt/homebrew/bin/brew",
+            uv: "/opt/homebrew/bin/uv",
+          })(name);
+        },
+        runBrewInherit: async () => 0,
+        runProcess: brewOkRunProcess(),
+        isTTY: false,
+        useStdoutColor: false,
+        runPythonPipInherit: async (argv) => {
+          calls.push([...argv]);
+
+          return 0;
+        },
+      },
+    );
+
+    expect(calls).toEqual([
+      ["/opt/homebrew/bin/uv", "tool", "install", "demucs"],
+    ]);
+    expect(outcome.kind).toBe("success");
+    if (outcome.kind === "success") {
+      expect(outcome.message).toContain("good to go");
+      expect(outcome.message).toContain(demucsBin);
+      expect(outcome.message).toContain("Summary:");
+    }
+  });
+
+  test("full tier TTY does not prompt when demucs already on PATH", async () => {
+    const outcome = await runInstallToolsRequest(
+      { dryRun: false, includeOptional: true, assumeYes: false },
+      {
+        platform: "darwin",
+        maybeWhich: stubWhich({
+          brew: "/opt/homebrew/bin/brew",
+          uv: "/opt/homebrew/bin/uv",
+          demucs: "/opt/homebrew/bin/demucs",
+        }),
+        runBrewInherit: async () => 0,
+        runProcess: brewOkRunProcess(),
+        isTTY: true,
+        confirmDemucsPip: async () => {
+          throw new Error("should not prompt when demucs on PATH");
+        },
+        runPythonPipInherit: async () => {
+          throw new Error("should not run uv tool install");
+        },
+      },
+    );
+
+    expect(outcome.kind).toBe("success");
+    if (outcome.kind === "success") {
+      expect(outcome.message).toContain("skipped install");
+      expect(outcome.message).toContain("Summary:");
+    }
+  });
+
+  test("full tier uses ANSI green check when useStdoutColor is true", async () => {
+    const outcome = await runInstallToolsRequest(
+      { dryRun: false, includeOptional: true, assumeYes: true },
+      {
+        platform: "darwin",
+        maybeWhich: stubWhich({
+          brew: "/opt/homebrew/bin/brew",
+          uv: "/opt/homebrew/bin/uv",
+          demucs: "/opt/homebrew/bin/demucs",
+        }),
+        runBrewInherit: async () => 0,
+        runProcess: brewOkRunProcess(),
+        isTTY: false,
+        useStdoutColor: true,
+        runPythonPipInherit: async () => 0,
+      },
+    );
+
+    expect(outcome.kind).toBe("success");
+    if (outcome.kind === "success") {
+      expect(outcome.message).toContain("\u001b[32m\u2713\u001b[0m");
     }
   });
 
@@ -316,7 +464,8 @@ describe("runInstallToolsRequest", () => {
     expect(demucsStepCalls).toBe(0);
     expect(outcome.kind).toBe("success");
     if (outcome.kind === "success") {
-      expect(outcome.message).toContain("uv tool install");
+      expect(outcome.message).toContain("Optional Demucs:");
+      expect(outcome.message).toContain("Summary:");
     }
   });
 
@@ -347,6 +496,8 @@ describe("runInstallToolsRequest", () => {
     expect(outcome.kind).toBe("success");
     if (outcome.kind === "success") {
       expect(outcome.message).toContain("uv");
+      expect(outcome.message).toContain("~/.local/bin");
+      expect(outcome.message).toContain("Summary:");
     }
   });
 });

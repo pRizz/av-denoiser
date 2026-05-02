@@ -27,7 +27,23 @@ export type InstallToolsDeps = {
   readonly confirmDemucsPip?: () => Promise<boolean>;
   /** Runs Demucs automation (`uv tool install demucs`); default inherits stdio. */
   readonly runPythonPipInherit?: (argv: readonly string[]) => Promise<number>;
+  /**
+   * When true, prefix the on-PATH success line with ANSI green + checkmark.
+   * Default: `process.stdout.isTTY === true`. Set false in tests that assert plain text.
+   */
+  readonly useStdoutColor?: boolean;
 };
+
+/** Demucs row in the post-install summary (full tier only). */
+type DemucsSummaryKind =
+  | { readonly kind: "none" }
+  | { readonly kind: "skipped" }
+  | { readonly kind: "already"; readonly path: string }
+  | {
+      readonly kind: "installed";
+      /** Resolved PATH after install, if any. */
+      readonly path: string | null;
+    };
 
 function defaultRunBrewInherit(argv: readonly string[]): Promise<number> {
   const [executable, ...args] = argv;
@@ -75,10 +91,6 @@ async function defaultConfirmDemucsPip(): Promise<boolean> {
   return answer;
 }
 
-function fullTierManualSuffix(demucsBlock: string): string[] {
-  return ["", "Homebrew installs finished.", demucsBlock.replace(/^\n+/, "")];
-}
-
 function demucsAutomationFailureMessage(detail: string): string {
   return [
     detail,
@@ -88,13 +100,85 @@ function demucsAutomationFailureMessage(detail: string): string {
   ].join("\n");
 }
 
+function greenCheckMarkPrefix(useColor: boolean): string {
+  if (useColor) {
+    return "\u001b[32m\u2713\u001b[0m ";
+  }
+
+  return "\u2713 ";
+}
+
+function summaryToolLine(
+  useColor: boolean,
+  label: string,
+  maybePath: string | null,
+): string {
+  const path =
+    maybePath !== null && maybePath.trim() !== "" ? maybePath.trim() : null;
+  const suffix =
+    path !== null ? ` (${path})` : " (not found on PATH — open a new shell?)";
+
+  return `${greenCheckMarkPrefix(useColor)}${label}${suffix}`;
+}
+
+/** Post-install checklist: tools this command is responsible for. */
+export function buildInstallToolsSummaryLines(deps: {
+  readonly includeOptional: boolean;
+  readonly maybeWhich: (name: string) => string | null;
+  readonly useStdoutColor: boolean;
+  readonly demucs: DemucsSummaryKind;
+}): string[] {
+  const { includeOptional, maybeWhich, useStdoutColor, demucs } = deps;
+  const lines: string[] = ["", "Summary:"];
+
+  lines.push(summaryToolLine(useStdoutColor, "FFmpeg", maybeWhich("ffmpeg")));
+  lines.push(summaryToolLine(useStdoutColor, "ffprobe", maybeWhich("ffprobe")));
+  lines.push(summaryToolLine(useStdoutColor, "uv", maybeWhich("uv")));
+
+  if (includeOptional) {
+    lines.push(summaryToolLine(useStdoutColor, "SoX_ng", maybeWhich("sox_ng")));
+    lines.push(
+      `${greenCheckMarkPrefix(useStdoutColor)}Audacity (Homebrew cask)`,
+    );
+
+    switch (demucs.kind) {
+      case "none":
+        break;
+      case "skipped":
+        lines.push("Demucs: not installed (skipped or non-interactive run).");
+        break;
+      case "already":
+        lines.push(
+          `${greenCheckMarkPrefix(useStdoutColor)}Demucs already on PATH (${demucs.path})`,
+        );
+        break;
+      case "installed": {
+        const demucsPath = demucs.path;
+        if (demucsPath !== null) {
+          lines.push(
+            `${greenCheckMarkPrefix(useStdoutColor)}Demucs installed via uv (${demucsPath})`,
+          );
+        } else {
+          lines.push(
+            `${greenCheckMarkPrefix(useStdoutColor)}Demucs installed via uv — not on PATH yet; try \`~/.local/bin\` and a new shell`,
+          );
+        }
+        break;
+      }
+    }
+  }
+
+  return lines;
+}
+
 type DemucsAutomationResult =
-  | { readonly kind: "success"; readonly tailLines: readonly string[] }
+  | { readonly kind: "success"; readonly pathAfterInstall: string | null }
   | { readonly kind: "failure"; readonly message: string };
 
 async function runAutomatedDemucsInstall(deps: {
   readonly uvPath: string;
   readonly runDemucsStep: (argv: readonly string[]) => Promise<number>;
+  readonly maybeWhich: (name: string) => string | null;
 }): Promise<DemucsAutomationResult> {
   const code = await deps.runDemucsStep([
     deps.uvPath,
@@ -112,12 +196,22 @@ async function runAutomatedDemucsInstall(deps: {
     };
   }
 
+  const maybeDemucsPath = deps.maybeWhich("demucs");
+  const demucsPath =
+    maybeDemucsPath !== null && maybeDemucsPath.trim() !== ""
+      ? maybeDemucsPath.trim()
+      : null;
+
   return {
     kind: "success",
-    tailLines: [
-      "Demucs: installed via uv (`uv tool install demucs`).",
-      "If `demucs` is not on PATH, ensure uv's tool bin directory is on PATH (often `~/.local/bin`); open a new shell and retry.",
-    ],
+    pathAfterInstall: demucsPath,
+  };
+}
+
+function successCompletedMessage(bodyLines: readonly string[]): CommandOutcome {
+  return {
+    kind: "success",
+    message: `${cliName} install-tools: completed.${bodyLines.join("\n")}`,
   };
 }
 
@@ -134,6 +228,9 @@ export async function runInstallToolsRequest(
     (typeof process !== "undefined" && process.stdin.isTTY === true);
   const confirmDemucsPip = deps.confirmDemucsPip ?? defaultConfirmDemucsPip;
   const runDemucsStep = deps.runPythonPipInherit ?? defaultRunDemucsStepInherit;
+  const useStdoutColor =
+    deps.useStdoutColor ??
+    (typeof process !== "undefined" && process.stdout.isTTY === true);
 
   if (platform !== "darwin") {
     return {
@@ -162,7 +259,7 @@ export async function runInstallToolsRequest(
     if (request.includeOptional) {
       lines.push(
         "",
-        "Full tier: when you accept Demucs automation (or pass --yes), this CLI runs `uv tool install demucs`.",
+        "Full tier: when you accept Demucs automation (or pass --yes), this CLI runs `uv tool install demucs`. If `demucs` is already on PATH, that step is skipped.",
       );
     }
 
@@ -252,12 +349,41 @@ export async function runInstallToolsRequest(
   }
 
   if (!request.includeOptional) {
-    const doneLines = ["", "Homebrew installs finished."];
+    const summaryLines = buildInstallToolsSummaryLines({
+      includeOptional: false,
+      maybeWhich,
+      useStdoutColor,
+      demucs: { kind: "none" },
+    });
 
-    return {
-      kind: "success",
-      message: `${cliName} install-tools: completed.${doneLines.join("\n")}`,
-    };
+    return successCompletedMessage([
+      "",
+      "Homebrew installs finished.",
+      ...summaryLines,
+    ]);
+  }
+
+  const maybeDemucsPre = maybeWhich("demucs");
+  const demucsPrePath =
+    maybeDemucsPre !== null && maybeDemucsPre.trim() !== ""
+      ? maybeDemucsPre.trim()
+      : null;
+
+  if (demucsPrePath !== null) {
+    const detailLines = [
+      "",
+      "Homebrew installs finished.",
+      "",
+      `${greenCheckMarkPrefix(useStdoutColor)}\`demucs\` already on PATH (${demucsPrePath}) — skipped install.`,
+    ];
+    const summaryLines = buildInstallToolsSummaryLines({
+      includeOptional: true,
+      maybeWhich,
+      useStdoutColor,
+      demucs: { kind: "already", path: demucsPrePath },
+    });
+
+    return successCompletedMessage([...detailLines, ...summaryLines]);
   }
 
   let runDemucsAutomated = false;
@@ -269,17 +395,26 @@ export async function runInstallToolsRequest(
   }
 
   if (!runDemucsAutomated) {
-    const doneLines = fullTierManualSuffix(demucsBlock);
+    const summaryLines = buildInstallToolsSummaryLines({
+      includeOptional: true,
+      maybeWhich,
+      useStdoutColor,
+      demucs: { kind: "skipped" },
+    });
 
-    return {
-      kind: "success",
-      message: `${cliName} install-tools: completed.${doneLines.join("\n")}`,
-    };
+    return successCompletedMessage([
+      "",
+      "Homebrew installs finished.",
+      "",
+      "Optional Demucs: run `uv tool install demucs` when you want vocal-isolation presets (or re-run this command).",
+      ...summaryLines,
+    ]);
   }
 
   const demucsResult = await runAutomatedDemucsInstall({
     uvPath,
     runDemucsStep,
+    maybeWhich,
   });
 
   if (demucsResult.kind === "failure") {
@@ -292,15 +427,27 @@ export async function runInstallToolsRequest(
     };
   }
 
-  const doneLines = [
-    "",
-    "Homebrew installs finished.",
-    "",
-    ...demucsResult.tailLines,
-  ];
+  const pathAfter = demucsResult.pathAfterInstall;
+  const detailLines: string[] = ["", "Homebrew installs finished.", ""];
 
-  return {
-    kind: "success",
-    message: `${cliName} install-tools: completed.${doneLines.join("\n")}`,
-  };
+  detailLines.push("Demucs: installed via uv (`uv tool install demucs`).");
+
+  if (pathAfter !== null) {
+    detailLines.push(
+      `${greenCheckMarkPrefix(useStdoutColor)}\`demucs\` is on PATH (${pathAfter}) — good to go for \`doctor\` and Demucs presets.`,
+    );
+  } else {
+    detailLines.push(
+      "If `demucs` is not on PATH, ensure uv's tool bin directory is on PATH (often `~/.local/bin`); open a new shell and retry.",
+    );
+  }
+
+  const summaryLines = buildInstallToolsSummaryLines({
+    includeOptional: true,
+    maybeWhich,
+    useStdoutColor,
+    demucs: { kind: "installed", path: pathAfter },
+  });
+
+  return successCompletedMessage([...detailLines, ...summaryLines]);
 }
