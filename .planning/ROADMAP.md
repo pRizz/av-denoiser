@@ -65,10 +65,11 @@ Plans:
   1. User can process video with a stream-copy-first policy that avoids video recompression whenever the container and codec combination allows it.
   2. User can see explicit fallback reasons when preserving video streams without recompression is impossible.
   3. User can approve or reject any fallback that would re-encode video or change the output container.
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: TBD
+- [ ] 03-01-PLAN.md — Narrow MP4+h264 feasibility rules, probe `format_name`, deterministic `fallback-required`
+- [ ] 03-02-PLAN.md — `preservationNotes` + `--allow-video-fallback` policy + inspect rendering
 
 ### Phase 4: Core Audio Pipeline & SoX Cleanup
 **Goal**: Users can clean single audio files through transparent recommended presets and sequential lossless-intermediate pipeline steps.
@@ -154,7 +155,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 |-------|----------------|--------|-----------|
 | 1. Bun CLI Foundation & Trust Model | 4/4 | Complete    | 2026-05-01 |
 | 2. Media Probing & Output Planning | 3/3 | Complete    | 2026-05-01 |
-| 3. Video Preservation & Fallback Control | 0/1 | Not started | - |
+| 3. Video Preservation & Fallback Control | 0/2 | Planned      | - |
 | 4. Core Audio Pipeline & SoX Cleanup | 0/1 | Not started | - |
 | 5. Final Media Output & Reporting | 0/1 | Not started | - |
 | 6. Guided & Repeatable Workflows | 0/1 | Not started | - |
