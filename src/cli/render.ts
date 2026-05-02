@@ -122,6 +122,13 @@ export function renderInspectPlanText(summary: InspectPlanSummary): string {
     ...summary.reasonCodes.map((code) => `- ${code}`),
   ];
 
+  if (summary.preservationNotes.length > 0) {
+    lines.push("", "Preservation notes");
+    for (const line of summary.preservationNotes) {
+      lines.push(`- ${line}`);
+    }
+  }
+
   return lines.join("\n");
 }
 

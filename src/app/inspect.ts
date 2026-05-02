@@ -87,6 +87,17 @@ export async function runInspectRequest(
     pathOutcome: pathResult,
   });
 
+  if (plan.modality === "fallback-required" && !request.allowVideoFallback) {
+    return {
+      kind: "failure",
+      reason: {
+        kind: "fallback-required",
+        message:
+          "Planned output requires video preservation fallback approval. Pass --allow-video-fallback to acknowledge.",
+      },
+    };
+  }
+
   return {
     kind: "success",
     inspect: {

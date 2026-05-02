@@ -16,6 +16,7 @@
     }
   ],
   "format": {
-    "duration": "60.120000"
+    "duration": "60.120000",
+    "format_name": "mov,mp4,m4a,3gp,3g2,mj2"
   }
 }

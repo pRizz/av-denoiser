@@ -8,6 +8,7 @@ export type CliRequest =
       readonly maybeOutputPath?: string;
       readonly force: boolean;
       readonly json: boolean;
+      readonly allowVideoFallback: boolean;
     };
 
 export type CliRequestResult =

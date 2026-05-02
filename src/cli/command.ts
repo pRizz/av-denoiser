@@ -33,10 +33,20 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
     .option("-o, --output <path>", "Explicit output path (optional)")
     .option("--force", "Allow overwriting an existing output file", false)
     .option("--json", "Print machine-readable JSON instead of text", false)
+    .option(
+      "--allow-video-fallback",
+      "Acknowledge fallback-required preservation plans instead of exiting non-zero.",
+      false,
+    )
     .action(
       (
         input: string,
-        options: { output?: string; force?: boolean; json?: boolean },
+        options: {
+          output?: string;
+          force?: boolean;
+          json?: boolean;
+          allowVideoFallback?: boolean;
+        },
       ) => {
         handleRequest({
           kind: "inspect",
@@ -44,6 +54,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
           maybeOutputPath: options.output,
           force: Boolean(options.force),
           json: Boolean(options.json),
+          allowVideoFallback: Boolean(options.allowVideoFallback),
         });
       },
     );

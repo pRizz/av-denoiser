@@ -24,9 +24,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Video Preservation and Remuxing
 
-- [ ] **VIDEO-01**: User can process video with a stream-copy-first policy that avoids video recompression whenever the container and codec combination allows it.
-- [ ] **VIDEO-02**: User can see explicit fallback reasons when preserving video streams without recompression is impossible.
-- [ ] **VIDEO-03**: User can approve or reject any fallback that would re-encode video or change the output container.
+- [x] **VIDEO-01**: User can process video with a stream-copy-first policy that avoids video recompression whenever the container and codec combination allows it.
+- [x] **VIDEO-02**: User can see explicit fallback reasons when preserving video streams without recompression is impossible.
+- [x] **VIDEO-03**: User can approve or reject any fallback that would re-encode video or change the output container.
 - [ ] **VIDEO-04**: User receives a final report confirming whether video streams were copied, audio was encoded, side streams were preserved or dropped, and which fallbacks were used.
 - [ ] **VIDEO-05**: User can rely on deliberate audio codec/container choices instead of hidden FFmpeg defaults for final outputs.
 
@@ -126,9 +126,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MEDIA-03 | Phase 2 | Pending |
 | MEDIA-04 | Phase 2 | Pending |
 | MEDIA-05 | Phase 2 | Pending |
-| VIDEO-01 | Phase 3 | Pending |
-| VIDEO-02 | Phase 3 | Pending |
-| VIDEO-03 | Phase 3 | Pending |
+| VIDEO-01 | Phase 3 | Complete |
+| VIDEO-02 | Phase 3 | Complete |
+| VIDEO-03 | Phase 3 | Complete |
 | VIDEO-04 | Phase 5 | Pending |
 | VIDEO-05 | Phase 2 | Pending |
 | PIPE-01 | Phase 4 | Pending |

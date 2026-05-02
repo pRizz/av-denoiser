@@ -41,6 +41,7 @@ test("parses inspect command into a typed request", () => {
     inputPath: "clip.m4a",
     force: true,
     json: true,
+    allowVideoFallback: false,
   });
 });
 

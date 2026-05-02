@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Bun CLI Foundation & Trust Model** - Users can install, run, diagnose, and verify the safe CLI shell. (completed 2026-05-01)
 - [x] **Phase 2: Media Probing & Output Planning** - Users can inspect input media facts and safe output decisions before processing.
-- [ ] **Phase 3: Video Preservation & Fallback Control** - Users can understand and control when video stream copy is possible or impossible.
+- [x] **Phase 3: Video Preservation & Fallback Control** - Users can understand and control when video stream copy is possible or impossible. (completed 2026-05-02)
 - [ ] **Phase 4: Core Audio Pipeline & SoX Cleanup** - Users can clean single audio files through transparent presets and sequential FFmpeg/SoX steps.
 - [ ] **Phase 5: Final Media Output & Reporting** - Users can receive cleaned audio/video outputs with verified FFmpeg remuxing and human-readable reports.
 - [ ] **Phase 6: Guided & Repeatable Workflows** - Users can choose guided prompts or equivalent flags for the same dry-run and execution behavior.
@@ -68,8 +68,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Narrow MP4+h264 feasibility rules, probe `format_name`, deterministic `fallback-required`
-- [ ] 03-02-PLAN.md — `preservationNotes` + `--allow-video-fallback` policy + inspect rendering
+- [x] 03-01-PLAN.md — Narrow MP4+h264 feasibility rules, probe `format_name`, deterministic `fallback-required`
+- [x] 03-02-PLAN.md — `preservationNotes` + `--allow-video-fallback` policy + inspect rendering
 
 ### Phase 4: Core Audio Pipeline & SoX Cleanup
 **Goal**: Users can clean single audio files through transparent recommended presets and sequential lossless-intermediate pipeline steps.
@@ -155,7 +155,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 |-------|----------------|--------|-----------|
 | 1. Bun CLI Foundation & Trust Model | 4/4 | Complete    | 2026-05-01 |
 | 2. Media Probing & Output Planning | 3/3 | Complete    | 2026-05-01 |
-| 3. Video Preservation & Fallback Control | 0/2 | Planned      | - |
+| 3. Video Preservation & Fallback Control | 2/2 | Complete    | 2026-05-02 |
 | 4. Core Audio Pipeline & SoX Cleanup | 0/1 | Not started | - |
 | 5. Final Media Output & Reporting | 0/1 | Not started | - |
 | 6. Guided & Repeatable Workflows | 0/1 | Not started | - |

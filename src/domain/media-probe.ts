@@ -20,6 +20,7 @@ const ffprobeStreamSchema = z
 const ffprobeFormatSchema = z
   .object({
     duration: z.string().optional(),
+    format_name: z.string().optional(),
   })
   .passthrough();
 

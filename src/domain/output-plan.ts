@@ -1,5 +1,6 @@
 import type { MediaProbe } from "./media-probe";
 import type { OutputPathSuccess } from "./output-path";
+import { evaluateStreamCopyFeasibility } from "./stream-copy-feasibility";
 
 export type PlannedAudioCodec = "aac" | "opus" | "pcm_s16le";
 export type PlannedContainer = "mp4" | "matroska" | "wav";
@@ -36,10 +37,13 @@ export type PlanMediaOutputInput = {
 };
 
 /**
- * Phase 2 stub: when both audio and video exist we label `video-copy-safe`.
- * Detailed fallback matrix (container/codec incompatibilities) is Phase 3.
+ * Computes output modality before any FFmpeg execution. Video + audio uses Phase 3
+ * stream-copy rules (narrow H.264 + MP4 whitelist); Phase 4+ may widen the matrix.
  */
 export function planMediaOutput(input: PlanMediaOutputInput): OutputPlan {
+  const plannedAudioCodec: PlannedAudioCodec = "aac";
+  const plannedContainer: PlannedContainer = "mp4";
+
   const audioStreams = input.probe.streams.filter(
     (stream) => stream.codec_type === "audio",
   );
@@ -59,22 +63,44 @@ export function planMediaOutput(input: PlanMediaOutputInput): OutputPlan {
 
   const selected = selectAudioStream(audioStreams);
 
-  const modality: Exclude<OutputModality, "unsupported"> =
-    videoStreams.length === 0 ? "audio-only" : "video-copy-safe";
+  if (videoStreams.length === 0) {
+    return {
+      modality: "audio-only",
+      reasonCodes: ["phase-2-stub-audio-only"],
+      resolvedOutputPath: input.pathOutcome.resolvedOutputPath,
+      resolvedInputPath: input.pathOutcome.resolvedInputPath,
+      selectedAudioStreamIndex: selected.index,
+      plannedAudioCodec,
+      plannedContainer,
+    };
+  }
 
-  const reasonCodes =
-    modality === "video-copy-safe"
-      ? ["phase-2-stub-video-copy-safe"]
-      : ["phase-2-stub-audio-only"];
+  const streamCopy = evaluateStreamCopyFeasibility({
+    probe: input.probe,
+    plannedContainer,
+    plannedAudioCodec,
+  });
+
+  if (streamCopy.kind === "fallback-required") {
+    return {
+      modality: "fallback-required",
+      reasonCodes: streamCopy.reasonCodes,
+      resolvedOutputPath: input.pathOutcome.resolvedOutputPath,
+      resolvedInputPath: input.pathOutcome.resolvedInputPath,
+      selectedAudioStreamIndex: selected.index,
+      plannedAudioCodec,
+      plannedContainer,
+    };
+  }
 
   return {
-    modality,
-    reasonCodes,
+    modality: "video-copy-safe",
+    reasonCodes: [...streamCopy.reasonCodes],
     resolvedOutputPath: input.pathOutcome.resolvedOutputPath,
     resolvedInputPath: input.pathOutcome.resolvedInputPath,
     selectedAudioStreamIndex: selected.index,
-    plannedAudioCodec: "aac",
-    plannedContainer: "mp4",
+    plannedAudioCodec,
+    plannedContainer,
   };
 }
 

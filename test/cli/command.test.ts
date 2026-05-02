@@ -9,6 +9,7 @@ test("parses inspect argv into typed inspect request", () => {
     inputPath: "clip.m4a",
     force: false,
     json: false,
+    allowVideoFallback: false,
   });
 });
 
@@ -28,6 +29,7 @@ test("parses inspect with --output --force and --json together", () => {
     maybeOutputPath: "out.mp4",
     force: true,
     json: true,
+    allowVideoFallback: false,
   });
 });
 
