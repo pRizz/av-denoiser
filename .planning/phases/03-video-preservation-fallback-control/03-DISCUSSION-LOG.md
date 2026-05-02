@@ -3,7 +3,7 @@
 > **Audit trail only.** Do not use as input to planning, research, or execution agents.
 > Decisions are captured in CONTEXT.md — this log preserves the alternatives considered.
 
-**Date:** 2026-05-01
+**Date:** 2026-05-02
 **Phase:** 3 — Video Preservation & Fallback Control
 **Mode:** Yolo
 **Areas discussed:** Stream-copy feasibility classification, Fallback approval & CLI policy, Reason-code taxonomy & user-visible explanations, Conservative defaults when proof is incomplete
@@ -19,7 +19,7 @@
 | Always fallback-required for video | Force user approval for any video job | |
 
 **User's choice:** Conservative proof-only copy-safe (recommended default)
-**Notes:** Yolo auto-selection — aligns with VIDEO-01 and replaces `phase-2-stub-video-copy-safe` once rules land.
+**Notes:** Yolo auto-selection (`[auto]`). Aligns with VIDEO-01 and replaces `phase-2-stub-video-copy-safe` once rules land.
 
 ---
 
@@ -27,12 +27,12 @@
 
 | Option | Description | Selected |
 |--------|-------------|----------|
-| Explicit flags + typed outcomes | Non-interactive policies (`allow` / `deny` / future `prompt`) with stable exit mapping | ✓ |
+| Explicit flags + typed outcomes | Non-interactive deny-by-default unless opt-in flag; stable exit/outcome mapping (`fallback-required`) | ✓ |
 | Interactive prompts in Phase 3 | Blocking CLI questions before any run | |
 | Silent FFmpeg attempts | Retry or infer policy from failures | |
 
 **User's choice:** Explicit flags + typed outcomes (recommended default)
-**Notes:** Interactive parity deferred to Phase 6 per roadmap layering.
+**Notes:** Phase 6 owns guided parity; reuse existing `ExitCode.fallbackRequired` family from planning outcomes.
 
 ---
 

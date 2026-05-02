@@ -1,13 +1,13 @@
 ---
 generated_by: gsd-discuss-phase
 lifecycle_mode: yolo
-phase_lifecycle_id: 03-2026-05-01T22-59-55
-generated_at: 2026-05-01T23:00:15.000Z
+phase_lifecycle_id: 03-2026-05-02T00-05-47
+generated_at: 2026-05-02T00:05:47.002Z
 ---
 
 # Phase 3: Video Preservation & Fallback Control - Context
 
-**Gathered:** 2026-05-01
+**Gathered:** 2026-05-02
 **Status:** Ready for planning
 **Mode:** Yolo
 
@@ -38,7 +38,7 @@ This phase **replaces** the Phase 2 stub that labels every video+audio input as 
 ### User approval / rejection of fallbacks (VIDEO-03)
 
 - **D-08:** Introduce an explicit **CLI policy** for non-interactive use (names are implementation details): *deny* fallbacks by default at execution boundaries OR require an explicit opt-in flag before any plan proceeds to spawn FFmpeg that transcodes video or switches containers away from the copy-safe path—**planners must record** whether the selected operation requires user-approved fallback.
-- **D-09:** Map denial to the existing **planning / trust outcome** surface from Phase 1 (stable exit family for “fallback required but not approved”) rather than ad hoc stderr strings.
+- **D-09:** Map denial to the existing **planning / trust outcome** surface from Phase 1 (stable exit family for “fallback required but not approved”; today `InspectCliOutcome`/`CommandOutcome` already includes **`fallback-required`** → `ExitCode.fallbackRequired` via `command-outcome.ts`) rather than ad hoc stderr strings—extend consistently when execute paths land.
 - **D-10:** Reserve interactive confirmation flows for Phase 6; Phase 3 ships **flags + typed outcomes** so automation behaves predictably.
 
 ### Claude's Discretion
@@ -66,7 +66,7 @@ _None — no matching pending todos for this phase._
 
 ### Prior phase contracts
 
-- `.planning/phases/02-media-probing-output-planning/02-CONTEXT.md` — `OutputPlan` modality union, reason codes, explicit audio/container fields, inspect summaries.
+- `.planning/phases/02-media-probing-output-planning/02-CONTEXT.md` — `OutputPlan` modality union, reason codes, explicit audio/container fields, inspect summaries; reaffirms **`fallback-required`** is typed but stub-populated until Phase 3 replaces `phase-2-stub-video-copy-safe`.
 - `.planning/phases/01-bun-cli-foundation-trust-model/01-CONTEXT.md` — argv-only execution, exit outcomes, functional core vs imperative shell.
 
 ### Research
@@ -87,6 +87,7 @@ _None — no matching pending todos for this phase._
 - `src/domain/output-plan.ts` — `OutputModality`, `OutputPlan`, and `planMediaOutput()` currently stub `video-copy-safe` for any video+audio input; Phase 3 replaces stub reason codes (`phase-2-stub-video-copy-safe`) with real classification and structured fallback explanations.
 - `src/domain/inspect-summary.ts` — renders plan summaries for `inspect`; extend alongside new modalities/reasons while keeping output readable for scripting.
 - `src/app/inspect.ts` — orchestrates probe → path resolution → `planMediaOutput`; future execute path should reuse the same planning core before spawning FFmpeg.
+- `src/domain/command-outcome.ts` — maps typed **`fallback-required`** to `ExitCode.fallbackRequired` for stable shell semantics when planning surfaces need user action or policy denial.
 
 ### Established Patterns
 
@@ -122,4 +123,4 @@ _None._
 
 ---
 *Phase: 03-video-preservation-fallback-control*
-*Context gathered: 2026-05-01*
+*Context gathered: 2026-05-02*
