@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Core Audio Pipeline & SoX Cleanup** - Users can clean single audio files through transparent presets and sequential FFmpeg/SoX steps. (completed 2026-05-02)
 - [x] **Phase 5: Final Media Output & Reporting** - Users can receive cleaned audio/video outputs with verified FFmpeg remuxing and human-readable reports. (completed 2026-05-01)
 - [x] **Phase 6: Guided & Repeatable Workflows** - Users can choose guided prompts or equivalent flags for the same dry-run and execution behavior. (completed 2026-05-02)
-- [ ] **Phase 7: Batch Processing & Manifests** - Users can process many files safely with per-file status, summaries, and failure isolation.
+- [x] **Phase 7: Batch Processing & Manifests** - Users can process many files safely with per-file status, summaries, and failure isolation. (completed 2026-05-01)
 - [ ] **Phase 8: Optional Heavy & Editor Integrations** - Users can opt into Demucs, Audacity, and Kdenlive/MLT paths when prerequisites are available.
 
 ## Phase Details
@@ -134,10 +134,12 @@ Plans:
   3. User can run batch processing without one failed file deleting progress or hiding failures for the remaining files.
   4. User can rely on collision-safe output naming for batch runs.
   5. User can inspect a batch manifest or summary that records effective presets, tool versions, planned commands, and fallback decisions.
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 07-01: TBD
+- [x] 07-01-PLAN.md — Batch manifest types, collision-safe output allocation (`BATCH-04`, `BATCH-05`).
+- [x] 07-02-PLAN.md — `batch` CLI, input expansion (`--input`, `--glob` + `--accept-glob-risk`, `--from-dir`), `CliRequest` (`BATCH-01`).
+- [x] 07-03-PLAN.md — `runBatchRequest`, concurrency / `--fail-fast`, manifest write, exit aggregation (`BATCH-02`, `BATCH-03`).
 
 ### Phase 8: Optional Heavy & Editor Integrations
 **Goal**: Users can opt into Demucs, Audacity, and Kdenlive/MLT cleanup paths only when prerequisites are available and clearly accepted.
@@ -165,9 +167,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 2. Media Probing & Output Planning | 3/3 | Complete    | 2026-05-01 |
 | 3. Video Preservation & Fallback Control | 2/2 | Complete    | 2026-05-02 |
 | 4. Core Audio Pipeline & SoX Cleanup | 4/4 | Complete    | 2026-05-02 |
-| 5. Final Media Output & Reporting | 0/4 | Not started | - |
-| 6. Guided & Repeatable Workflows | 0/1 | Not started | - |
-| 7. Batch Processing & Manifests | 0/1 | Not started | - |
+| 5. Final Media Output & Reporting | 4/4 | Complete    | 2026-05-01 |
+| 6. Guided & Repeatable Workflows | 3/3 | Complete    | 2026-05-02 |
+| 7. Batch Processing & Manifests | 3/3 | Complete    | 2026-05-01 |
 | 8. Optional Heavy & Editor Integrations | 0/1 | Not started | - |
 
 ## Requirement Coverage

@@ -147,5 +147,115 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
       },
     );
 
+  program
+    .command("batch")
+    .description(
+      "Run preset cleanup on multiple media files with per-file outcomes and a batch manifest",
+    )
+    .option(
+      "-i, --input <path>",
+      "Input media file (repeatable)",
+      collectPaths,
+      [] as string[],
+    )
+    .option(
+      "--glob <pattern>",
+      "Glob pattern resolved from cwd (requires --accept-glob-risk)",
+      collectPaths,
+      [] as string[],
+    )
+    .option("--from-dir <dir>", "Scan directory recursively for media files")
+    .option(
+      "--accept-glob-risk",
+      "Acknowledge that glob expansion may match many files",
+      false,
+    )
+    .option(
+      "--output-dir <dir>",
+      "Write outputs under this directory (basename-preserving)",
+    )
+    .option(
+      "--manifest <path>",
+      "Batch manifest JSON path (default: ./batch-manifest.json in cwd)",
+    )
+    .option("--concurrency <n>", "Parallel clean jobs", "1")
+    .option("--fail-fast", "Stop after the first failing file", false)
+    .option("--force", "Allow overwriting existing outputs", false)
+    .option("--dry-run", "Plan every file without invoking ffmpeg/sox", false)
+    .option("--json", "Machine-readable batch summary on stdout", false)
+    .option(
+      "--allow-video-fallback",
+      "Allow executing fallback-required preservation plans",
+      false,
+    )
+    .option(
+      "--preset <id>",
+      "Preset id (speech-light | speech-soft-sox)",
+      DEFAULT_CLEAN_PRESET_ID,
+    )
+    .option(
+      "--noise-strength <0..1>",
+      "Noise reduction strength for afftdn mapping",
+      parseNoiseStrength,
+      0.35,
+    )
+    .action(
+      (options: {
+        input?: string[];
+        glob?: string[];
+        fromDir?: string;
+        acceptGlobRisk?: boolean;
+        outputDir?: string;
+        manifest?: string;
+        concurrency?: string;
+        failFast?: boolean;
+        force?: boolean;
+        dryRun?: boolean;
+        json?: boolean;
+        allowVideoFallback?: boolean;
+        preset?: string;
+        noiseStrength?: number;
+      }) => {
+        const inputs = options.input ?? [];
+        const globs = options.glob ?? [];
+        const rawConcurrency = Number.parseInt(options.concurrency ?? "1", 10);
+
+        if (!Number.isFinite(rawConcurrency) || rawConcurrency < 1) {
+          throw new Error("concurrency must be an integer >= 1");
+        }
+
+        const rawPreset = options.preset ?? DEFAULT_CLEAN_PRESET_ID;
+        const presetId = parsePresetId(rawPreset);
+
+        if (presetId === null) {
+          throw new Error(
+            `Invalid --preset "${rawPreset}". Use speech-light or speech-soft-sox.`,
+          );
+        }
+
+        handleRequest({
+          kind: "batch",
+          inputPaths: inputs,
+          globs,
+          maybeFromDir: options.fromDir,
+          acceptGlobRisk: Boolean(options.acceptGlobRisk),
+          maybeOutputDir: options.outputDir,
+          maybeManifestPath: options.manifest,
+          concurrency: rawConcurrency,
+          failFast: Boolean(options.failFast),
+          force: Boolean(options.force),
+          dryRun: Boolean(options.dryRun),
+          json: Boolean(options.json),
+          allowVideoFallback: Boolean(options.allowVideoFallback),
+          presetId,
+          knobs: { noiseStrength: options.noiseStrength ?? 0.35 },
+        });
+      },
+    );
+
   return program;
+}
+
+function collectPaths(value: string, previous: string[]): string[] {
+  return [...previous, value];
 }

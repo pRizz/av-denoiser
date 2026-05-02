@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 
+import type { CliCommandOutcome } from "../app/run-command";
 import { runCliRequest } from "../app/run-command";
 import type { CliRequest } from "../domain/cli-request";
 import { mapOutcomeToExitCode } from "../domain/command-outcome";
@@ -57,7 +58,7 @@ export async function runCli(
     outcome,
     program.helpInformation(),
   );
-  const exitCode = mapOutcomeToExitCode(outcome);
+  const exitCode = resolveProcessExitCode(requestResult.request, outcome);
   const outputStream =
     exitCode === ExitCode.success ? process.stdout : process.stderr;
 
@@ -81,6 +82,21 @@ if (import.meta.main) {
 type CliRequestParseResult =
   | { readonly kind: "parsed"; readonly request: CliRequest }
   | { readonly kind: "parse-error"; readonly message: string };
+
+export function resolveProcessExitCode(
+  request: CliRequest,
+  outcome: CliCommandOutcome,
+): number {
+  if (
+    request.kind === "batch" &&
+    outcome.kind === "success" &&
+    outcome.batch !== undefined
+  ) {
+    return outcome.batch.worstExitCode;
+  }
+
+  return mapOutcomeToExitCode(outcome);
+}
 
 function safeParseCliRequest(
   rawArgs: readonly string[],

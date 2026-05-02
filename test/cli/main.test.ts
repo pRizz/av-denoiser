@@ -1,7 +1,31 @@
 import { expect, test } from "bun:test";
-
-import { parseCliRequest } from "../../src/cli/main";
+import type { CliCommandOutcome } from "../../src/app/run-command";
+import { parseCliRequest, resolveProcessExitCode } from "../../src/cli/main";
 import { renderDefaultGuidance } from "../../src/cli/render";
+import { BATCH_MANIFEST_SCHEMA_VERSION } from "../../src/domain/batch-manifest";
+import type { CliRequest } from "../../src/domain/cli-request";
+import { ExitCode } from "../../src/domain/exit-codes";
+
+test("resolveProcessExitCode uses batch worst exit code", () => {
+  const request = { kind: "batch" } as CliRequest;
+  const outcome = {
+    kind: "success",
+    batch: {
+      manifestPath: "/tmp/m.json",
+      worstExitCode: ExitCode.planningFailure,
+      document: {
+        schemaVersion: BATCH_MANIFEST_SCHEMA_VERSION,
+        generatedAt: "",
+        items: [],
+        maybeDoctorFacts: null,
+      },
+    },
+  } as CliCommandOutcome;
+
+  expect(resolveProcessExitCode(request, outcome)).toBe(
+    ExitCode.planningFailure,
+  );
+});
 
 test("parses doctor command into a typed request", () => {
   // Arrange

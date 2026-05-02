@@ -35,3 +35,14 @@ export function mapOutcomeToExitCode(outcome: CommandOutcome): ExitCodeValue {
       return ExitCode.fallbackRequired;
   }
 }
+
+/** Batch aggregate exit = numeric max of per-file codes (`ExitCode.success` = 0). */
+export function aggregateBatchExitCodes(
+  codes: readonly ExitCodeValue[],
+): ExitCodeValue {
+  if (codes.length === 0) {
+    return ExitCode.success;
+  }
+
+  return Math.max(...codes) as ExitCodeValue;
+}

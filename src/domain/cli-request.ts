@@ -23,6 +23,23 @@ export type CliRequest =
       readonly presetId: PresetId;
       readonly knobs: CleanPresetKnobs;
       readonly allowVideoFallback: boolean;
+    }
+  | {
+      readonly kind: "batch";
+      readonly inputPaths: readonly string[];
+      readonly globs: readonly string[];
+      readonly maybeFromDir?: string;
+      readonly acceptGlobRisk: boolean;
+      readonly maybeOutputDir?: string;
+      readonly maybeManifestPath?: string;
+      readonly concurrency: number;
+      readonly failFast: boolean;
+      readonly force: boolean;
+      readonly dryRun: boolean;
+      readonly json: boolean;
+      readonly presetId: PresetId;
+      readonly knobs: CleanPresetKnobs;
+      readonly allowVideoFallback: boolean;
     };
 
 export type CliRequestResult =

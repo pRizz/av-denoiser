@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 7 context gathered
-last_updated: "2026-05-02T01:09:21.814Z"
-last_activity: 2026-05-02 -- Phase 7 planning complete
+stopped_at: Phase 8 — Optional Heavy & Editor Integrations (next)
+last_updated: "2026-05-01T12:00:00.000Z"
+last_activity: 2026-05-01 — Phase 7 executed; batch command, manifest, verify green
 progress:
   total_phases: 8
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 23
-  completed_plans: 20
-  percent: 87
+  completed_plans: 23
+  percent: 88
 ---
 
 # Project State
@@ -21,22 +21,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-01)
 
 **Core value:** Users can pass an audio or video file through a guided denoise pipeline and get a cleaned output while avoiding video recompression whenever possible.
-**Current focus:** Phase 7 — Batch Processing & Manifests (next)
+**Current focus:** Phase 8 — Optional Heavy & Editor Integrations (next)
 
 ## Current Position
 
-Phase: 7
+Phase: 8
 Plan: Not started
-Status: Ready to execute
-Last activity: 2026-05-02 -- Phase 7 planning complete
+Status: Ready to plan or execute
+Last activity: 2026-05-01 — Phase 7 executed; `bun run verify` green
 
-Progress: [██████░░░░] 75% (6/8 phases complete)
+Progress: [███████░░░] 88% (7/8 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 20
+- Total plans completed: 23
 - Average duration: N/A
 - Total execution time: 0.0 hours
 
@@ -76,7 +76,7 @@ Recent decisions affecting current work:
 - [Phase 01]: Rendered doctor output from structured DoctorReport facts instead of overclaiming capability readiness.
 - [Phase 01]: Documented target/current Bun runtime information as informational for Phase 1 compatibility.
 - [Phase 5]: Post-run verification uses duration tolerance and optional video codec match when modality is video-copy-safe and copy is claimed.
-- [Phase 6]: Guided `av-denoiser guided` mirrors `clean` dry-run and execute with copy-paste argv replay; optional `reportProgress` drives spinner labels.
+- [Phase 7]: **`batch`** subcommand with **`--input`**, **`--glob`** (requires **`--accept-glob-risk`**), **`--from-dir`**, **`--output-dir`**, **`--fail-fast`**, **`--concurrency`**, manifest path override; **`runBatchRequest`** writes **`batch-manifest.json`**, aggregates worst exit code, uses **`p-limit`** for parallel runs.
 
 ### Pending Todos
 
@@ -90,6 +90,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-02T01:07:50.687Z
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/07-batch-processing-manifests/07-CONTEXT.md
+Last session: 2026-05-01
+Stopped at: Phase 8 — Optional Heavy & Editor Integrations (next)
+Resume file: .planning/ROADMAP.md (Phase 8 section)

@@ -68,6 +68,25 @@ test("parses clean --allow-video-fallback", () => {
   });
 });
 
+test("parses batch with two --input paths and dry-run", () => {
+  expect(
+    parseCliRequest([
+      "batch",
+      "--input",
+      "a.wav",
+      "--input",
+      "b.wav",
+      "--dry-run",
+    ]),
+  ).toMatchObject({
+    kind: "batch",
+    inputPaths: ["a.wav", "b.wav"],
+    dryRun: true,
+    concurrency: 1,
+    presetId: "speech-light",
+  });
+});
+
 test("parses inspect argv into typed inspect request", () => {
   expect(parseCliRequest(["inspect", "clip.m4a"])).toEqual({
     kind: "inspect",

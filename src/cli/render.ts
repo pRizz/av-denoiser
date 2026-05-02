@@ -1,3 +1,4 @@
+import type { BatchCliPayload } from "../app/batch";
 import type { CleanCliSuccess } from "../app/clean";
 import type { InspectCliSuccess } from "../app/inspect";
 import type { CliRequest } from "../domain/cli-request";
@@ -19,6 +20,7 @@ const DEFAULT_GUIDANCE_LINES = [
   'Run "av-denoiser doctor" to inspect local tool readiness.',
   'Run "av-denoiser inspect <path>" to probe media and preview planned outputs.',
   'Use "av-denoiser clean <path>" for preset FFmpeg/SoX cleanup when tools are ready.',
+  'Use "av-denoiser batch --input <path>..." for multi-file cleanup with a manifest.',
   'Use "av-denoiser clean <path>" after inspect for video inputs when stream-copy-safe or when you pass --allow-video-fallback for fallback plans.',
   'Run "av-denoiser guided" for a prompted clean workflow that prints equivalent CLI flags.',
 ];
@@ -43,6 +45,7 @@ export type RenderableOutcome = CommandOutcome & {
   readonly inspect?: InspectCliSuccess;
   readonly clean?: CleanCliSuccess;
   readonly guidedHumanSummary?: string;
+  readonly batch?: BatchCliPayload;
 };
 
 export function renderDefaultGuidance(): string {
@@ -92,6 +95,25 @@ export function renderDoctorReport(
       ...summary.warnings.map((warning) => `- ${warning}`),
     );
   }
+
+  return lines.join("\n");
+}
+
+export function renderBatchSummary(payload: BatchCliPayload): string {
+  const lines = [
+    "av-denoiser batch",
+    "",
+    `Manifest: ${payload.manifestPath}`,
+    `Worst exit code: ${payload.worstExitCode}`,
+    "",
+    "Files",
+    ...payload.document.items.map(
+      (row) =>
+        `- ${row.inputPath} → ${row.outcome} (${row.resolvedOutputPath || "n/a"})${
+          row.message.length > 0 ? `: ${row.message}` : ""
+        }`,
+    ),
+  ];
 
   return lines.join("\n");
 }
@@ -214,6 +236,24 @@ export function renderCommandOutcome(
     return appendFailureDetails("av-denoiser guided failed.", outcome);
   }
 
+  if (request.kind === "batch") {
+    if (outcome.kind === "success" && outcome.batch !== undefined) {
+      return request.json
+        ? `${JSON.stringify(
+            {
+              worstExitCode: outcome.batch.worstExitCode,
+              manifestPath: outcome.batch.manifestPath,
+              items: outcome.batch.document.items,
+            },
+            null,
+            2,
+          )}\n`
+        : renderBatchSummary(outcome.batch);
+    }
+
+    return appendFailureDetails("av-denoiser batch failed.", outcome);
+  }
+
   if (outcome.doctorReport !== undefined) {
     return appendFailureDetails(
       renderDoctorReport(outcome.doctorReport, runtimeInfo),
@@ -256,6 +296,13 @@ export function renderCliRequest(
         "av-denoiser clean <path>",
         "",
         "Runs preset FFmpeg/SoX cleanup on audio or supported video inputs (inspect first; use --allow-video-fallback when needed).",
+      ].join("\n");
+    case "batch":
+      return [
+        "av-denoiser batch [--input <path> ...] [--from-dir <dir>] [--glob <pattern> ...]",
+        "",
+        "Runs clean on many inputs; writes batch-manifest.json unless --manifest is set.",
+        "Globs require --accept-glob-risk. Default concurrency is 1; failures aggregate into the process exit code.",
       ].join("\n");
   }
 }

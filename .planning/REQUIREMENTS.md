@@ -60,11 +60,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Batch Processing
 
-- [ ] **BATCH-01**: User can pass multiple files or directory/glob-style input for batch cleanup.
-- [ ] **BATCH-02**: User receives per-file plans, statuses, warnings, outputs, and failure reasons in batch mode.
-- [ ] **BATCH-03**: User can run batch processing without one failed file deleting progress or hiding failures for the remaining files.
-- [ ] **BATCH-04**: User can rely on collision-safe output naming for batch runs.
-- [ ] **BATCH-05**: User can inspect a batch manifest or summary that records effective presets, tool versions, planned commands, and fallback decisions.
+- [x] **BATCH-01**: User can pass multiple files or directory/glob-style input for batch cleanup.
+- [x] **BATCH-02**: User receives per-file plans, statuses, warnings, outputs, and failure reasons in batch mode.
+- [x] **BATCH-03**: User can run batch processing without one failed file deleting progress or hiding failures for the remaining files.
+- [x] **BATCH-04**: User can rely on collision-safe output naming for batch runs.
+- [x] **BATCH-05**: User can inspect a batch manifest or summary that records effective presets, tool versions, planned commands, and fallback decisions.
 
 ### Verification and Trust
 
@@ -150,11 +150,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UX-03 | Phase 6 | Pending |
 | UX-04 | Phase 6 | Pending |
 | UX-05 | Phase 6 | Pending |
-| BATCH-01 | Phase 7 | Pending |
-| BATCH-02 | Phase 7 | Pending |
-| BATCH-03 | Phase 7 | Pending |
-| BATCH-04 | Phase 7 | Pending |
-| BATCH-05 | Phase 7 | Pending |
+| BATCH-01 | Phase 7 | Complete |
+| BATCH-02 | Phase 7 | Complete |
+| BATCH-03 | Phase 7 | Complete |
+| BATCH-04 | Phase 7 | Complete |
+| BATCH-05 | Phase 7 | Complete |
 | TRUST-01 | Phase 1 | Complete |
 | TRUST-02 | Phase 5 | Pending |
 | TRUST-03 | Phase 5 | Pending |
@@ -167,4 +167,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-05-01*
-*Last updated: 2026-05-01 after roadmap creation*
+*Last updated: 2026-05-01 after Phase 7 execution*

@@ -58,7 +58,7 @@ export function resolveOutputPath(
 
   const resolvedOutputPath =
     explicit === undefined
-      ? resolveDefaultOutputPath(resolvedInputPath)
+      ? defaultOutputPathBesideInput(resolvedInputPath)
       : canonicalPath(input.cwd, explicit);
 
   if (resolvedOutputPath === resolvedInputPath) {
@@ -83,7 +83,12 @@ export function resolveOutputPath(
   };
 }
 
-function resolveDefaultOutputPath(resolvedInputPath: string): string {
+/**
+ * Default cleaned output path beside the resolved input (`clip.m4a` → `clip.avdn.m4a`).
+ */
+export function defaultOutputPathBesideInput(
+  resolvedInputPath: string,
+): string {
   const dir = dirname(resolvedInputPath);
   const base = basename(resolvedInputPath);
   const ext = extname(base);
