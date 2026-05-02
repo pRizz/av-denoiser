@@ -193,7 +193,10 @@ Plans:
 **Depends on**: Phase 10
 **Gap closure**: v1.0-MILESTONE-AUDIT orphaned `MEDIA-02`, `VIDEO-04`, `TOOL-01`, `TRUST-02`, `TRUST-03`
 **Requirements**: MEDIA-02, VIDEO-04, TOOL-01, TRUST-02, TRUST-03
-**Plans**: Plans TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 11-01-PLAN.md — Retroactive **`05-VERIFICATION.md`** + SUMMARY `requirements-completed` + **`bun run verify`** (`MEDIA-02`, `VIDEO-04`, `TOOL-01`, `TRUST-02`, `TRUST-03`).
 
 ### Phase 12: Milestone Gap — Phase 8 verification
 **Goal**: Verification artifact plus stronger execution-path confidence for optional heavy integrations.
