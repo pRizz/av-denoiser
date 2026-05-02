@@ -157,7 +157,7 @@ Plans:
 - [ ] 08-01-PLAN.md — Demucs logical step, preset expansion, argv builder, TOOL-04 warnings (TOOL-03, TOOL-04).
 - [ ] 08-02-PLAN.md — Wire Demucs into `runCleanRequest` / CLI / batch summary parity (TOOL-03, TOOL-04).
 - [ ] 08-03-PLAN.md — Audacity pipe adapter, opt-in CLI, diagnostics (TOOL-05, TOOL-06).
-- [ ] 08-04-PLAN.md — Doctor ladspa/melt probes, docs for TOOL-07 / TOOL-08.
+- [ ] 08-04-PLAN.md — Demucs doctor (D-16), ladspa/melt probes, **runnable FFmpeg LADSPA step** (TOOL-07), docs TOOL-08 (`clean.ts` after 08-03).
 
 ## Progress
 
