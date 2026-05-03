@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 14: Milestone Gap — Guided optional-tool parity & Phase 6/7 verification** — Extend guided selections/prompts and argv equivalence for Demucs, Audacity, and LADSPA opt-in parity with `clean`/`batch`; author `06-VERIFICATION.md` and `07-VERIFICATION.md` (`CLI-04`, `UX-01`–`UX-05`, integration guided→heavy tools). (completed 2026-05-02)
 - [x] **Phase 15: Milestone Gap — Requirements traceability sync** — Reconcile `.planning/REQUIREMENTS.md` checklist and traceability table with shipped v1 (`bun run verify`) and ROADMAP Phases **1–14**; fix stale `[ ]`/“Pending” rows per [.planning/v1.0-MILESTONE-AUDIT.md](./v1.0-MILESTONE-AUDIT.md) tech debt (**docs-governance**). (completed 2026-05-03)
 - [x] **Phase 16: Milestone Gap — TOOL-07 semantics & verification** — Resolve re-audit `gaps.integration`: align **TOOL-07** wording and `08-VERIFICATION.md` with either diagnostics-only **`melt`** posture or an explicit minimal opt-in runnable path (**must** reconcile requirement text, verification evidence, docs). (completed 2026-05-03)
-- [ ] **Phase 17: Milestone Gap — Verification pointer stubs** — Add lightweight `*-VERIFICATION.md` (or `VERIFICATION-Pointers.md`) under gap-phase dirs **09–14** linking to authoritative `03`–`08` verification artifacts (**planning-layout** tech debt from audit).
+- [x] **Phase 17: Milestone Gap — Verification pointer stubs** — Add lightweight `*-VERIFICATION.md` (or `VERIFICATION-Pointers.md`) under gap-phase dirs **09–14** linking to authoritative `03`–`08` verification artifacts (**planning-layout** tech debt from audit). (completed 2026-05-03)
 
 ## Phase Details
 
@@ -257,10 +257,10 @@ Plans:
 **Depends on**: Phase 16 *(optional — can parallel with **16** if file-only stubs; sequencing with **15** avoids churn)*
 **Gap closure**: v1.0-MILESTONE-AUDIT **planning-layout** tech debt
 **Requirements**: *(none — planning ergonomics only)*
-**Plans**: _(TBD via `/gsd-plan-phase 17`)_
+**Plans**: 1 plan
 
 Plans:
-- [ ] 17-01-PLAN.md — Add stub `*-VERIFICATION.md` (or index markdown) linking to **`03`**–`**08`** verification sources per gap-phase intent.
+- [x] 17-01-PLAN.md — Add stub `*-VERIFICATION.md` (or index markdown) linking to **`03`**–`**08`** verification sources per gap-phase intent.
 
 ## Progress
 
@@ -285,7 +285,7 @@ Phases execute in numeric order: 1 … 17. Second-pass gap work **15–17** clos
 | 14. Milestone Gap — Guided optional-tool parity & Phase 6/7 verification | 2/2 | Complete    | 2026-05-02 |
 | 15. Milestone Gap — Requirements traceability sync | 1/1 | Complete    | 2026-05-03 |
 | 16. Milestone Gap — TOOL-07 semantics & verification | 1/1 | Complete   | 2026-05-03 |
-| 17. Milestone Gap — Verification pointer stubs | 0/1 | Not started | — |
+| 17. Milestone Gap — Verification pointer stubs | 1/1 | Complete   | 2026-05-03 |
 
 ## Requirement Coverage
 
