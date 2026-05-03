@@ -57,6 +57,19 @@ export function planMediaOutput(input: PlanMediaOutputInput): OutputPlan {
     };
   }
 
+  const hasIdentifiableAudioCodec = audioStreams.some(
+    (stream) => (stream.codec_name?.trim() ?? "").length > 0,
+  );
+
+  if (!hasIdentifiableAudioCodec) {
+    return {
+      modality: "unsupported",
+      reasonCodes: ["no-audio-codec-metadata"],
+      resolvedOutputPath: input.pathOutcome.resolvedOutputPath,
+      resolvedInputPath: input.pathOutcome.resolvedInputPath,
+    };
+  }
+
   const videoStreams = input.probe.streams.filter(
     (stream) => stream.codec_type === "video",
   );
@@ -120,6 +133,12 @@ function streamChannelCount(stream: MediaProbe["streams"][number]): number {
   return Number.isNaN(parsed) ? 0 : parsed;
 }
 
+function streamHasIdentifiableAudioCodec(
+  stream: MediaProbe["streams"][number],
+): boolean {
+  return (stream.codec_name?.trim() ?? "").length > 0;
+}
+
 function selectAudioStream(
   audioStreams: MediaProbe["streams"],
 ): MediaProbe["streams"][number] {
@@ -129,6 +148,13 @@ function selectAudioStream(
 
     if (aDefault !== bDefault) {
       return aDefault - bDefault;
+    }
+
+    const aCodec = streamHasIdentifiableAudioCodec(a) ? 0 : 1;
+    const bCodec = streamHasIdentifiableAudioCodec(b) ? 0 : 1;
+
+    if (aCodec !== bCodec) {
+      return aCodec - bCodec;
     }
 
     if (a.index !== b.index) {

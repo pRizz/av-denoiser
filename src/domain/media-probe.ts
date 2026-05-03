@@ -10,7 +10,7 @@ const ffprobeStreamSchema = z
   .object({
     index: z.number(),
     codec_type: z.string(),
-    codec_name: z.string(),
+    codec_name: z.string().optional(),
     disposition: dispositionSchema.optional(),
     channels: z.union([z.number(), z.string()]).optional(),
     sample_rate: z.string().optional(),

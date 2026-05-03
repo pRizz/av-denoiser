@@ -58,7 +58,15 @@ export function evaluateStreamCopyFeasibility(
     throw new Error("evaluateStreamCopyFeasibility requires one video stream");
   }
 
-  const codecNormalized = firstVideo.codec_name.trim().toLowerCase();
+  const rawVideoCodec = firstVideo.codec_name?.trim() ?? "";
+  if (rawVideoCodec.length === 0) {
+    return {
+      kind: "fallback-required",
+      reasonCodes: ["video-fallback-missing-video-codec-name"],
+    };
+  }
+
+  const codecNormalized = rawVideoCodec.toLowerCase();
   if (codecNormalized !== "h264") {
     return {
       kind: "fallback-required",

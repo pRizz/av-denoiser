@@ -136,11 +136,27 @@ export function verifyCleanOutput(
       };
     }
 
-    if (inVideo.codec_name !== outVideo.codec_name) {
+    const inCodec = inVideo.codec_name?.trim() ?? "";
+    const outCodec = outVideo.codec_name?.trim() ?? "";
+
+    if (inCodec.length === 0 || outCodec.length === 0) {
       return {
         kind: "failure",
         reason: "video-copy-mismatch",
-        detail: `video-copy-mismatch: input video ${inVideo.codec_name} vs output ${outVideo.codec_name}`,
+        detail:
+          inCodec.length === 0 && outCodec.length === 0
+            ? "video-copy-mismatch: input and output video missing codec_name in probe"
+            : inCodec.length === 0
+              ? "video-copy-mismatch: input video missing codec_name in probe"
+              : "video-copy-mismatch: output video missing codec_name in probe",
+      };
+    }
+
+    if (inCodec !== outCodec) {
+      return {
+        kind: "failure",
+        reason: "video-copy-mismatch",
+        detail: `video-copy-mismatch: input video ${inCodec} vs output ${outCodec}`,
       };
     }
   }

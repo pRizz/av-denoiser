@@ -112,6 +112,33 @@ describe("verifyCleanOutput", () => {
     }
   });
 
+  test("input video missing codec_name in probe => video-copy-mismatch", () => {
+    const input: MediaProbe = {
+      streams: [
+        { index: 0, codec_type: "video" },
+        { index: 1, codec_type: "audio", codec_name: "aac" },
+      ],
+      format: { duration: "10.0" },
+    };
+    const output = probeVideoAudio("10.0", "h264");
+
+    const result = verifyCleanOutput({
+      outputPath: "/out.mp4",
+      outputExists: existsTrue,
+      outputFileSize: sizeNonEmpty,
+      inputProbe: input,
+      outputProbe: output,
+      plannedModality: "video-copy-safe",
+      claimedVideoCopied: true,
+    });
+
+    expect(result.kind).toBe("failure");
+    if (result.kind === "failure") {
+      expect(result.reason).toBe("video-copy-mismatch");
+      expect(result.detail).toContain("missing codec_name");
+    }
+  });
+
   test("zero-byte file => empty-output", () => {
     const input = probeVideoAudio("10.0", "h264");
     const output = probeVideoAudio("10.0", "h264");

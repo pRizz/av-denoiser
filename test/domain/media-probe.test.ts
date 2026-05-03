@@ -72,3 +72,25 @@ test("parseFfprobeJson rejects object missing streams array", () => {
 
   expect(result.error.kind).toBe("schema-mismatch");
 });
+
+test("parseFfprobeJson accepts streams without codec_name (data and some audio)", async () => {
+  const raw = await Bun.file(
+    `${import.meta.dir}/../fixtures/ffprobe/mov-extra-streams-no-codec-name.json`,
+  ).text();
+
+  const result = parseFfprobeJson(raw);
+
+  expect(result.ok).toBe(true);
+  if (!result.ok) {
+    return;
+  }
+
+  expect(result.value.streams).toHaveLength(5);
+  expect(result.value.streams[0]?.codec_name).toBe("hevc");
+  expect(result.value.streams[1]?.codec_name).toBe("aac");
+  expect(result.value.streams[2]?.codec_type).toBe("audio");
+  expect(result.value.streams[2]?.codec_name).toBeUndefined();
+  expect(result.value.streams[3]?.codec_type).toBe("data");
+  expect(result.value.streams[3]?.codec_name).toBeUndefined();
+  expect(result.value.format?.format_name).toContain("mov");
+});

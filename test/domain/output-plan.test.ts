@@ -238,3 +238,123 @@ test("planMediaOutput prefers lower-index default stream over higher channel cou
 
   expect(plan.selectedAudioStreamIndex).toBe(0);
 });
+
+test("planMediaOutput fallback-required for hevc plus aac and extra audio without codec_name", () => {
+  const probe: MediaProbe = {
+    streams: [
+      {
+        index: 0,
+        codec_name: "hevc",
+        codec_type: "video",
+        disposition: { default: 1 },
+      },
+      {
+        index: 1,
+        codec_name: "aac",
+        codec_type: "audio",
+        channels: 2,
+        disposition: { default: 1 },
+      },
+      {
+        index: 2,
+        codec_type: "audio",
+        channels: 4,
+        disposition: { default: 0 },
+      },
+      {
+        index: 3,
+        codec_type: "data",
+        disposition: { default: 1 },
+      },
+    ],
+    format: { format_name: "mov,mp4,m4a,3gp,3g2,mj2" },
+  };
+
+  const plan = planMediaOutput({
+    probe,
+    pathOutcome: pathOk("/in.mov", "/out.mp4"),
+  });
+
+  expect(plan.modality).toBe("fallback-required");
+  if (plan.modality === "unsupported") {
+    return;
+  }
+
+  expect(plan.reasonCodes).toContain("video-fallback-non-h264-video");
+  expect(plan.selectedAudioStreamIndex).toBe(1);
+});
+
+test("planMediaOutput fallback-required when video stream lacks codec_name", () => {
+  const probe: MediaProbe = {
+    streams: [
+      { index: 0, codec_type: "video", disposition: { default: 1 } },
+      {
+        index: 1,
+        codec_name: "aac",
+        codec_type: "audio",
+        channels: 2,
+      },
+    ],
+    format: { format_name: "mov,mp4,m4a,3gp,3g2,mj2" },
+  };
+
+  const plan = planMediaOutput({
+    probe,
+    pathOutcome: pathOk("/in.mov", "/out.mp4"),
+  });
+
+  expect(plan.modality).toBe("fallback-required");
+  if (plan.modality === "unsupported") {
+    return;
+  }
+
+  expect(plan.reasonCodes).toContain("video-fallback-missing-video-codec-name");
+  expect(plan.selectedAudioStreamIndex).toBe(1);
+});
+
+test("planMediaOutput prefers audio stream with codec_name when neither is default", () => {
+  const probe: MediaProbe = {
+    streams: [
+      {
+        index: 0,
+        codec_type: "audio",
+        channels: 6,
+      },
+      {
+        index: 1,
+        codec_name: "aac",
+        codec_type: "audio",
+        channels: 2,
+      },
+    ],
+  };
+
+  const plan = planMediaOutput({
+    probe,
+    pathOutcome: pathOk("/in.mkv", "/out.mkv"),
+  });
+
+  expect(plan.modality).toBe("audio-only");
+  if (plan.modality === "unsupported") {
+    return;
+  }
+
+  expect(plan.selectedAudioStreamIndex).toBe(1);
+});
+
+test("planMediaOutput unsupported when every audio stream lacks codec_name", () => {
+  const probe: MediaProbe = {
+    streams: [
+      { index: 0, codec_type: "audio", channels: 2 },
+      { index: 1, codec_type: "audio", channels: 2 },
+    ],
+  };
+
+  const plan = planMediaOutput({
+    probe,
+    pathOutcome: pathOk("/in.mov", "/out.m4a"),
+  });
+
+  expect(plan.modality).toBe("unsupported");
+  expect(plan.reasonCodes).toContain("no-audio-codec-metadata");
+});
