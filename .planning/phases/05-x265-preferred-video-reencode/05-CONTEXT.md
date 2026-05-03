@@ -34,7 +34,7 @@ When **`clean`** must **re-encode video** on the **`fallback-required`** path wi
 
 - **D-03:** Use **`libx265`** with **`-pix_fmt yuv420p`** (unchanged pixel constraint).
 - **D-04:** Use **`-crf 28`** as a practical **visually similar tier** to the existing **`libx264 -crf 23`** default; PLAN may adjust after spot-check encodes if tests show systematic quality/size issues.
-- **D-05:** Use **`-preset medium`** as the default **speed/quality balance** (slower/heavier than **`x264 -preset fast`** — document for operators).
+- **D-05:** Use **`-preset slow`** as the default **quality-first** choice: noticeably more CPU time than **`medium`**, but **better compression efficiency at the same CRF** (fits “denoise once, keep the file” workflows). Document **longer fallback encodes** for operators vs **`x264 -preset fast`**.
 - **D-06:** For **MP4** outputs, add **`-tag:v hvc1`** on the video stream for **broad player/MOV-brand compatibility** with HEVC-in-MP4; placement consistent with FFmpeg best practice near other **`-c:v`**/stream options.
 - **D-07:** Do **not** introduce raw user-tunable x265 filtergraphs; extra x265-only knobs (**`--fallback-video-preset`**, etc.) stay **out of scope** unless REQUIREMENTS add an ID.
 
@@ -50,7 +50,7 @@ When **`clean`** must **re-encode video** on the **`fallback-required`** path wi
 
 ### Verification & tests
 
-- **D-12:** Update **`test/domain/video-clean-argv.test.ts`** (and related) to assert **`libx265`**, **`-crf 28`**, **`hvc1`** (or argv order-safe checks), and **absence** of **`libx264`** on the fallback branch.
+- **D-12:** Update **`test/domain/video-clean-argv.test.ts`** (and related) to assert **`libx265`**, **`-crf 28`**, **`-preset slow`**, **`hvc1`** (or argv order-safe checks), and **absence** of **`libx264`** on the fallback branch.
 - **D-13:** Update **`test/app/clean.test.ts`** fallback execute test title + expectations from **x264** → **x265**.
 - **D-14:** Extend **`verifyCleanOutput`** / canonical codec coverage per roadmap: **fixture or synthetic probe** proving **x265-encoded** outputs match **HEVC** canonical bucket (**`h265` / `hevc`** aliases per **Phase 04** verifier rules).
 
@@ -60,7 +60,7 @@ When **`clean`** must **re-encode video** on the **`fallback-required`** path wi
 
 ### Claude's Discretion
 
-- Exact **`-preset`** if **`medium`** proves too slow in CI/dev feedback (**`fast`** or **`slow`** tuning).
+- **`slower`** / **`veryslow`** vs **`slow`** if benchmarks show **`slow`** is still not quality-competitive enough; **`medium`** only if a future requirement adds an explicit **speed-first** escape hatch.
 - Whether a one-line **`doctor`** hint (“fallback uses HEVC — slower than AVC”) ships in **Phase 05** vs a follow-up micro-phase.
 - Minimal **integration** encode sample (keep **deterministic** — prefer **mocked argv** + **targeted verify** over heavy binary round-trips unless PLAN finds a gap).
 

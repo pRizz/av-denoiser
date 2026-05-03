@@ -28,11 +28,11 @@
 
 | Option | Description | Selected |
 |--------|-------------|----------|
-| A | **`-crf 28`**, **`-preset medium`**, **`-tag:v hvc1`** for MP4, **`yuv420p`** | ✓ |
+| A | **`-crf 28`**, **`-preset slow`** (quality-first), **`-tag:v hvc1`** for MP4, **`yuv420p`** | ✓ |
 | B | Preserve **`-crf 23`** literal (parity number; may overshoot quality vs x264 23) | |
-| C | Match x264 speed with **`-preset fast`** + tune CRF separately | |
+| C | Match x264 speed with **`-preset fast`** or **`medium`** + tune CRF separately | |
 
-**User's choice:** [yolo recommended] **Option A** — aligns with common **x265 vs x264 CRF** guidance; **preset medium** as default balance; **`hvc1`** per roadmap.
+**User's choice:** [yolo recommended] **Option A** — **`-preset slow`** leans toward **better efficiency at the same CRF** (higher quality / smaller files vs **`medium`**) at the cost of longer encodes; **`hvc1`** per roadmap.
 
 **Notes:** Roadmap explicitly mentions **`hvc1`** / **`yuv420p`**.
 
