@@ -3,6 +3,7 @@ import { expect, test } from "bun:test";
 import {
   buildPreservationNotesFromPlan,
   MAX_PRESERVATION_NOTES,
+  outputPlanToInspectSummary,
 } from "../../src/domain/inspect-summary";
 import type { OutputPlan } from "../../src/domain/output-plan";
 
@@ -55,6 +56,25 @@ test("buildPreservationNotesFromPlan emits WebM pairing phrasing for VP9 copy-sa
   const notes = buildPreservationNotesFromPlan(plan);
   expect(notes.some((n) => n.toLowerCase().includes("webm"))).toBe(true);
   expect(notes.some((n) => n.includes("Opus"))).toBe(true);
+  expect(notes.some((n) => /hdr|transfer|metadata|side/i.test(n))).toBe(true);
+});
+
+test("buildPreservationNotesFromPlan emits Matroska Theora caveat with HDR or side-metadata phrasing", () => {
+  const plan: OutputPlan = {
+    modality: "video-copy-safe",
+    reasonCodes: ["video-copy-theora-matroska-v1"],
+    resolvedInputPath: "/in.ogv",
+    resolvedOutputPath: "/out.avdn.mkv",
+    selectedAudioStreamIndex: 1,
+    plannedAudioCodec: "aac",
+    plannedContainer: "matroska",
+  };
+
+  const notes = buildPreservationNotesFromPlan(plan);
+  expect(notes.some((n) => /theora|stream-copy/i.test(n))).toBe(true);
+  expect(
+    notes.some((n) => /hdr|metadata|color|player|best-effort|side/i.test(n)),
+  ).toBe(true);
 });
 
 test("buildPreservationNotesFromPlan emits audio-only phrasing", () => {
@@ -82,4 +102,35 @@ test("buildPreservationNotesFromPlan marks unsupported probes", () => {
 
   const notes = buildPreservationNotesFromPlan(plan);
   expect(notes.some((n) => n.toLowerCase().includes("unsupported"))).toBe(true);
+});
+
+function mp4WhitelistPlan(code: string): OutputPlan {
+  return {
+    modality: "video-copy-safe",
+    reasonCodes: [code],
+    resolvedInputPath: "/in.mp4",
+    resolvedOutputPath: "/out.avdn.mp4",
+    selectedAudioStreamIndex: 1,
+    plannedAudioCodec: "aac",
+    plannedContainer: "mp4",
+  };
+}
+
+test("outputPlanToInspectSummary MP4 whitelist reason codes are frozen literals", () => {
+  const trios = [
+    "video-copy-h264-mp4-v1",
+    "video-copy-hevc-mp4-v1",
+    "video-copy-av1-mp4-v1",
+  ] as const;
+
+  for (const code of trios) {
+    const summary = outputPlanToInspectSummary(mp4WhitelistPlan(code));
+    expect(summary.plannedContainer).toBe("mp4");
+    expect(summary.reasonCodes.length).toBe(1);
+    expect(summary.reasonCodes[0]).toBe(code);
+    expect(
+      summary.preservationNotes.some((n) => n.includes("Stream-copy")),
+    ).toBe(true);
+    expect(summary.preservationNotes.length).toBeGreaterThanOrEqual(2);
+  }
 });

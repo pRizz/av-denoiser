@@ -47,6 +47,8 @@ import {
 import {
   implicitDefaultOutputExtWithDot,
   type OutputPlan,
+  type PlannedAudioCodec,
+  type PlannedContainer,
   planMediaOutput,
   planMediaOutputPrelude,
 } from "../domain/output-plan";
@@ -87,6 +89,9 @@ export type CleanPlanSummary = {
   readonly inputPath: string;
   readonly outputPath: string;
   readonly modality: string;
+  readonly plannedContainer: PlannedContainer | null;
+  readonly plannedAudioCodec: PlannedAudioCodec | null;
+  readonly reasonCodes: readonly string[];
   readonly pipelineWarnings: readonly PipelineWarning[];
   readonly steps: readonly CleanStepSummary[];
 };
@@ -856,6 +861,9 @@ export async function runCleanRequest(
     inputPath: request.inputPath,
     outputPath: executablePlan.resolvedOutputPath,
     modality: executablePlan.modality,
+    plannedContainer: executablePlan.plannedContainer,
+    plannedAudioCodec: executablePlan.plannedAudioCodec,
+    reasonCodes: executablePlan.reasonCodes,
     pipelineWarnings,
     steps: stepSummaries,
   };

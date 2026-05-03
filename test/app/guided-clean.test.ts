@@ -48,6 +48,9 @@ describe("runGuidedCleanRequest", () => {
               inputPath: input.inputPath,
               outputPath: "/tmp/out.wav",
               modality: "audio-only",
+              plannedContainer: "mp4",
+              plannedAudioCodec: "aac",
+              reasonCodes: [],
               pipelineWarnings: [],
               steps: [
                 { tool: "ffmpeg", displayCommand: "ffmpeg -version (stub)" },

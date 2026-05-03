@@ -168,6 +168,104 @@ describe("verifyCleanOutput", () => {
     }
   });
 
+  test("vp09 vs vp9 probe codec_name => ok for video-copy-safe verify", () => {
+    const input: MediaProbe = {
+      streams: [
+        { index: 0, codec_type: "video", codec_name: "vp09" },
+        { index: 1, codec_type: "audio", codec_name: "opus" },
+      ],
+      format: { duration: "10.0" },
+    };
+    const output: MediaProbe = {
+      streams: [
+        { index: 0, codec_type: "video", codec_name: "vp9" },
+        { index: 1, codec_type: "audio", codec_name: "opus" },
+      ],
+      format: { duration: "10.0" },
+    };
+
+    const result = verifyCleanOutput({
+      outputPath: "/out.webm",
+      outputExists: existsTrue,
+      outputFileSize: sizeNonEmpty,
+      inputProbe: input,
+      outputProbe: output,
+      plannedModality: "video-copy-safe",
+      claimedVideoCopied: true,
+    });
+
+    expect(result.kind).toBe("ok");
+  });
+
+  test("av01 vs av1 probe codec_name => ok for video-copy-safe verify", () => {
+    const input: MediaProbe = {
+      streams: [
+        { index: 0, codec_type: "video", codec_name: "av01" },
+        { index: 1, codec_type: "audio", codec_name: "aac" },
+      ],
+      format: { duration: "10.0" },
+    };
+    const output: MediaProbe = {
+      streams: [
+        { index: 0, codec_type: "video", codec_name: "av1" },
+        { index: 1, codec_type: "audio", codec_name: "aac" },
+      ],
+      format: { duration: "10.0" },
+    };
+
+    const result = verifyCleanOutput({
+      outputPath: "/out.mp4",
+      outputExists: existsTrue,
+      outputFileSize: sizeNonEmpty,
+      inputProbe: input,
+      outputProbe: output,
+      plannedModality: "video-copy-safe",
+      claimedVideoCopied: true,
+    });
+
+    expect(result.kind).toBe("ok");
+  });
+
+  test("vp09 vs h264 => video-copy-mismatch", () => {
+    const input = probeVideoAudio("10.0", "vp09");
+    const output = probeVideoAudio("10.0", "h264");
+
+    const result = verifyCleanOutput({
+      outputPath: "/out.mp4",
+      outputExists: existsTrue,
+      outputFileSize: sizeNonEmpty,
+      inputProbe: input,
+      outputProbe: output,
+      plannedModality: "video-copy-safe",
+      claimedVideoCopied: true,
+    });
+
+    expect(result.kind).toBe("failure");
+    if (result.kind === "failure") {
+      expect(result.reason).toBe("video-copy-mismatch");
+    }
+  });
+
+  test("theora vs vp9 => video-copy-mismatch", () => {
+    const input = probeVideoAudio("10.0", "theora");
+    const output = probeVideoAudio("10.0", "vp9");
+
+    const result = verifyCleanOutput({
+      outputPath: "/out.webm",
+      outputExists: existsTrue,
+      outputFileSize: sizeNonEmpty,
+      inputProbe: input,
+      outputProbe: output,
+      plannedModality: "video-copy-safe",
+      claimedVideoCopied: true,
+    });
+
+    expect(result.kind).toBe("failure");
+    if (result.kind === "failure") {
+      expect(result.reason).toBe("video-copy-mismatch");
+    }
+  });
+
   test("zero-byte file => empty-output", () => {
     const input = probeVideoAudio("10.0", "h264");
     const output = probeVideoAudio("10.0", "h264");

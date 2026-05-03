@@ -47,6 +47,24 @@ export function canonicalMp4CopyVideoCodec(codecName: string): string {
 }
 
 /**
+ * Narrow alias table for verifying post-remux video stream-copy probes (`ffprobe`).
+ * See `canonicalVideoCodecForMatrix` for feasibility routing; aliases here are verifier-only.
+ */
+export function canonicalVideoCodecForVerify(codecName: string): string {
+  const n = codecName.trim().toLowerCase();
+
+  if (n === "vp09") {
+    return "vp9";
+  }
+
+  if (n === "av01") {
+    return "av1";
+  }
+
+  return canonicalVideoCodecForMatrix(n);
+}
+
+/**
  * Canonical codec bucket for feasibility matrix branching (aliases shared with MP4 rows).
  */
 export function canonicalVideoCodecForMatrix(codecName: string): string {

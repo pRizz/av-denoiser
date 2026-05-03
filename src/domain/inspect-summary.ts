@@ -36,6 +36,8 @@ export function buildPreservationNotesFromPlan(
         "Output planning is audio-only; video stream-copy rules do not apply for this probe.",
       );
       break;
+    // Preserve order when trimming to MAX_PRESERVATION_NOTES: container copy line,
+    // HDR/side-data caveat (where applicable), FFmpeg execution reminder.
     case "video-copy-safe": {
       if (plan.plannedContainer === "mp4") {
         notes.push(
@@ -48,9 +50,15 @@ export function buildPreservationNotesFromPlan(
         notes.push(
           "Stream-copy path: VP9 with WebM container pairing; planned output is WebM + Opus. FFmpeg must still validate remux at execution.",
         );
+        notes.push(
+          "VP9 HDR, transfer characteristics, or side metadata are best-effort: stream copy preserves compressed video bytes; container/player color behavior may still differ from the source.",
+        );
       } else if (plan.plannedContainer === "matroska") {
         notes.push(
           "Stream-copy path: Theora with Matroska container pairing; planned output is MKV + AAC. FFmpeg must still validate remux at execution.",
+        );
+        notes.push(
+          "Theora color metadata or side data is best-effort: stream copy preserves compressed video bytes; container/player behavior may still differ from the source.",
         );
       } else {
         notes.push(

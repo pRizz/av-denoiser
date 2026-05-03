@@ -202,6 +202,9 @@ test("runCleanRequest video-copy-safe dry-run succeeds with extract and remux st
   }
 
   expect(outcome.clean.summary.modality).toBe("video-copy-safe");
+  expect(outcome.clean.summary.plannedContainer).toBe("mp4");
+  expect(outcome.clean.summary.plannedAudioCodec).toBe("aac");
+  expect(outcome.clean.summary.reasonCodes).toContain("video-copy-h264-mp4-v1");
   expect(outcome.clean.summary.steps.length).toBe(4);
   const joined = outcome.clean.summary.steps
     .map((s) => s.displayCommand)

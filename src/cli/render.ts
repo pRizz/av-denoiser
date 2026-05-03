@@ -150,12 +150,27 @@ export function renderCleanPlanText(success: CleanCliSuccess): string {
     "Modality",
     `- ${summary.modality}`,
     "",
+  ];
+
+  if (summary.plannedContainer !== null) {
+    lines.push("Planned container", `- ${summary.plannedContainer}`, "");
+  }
+
+  if (summary.plannedAudioCodec !== null) {
+    lines.push("Planned audio codec", `- ${summary.plannedAudioCodec}`, "");
+  }
+
+  if (summary.reasonCodes.length > 0) {
+    lines.push("Reason codes", ...summary.reasonCodes.map((c) => `- ${c}`), "");
+  }
+
+  lines.push(
     "Warnings",
     ...summary.pipelineWarnings.map((w) => `- ${w.title} (${w.id})`),
     "",
     "Steps",
     ...summary.steps.map((s) => `- ${s.tool}: ${s.displayCommand}`),
-  ];
+  );
 
   if (
     success.maybeReportText !== undefined &&
@@ -358,6 +373,9 @@ function cleanSummaryForJson(
     inputPath: summary.inputPath,
     outputPath: summary.outputPath,
     modality: summary.modality,
+    plannedContainer: summary.plannedContainer,
+    plannedAudioCodec: summary.plannedAudioCodec,
+    reasonCodes: summary.reasonCodes,
     warnings: summary.pipelineWarnings,
     steps: summary.steps,
   };
