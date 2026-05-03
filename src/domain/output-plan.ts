@@ -1,9 +1,11 @@
+import { basename, extname } from "node:path";
+
 import type { MediaProbe } from "./media-probe";
 import type { OutputPathSuccess } from "./output-path";
 import { evaluateStreamCopyFeasibility } from "./stream-copy-feasibility";
 
 export type PlannedAudioCodec = "aac" | "opus" | "pcm_s16le";
-export type PlannedContainer = "mp4" | "matroska" | "wav";
+export type PlannedContainer = "mp4" | "matroska" | "webm" | "wav";
 
 export type OutputModality =
   | "audio-only"
@@ -36,25 +38,69 @@ export type PlanMediaOutputInput = {
   readonly pathOutcome: OutputPathSuccess;
 };
 
+export type PlanMediaOutputPrelude =
+  | { readonly kind: "unsupported"; readonly reasonCodes: readonly string[] }
+  | {
+      readonly kind: "ok";
+      readonly modality: Exclude<OutputModality, "unsupported">;
+      readonly plannedAudioCodec: PlannedAudioCodec;
+      readonly plannedContainer: PlannedContainer;
+      readonly reasonCodes: readonly string[];
+      readonly selectedAudioStreamIndex: number;
+    };
+
+export type ImplicitDefaultExtInput = {
+  readonly modality: Exclude<OutputModality, "unsupported">;
+  readonly plannedContainer: PlannedContainer;
+  readonly resolvedInputPath: string;
+};
+
 /**
- * Computes output modality before any FFmpeg execution. Video + audio uses Phase 3
- * stream-copy feasibility (single video, MP4 plan, MP4-safe codec whitelist: H.264, HEVC, AV1).
+ * Maps a planned container + modality to the default **implicit** output extension
+ * (leading dot) beside the input stem with the `avdn` segment.
+ *
+ * - **Video** (`video-copy-safe`, `fallback-required`): extension follows **`plannedContainer`**
+ *   (e.g. MP4 plan → `.mp4` even when the input is `.mov`).
+ * - **Audio-only + `mp4`** container: preserves the input extension when present, else **`.m4a`**.
  */
-export function planMediaOutput(input: PlanMediaOutputInput): OutputPlan {
+export function implicitDefaultOutputExtWithDot(
+  input: ImplicitDefaultExtInput,
+): string {
+  if (input.modality === "audio-only" && input.plannedContainer === "mp4") {
+    const fromInput = extname(basename(input.resolvedInputPath));
+
+    return fromInput.length > 0 ? fromInput : ".m4a";
+  }
+
+  switch (input.plannedContainer) {
+    case "mp4":
+      return ".mp4";
+    case "matroska":
+      return ".mkv";
+    case "webm":
+      return ".webm";
+    case "wav":
+      return ".wav";
+  }
+}
+
+/**
+ * Probe-only planning (no output paths). Used to derive implicit extensions before
+ * `resolveOutputPath` while keeping `planMediaOutput` as the canonical full `OutputPlan` builder.
+ */
+export function planMediaOutputPrelude(
+  probe: MediaProbe,
+): PlanMediaOutputPrelude {
   const plannedAudioCodec: PlannedAudioCodec = "aac";
+  /** PHASE 02: derive from feasibility matrix (VP9/Theora → matroska/webm rows). */
   const plannedContainer: PlannedContainer = "mp4";
 
-  const audioStreams = input.probe.streams.filter(
+  const audioStreams = probe.streams.filter(
     (stream) => stream.codec_type === "audio",
   );
 
   if (audioStreams.length === 0) {
-    return {
-      modality: "unsupported",
-      reasonCodes: ["no-audio-stream"],
-      resolvedOutputPath: input.pathOutcome.resolvedOutputPath,
-      resolvedInputPath: input.pathOutcome.resolvedInputPath,
-    };
+    return { kind: "unsupported", reasonCodes: ["no-audio-stream"] };
   }
 
   const hasIdentifiableAudioCodec = audioStreams.some(
@@ -62,15 +108,10 @@ export function planMediaOutput(input: PlanMediaOutputInput): OutputPlan {
   );
 
   if (!hasIdentifiableAudioCodec) {
-    return {
-      modality: "unsupported",
-      reasonCodes: ["no-audio-codec-metadata"],
-      resolvedOutputPath: input.pathOutcome.resolvedOutputPath,
-      resolvedInputPath: input.pathOutcome.resolvedInputPath,
-    };
+    return { kind: "unsupported", reasonCodes: ["no-audio-codec-metadata"] };
   }
 
-  const videoStreams = input.probe.streams.filter(
+  const videoStreams = probe.streams.filter(
     (stream) => stream.codec_type === "video",
   );
 
@@ -78,43 +119,93 @@ export function planMediaOutput(input: PlanMediaOutputInput): OutputPlan {
 
   if (videoStreams.length === 0) {
     return {
+      kind: "ok",
       modality: "audio-only",
       reasonCodes: ["phase-2-stub-audio-only"],
-      resolvedOutputPath: input.pathOutcome.resolvedOutputPath,
-      resolvedInputPath: input.pathOutcome.resolvedInputPath,
-      selectedAudioStreamIndex: selected.index,
       plannedAudioCodec,
       plannedContainer,
+      selectedAudioStreamIndex: selected.index,
     };
   }
 
   const streamCopy = evaluateStreamCopyFeasibility({
-    probe: input.probe,
+    probe,
     plannedContainer,
     plannedAudioCodec,
   });
 
   if (streamCopy.kind === "fallback-required") {
     return {
+      kind: "ok",
       modality: "fallback-required",
       reasonCodes: streamCopy.reasonCodes,
-      resolvedOutputPath: input.pathOutcome.resolvedOutputPath,
-      resolvedInputPath: input.pathOutcome.resolvedInputPath,
-      selectedAudioStreamIndex: selected.index,
       plannedAudioCodec,
       plannedContainer,
+      selectedAudioStreamIndex: selected.index,
     };
   }
 
   return {
+    kind: "ok",
     modality: "video-copy-safe",
     reasonCodes: [...streamCopy.reasonCodes],
-    resolvedOutputPath: input.pathOutcome.resolvedOutputPath,
-    resolvedInputPath: input.pathOutcome.resolvedInputPath,
-    selectedAudioStreamIndex: selected.index,
     plannedAudioCodec,
     plannedContainer,
+    selectedAudioStreamIndex: selected.index,
   };
+}
+
+/**
+ * Computes output modality before any FFmpeg execution. Video + audio uses
+ * stream-copy feasibility (single video, planned container, MP4-safe codec whitelist
+ * when planned container is mp4: H.264, HEVC, AV1).
+ */
+export function planMediaOutput(input: PlanMediaOutputInput): OutputPlan {
+  const prelude = planMediaOutputPrelude(input.probe);
+
+  if (prelude.kind === "unsupported") {
+    return {
+      modality: "unsupported",
+      reasonCodes: prelude.reasonCodes,
+      resolvedOutputPath: input.pathOutcome.resolvedOutputPath,
+      resolvedInputPath: input.pathOutcome.resolvedInputPath,
+    };
+  }
+
+  const ok = prelude;
+
+  switch (ok.modality) {
+    case "audio-only":
+      return {
+        modality: "audio-only",
+        reasonCodes: ok.reasonCodes,
+        resolvedOutputPath: input.pathOutcome.resolvedOutputPath,
+        resolvedInputPath: input.pathOutcome.resolvedInputPath,
+        selectedAudioStreamIndex: ok.selectedAudioStreamIndex,
+        plannedAudioCodec: ok.plannedAudioCodec,
+        plannedContainer: ok.plannedContainer,
+      };
+    case "fallback-required":
+      return {
+        modality: "fallback-required",
+        reasonCodes: ok.reasonCodes,
+        resolvedOutputPath: input.pathOutcome.resolvedOutputPath,
+        resolvedInputPath: input.pathOutcome.resolvedInputPath,
+        selectedAudioStreamIndex: ok.selectedAudioStreamIndex,
+        plannedAudioCodec: ok.plannedAudioCodec,
+        plannedContainer: ok.plannedContainer,
+      };
+    case "video-copy-safe":
+      return {
+        modality: "video-copy-safe",
+        reasonCodes: ok.reasonCodes,
+        resolvedOutputPath: input.pathOutcome.resolvedOutputPath,
+        resolvedInputPath: input.pathOutcome.resolvedInputPath,
+        selectedAudioStreamIndex: ok.selectedAudioStreamIndex,
+        plannedAudioCodec: ok.plannedAudioCodec,
+        plannedContainer: ok.plannedContainer,
+      };
+  }
 }
 
 function streamChannelCount(stream: MediaProbe["streams"][number]): number {

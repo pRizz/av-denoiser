@@ -45,6 +45,16 @@ export function canonicalMp4CopyVideoCodec(codecName: string): string {
   return n;
 }
 
+/*
+ * Reason-code naming (MULTI roadmap):
+ * - Success (copy-safe row): prefer `video-copy-<canonicalCodec>-<container>-v<n>`,
+ *   e.g. potential `video-copy-vp9-webm-v1` in Phase 02. Current MP4 allowlist retains
+ *   `video-copy-h264-mp4-v1`, `video-copy-hevc-mp4-v1`, `video-copy-av1-mp4-v1` (MULTI-12 —
+ *   no silent renames without regressions).
+ * - Fallback/disallow: `video-fallback-*` or `unsupported-*`; encode container/particular
+ *   denial in slug when meaningful (Phase 02 matrix rows).
+ */
+
 /**
  * Deterministic feasibility for copying the lone video stream into the planned MP4 container.
  */

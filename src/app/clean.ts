@@ -44,7 +44,12 @@ import {
   describeMissingInputPath,
   resolveOutputPath,
 } from "../domain/output-path";
-import { type OutputPlan, planMediaOutput } from "../domain/output-plan";
+import {
+  implicitDefaultOutputExtWithDot,
+  type OutputPlan,
+  planMediaOutput,
+  planMediaOutputPrelude,
+} from "../domain/output-plan";
 import { renderDisplayCommand } from "../domain/process-command";
 import {
   buildExtractPrimaryAudioWavCommand,
@@ -617,10 +622,26 @@ export async function runCleanRequest(
     };
   }
 
+  const prelude = planMediaOutputPrelude(probeResult.value);
+
+  const hasExplicitOutput =
+    request.maybeOutputPath !== undefined &&
+    request.maybeOutputPath.trim().length > 0;
+
+  const implicitOutputExtWithDot =
+    !hasExplicitOutput && prelude.kind === "ok"
+      ? implicitDefaultOutputExtWithDot({
+          modality: prelude.modality,
+          plannedContainer: prelude.plannedContainer,
+          resolvedInputPath,
+        })
+      : undefined;
+
   const pathResult = resolveOutputPath({
     cwd,
     inputPath: request.inputPath,
     maybeExplicitOutput: request.maybeOutputPath,
+    implicitOutputExtWithDot,
     force: request.force,
     doesOutputExist: outputExists,
   });

@@ -86,6 +86,8 @@ export {
 } from "./domain/media-probe";
 export {
   DEFAULT_OUTPUT_SUFFIX_SEGMENT,
+  type DefaultOutputPathBesideInputOptions,
+  defaultOutputPathBesideInput,
   type OutputPathFailure,
   type OutputPathSuccess,
   type ResolveOutputPathInput,
@@ -93,12 +95,16 @@ export {
   resolveOutputPath,
 } from "./domain/output-path";
 export {
+  type ImplicitDefaultExtInput,
+  implicitDefaultOutputExtWithDot,
   type OutputModality,
   type OutputPlan,
   type PlanMediaOutputInput,
+  type PlanMediaOutputPrelude,
   type PlannedAudioCodec,
   type PlannedContainer,
   planMediaOutput,
+  planMediaOutputPrelude,
 } from "./domain/output-plan";
 export {
   createProcessCommand,

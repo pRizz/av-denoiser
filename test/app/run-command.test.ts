@@ -7,6 +7,10 @@ import type { CleanCliOutcome } from "../../src/app/clean";
 import { runCliRequest } from "../../src/app/run-command";
 import type { CliRequest } from "../../src/domain/cli-request";
 
+const minimalAudioFixture = await Bun.file(
+  `${import.meta.dir}/../fixtures/ffprobe/minimal-audio.json`,
+).text();
+
 describe("runCliRequest batch discoverTools wiring", () => {
   test("persists stub DoctorReport into manifest.maybeDoctorFacts", async () => {
     const dir = mkdtempSync(join(tmpdir(), "avdn-runcli-batch-"));
@@ -54,7 +58,18 @@ describe("runCliRequest batch discoverTools wiring", () => {
     const outcome = await runCliRequest(request, {
       discoverTools: async () => stubReport,
       batch: { runClean },
-      clean: { cwd: dir, outputExists: () => false },
+      clean: {
+        cwd: dir,
+        outputExists: (p: string) => existsSync(p),
+        maybeWhich: (name: string) =>
+          name === "ffprobe" ? "/bin/ffprobe" : null,
+        runProcess: async () => ({
+          kind: "exited",
+          exitCode: 0,
+          stdout: minimalAudioFixture,
+          stderr: "",
+        }),
+      },
     });
 
     expect(outcome.kind).toBe("success");

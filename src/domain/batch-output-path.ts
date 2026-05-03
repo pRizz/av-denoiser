@@ -15,6 +15,7 @@ export type AllocateBatchOutputPathsInput = {
   readonly maybeOutputDir?: string;
   readonly doesOutputExist: (absolutePath: string) => boolean;
   readonly force: boolean;
+  readonly getImplicitExtWithDot?: (resolvedInputPath: string) => string;
 };
 
 export type BatchAllocatedPath = {
@@ -22,8 +23,12 @@ export type BatchAllocatedPath = {
   readonly resolvedOutputPath: string;
 };
 
-function canonicalAbsolutePath(cwd: string, maybePath: string): string {
-  return normalize(resolve(cwd, maybePath));
+/** Normalized absolute path for batch resolution (same semantics as prior `canonicalAbsolutePath`). */
+export function canonicalBatchResolvedInputPath(
+  cwd: string,
+  maybePath: string,
+): string {
+  return normalize(resolve(cwd, maybePath.trim()));
 }
 
 /** Stem + media extension from the original input basename (`clip.m4a` → stem `clip`, `.m4a`). */
@@ -46,13 +51,16 @@ export function allocateBatchOutputPaths(
 
   const maybeOutDirAbs =
     input.maybeOutputDir !== undefined && input.maybeOutputDir.trim().length > 0
-      ? canonicalAbsolutePath(input.cwd, input.maybeOutputDir.trim())
+      ? canonicalBatchResolvedInputPath(input.cwd, input.maybeOutputDir.trim())
       : undefined;
 
   const seg = DEFAULT_OUTPUT_SUFFIX_SEGMENT;
 
   for (const rawInput of input.orderedInputPaths) {
-    const resolvedInputPath = canonicalAbsolutePath(input.cwd, rawInput);
+    const resolvedInputPath = canonicalBatchResolvedInputPath(
+      input.cwd,
+      rawInput,
+    );
     const { stem, extWithDot } = stemAndExtFromInputBasename(resolvedInputPath);
 
     const outputDir =
@@ -65,10 +73,19 @@ export function allocateBatchOutputPaths(
     let candidate: string;
 
     while (true) {
+      let suffixExtWithDot = extWithDot;
+
+      if (input.getImplicitExtWithDot !== undefined) {
+        const fromCb = input.getImplicitExtWithDot(resolvedInputPath).trim();
+
+        suffixExtWithDot =
+          fromCb.startsWith(".") && fromCb.length > 1 ? fromCb : extWithDot;
+      }
+
       const baseName =
         bump === undefined
-          ? `${stem}.${seg}${extWithDot}`
-          : `${stem}-${bump}.${seg}${extWithDot}`;
+          ? `${stem}.${seg}${suffixExtWithDot}`
+          : `${stem}-${bump}.${seg}${suffixExtWithDot}`;
 
       candidate = normalize(join(outputDir, baseName));
 

@@ -73,4 +73,4 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 ## Next action
 
-`/gsd-discuss-phase 1` or `/gsd-plan-phase 1` when ready to author **Phase 01** artifacts under **`.planning/phases/01-*/`**.
+**Phase 01** executed; continue with **`/gsd-discuss-phase 02`** or **`/gsd-plan-phase 02`** for the feasibility matrix (VP9, Theora, **MULTI-03**–**MULTI-05**).

@@ -296,6 +296,17 @@ function encodeDeliverableArgs(
     return createProcessCommand({ executable: ffmpegExecutable, args });
   }
 
+  if (container === "webm") {
+    /**
+     * MULTI Phase 03 will select WebM mux and audio policy (`-f webm`). With Phase 01
+     * planner defaults (`plannedContainer === "mp4"`), this branch is unreachable in
+     * shipped presets; provisional AAC/mp4 mux matches the fallback below.
+     */
+    args.push("-c:a", "aac", "-b:a", "192k", "-f", "mp4", outputPath);
+
+    return createProcessCommand({ executable: ffmpegExecutable, args });
+  }
+
   args.push("-c:a", "aac", "-b:a", "192k", "-f", "mp4", outputPath);
 
   return createProcessCommand({ executable: ffmpegExecutable, args });

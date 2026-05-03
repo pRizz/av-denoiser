@@ -1,7 +1,11 @@
 import { expect, test } from "bun:test";
 
 import type { MediaProbe } from "../../src/domain/media-probe";
-import { planMediaOutput } from "../../src/domain/output-plan";
+import {
+  implicitDefaultOutputExtWithDot,
+  planMediaOutput,
+  planMediaOutputPrelude,
+} from "../../src/domain/output-plan";
 
 function pathOk(input: string, output: string) {
   return {
@@ -10,6 +14,74 @@ function pathOk(input: string, output: string) {
     resolvedOutputPath: output,
   };
 }
+
+test("implicitDefaultOutputExtWithDot maps video mp4 planned container to .mp4 for .mov paths", () => {
+  expect(
+    implicitDefaultOutputExtWithDot({
+      modality: "video-copy-safe",
+      plannedContainer: "mp4",
+      resolvedInputPath: "/x/c.mov",
+    }),
+  ).toBe(".mp4");
+});
+
+test("implicitDefaultOutputExtWithDot maps planned matroska and webm literals", () => {
+  expect(
+    implicitDefaultOutputExtWithDot({
+      modality: "fallback-required",
+      plannedContainer: "matroska",
+      resolvedInputPath: "/x/y.mov",
+    }),
+  ).toBe(".mkv");
+  expect(
+    implicitDefaultOutputExtWithDot({
+      modality: "video-copy-safe",
+      plannedContainer: "webm",
+      resolvedInputPath: "/x/z.mp4",
+    }),
+  ).toBe(".webm");
+});
+
+test("implicitDefaultOutputExtWithDot audio-only mp4 preserves input extension", () => {
+  expect(
+    implicitDefaultOutputExtWithDot({
+      modality: "audio-only",
+      plannedContainer: "mp4",
+      resolvedInputPath: "/no-extension",
+    }),
+  ).toBe(".m4a");
+  expect(
+    implicitDefaultOutputExtWithDot({
+      modality: "audio-only",
+      plannedContainer: "mp4",
+      resolvedInputPath: "/pod/episode.m4a",
+    }),
+  ).toBe(".m4a");
+  expect(
+    implicitDefaultOutputExtWithDot({
+      modality: "audio-only",
+      plannedContainer: "mp4",
+      resolvedInputPath: "/speech.wav",
+    }),
+  ).toBe(".wav");
+});
+
+test("planMediaOutputPrelude mirrors planMediaOutput unsupported kinds", () => {
+  const probe: MediaProbe = { streams: [], format: {} };
+
+  const pre = planMediaOutputPrelude(probe);
+
+  expect(pre.kind).toBe("unsupported");
+  const plan = planMediaOutput({
+    probe,
+    pathOutcome: {
+      kind: "ok",
+      resolvedInputPath: "/a",
+      resolvedOutputPath: "/b",
+    },
+  });
+  expect(plan.modality).toBe("unsupported");
+});
 
 test("planMediaOutput unsupported when no audio stream", () => {
   // Arrange

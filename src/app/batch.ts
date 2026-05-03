@@ -1,13 +1,18 @@
 import { existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { extname, resolve } from "node:path";
 
 import { expandBatchInputs } from "../adapters/batch-input-expand";
+import { runFfprobeProbe } from "../adapters/ffprobe";
+import { runProcessCommand } from "../adapters/process-runner";
 import {
   type BatchManifestDocumentV1,
   type BatchManifestItemV1,
   emptyBatchManifestDraft,
 } from "../domain/batch-manifest";
-import { allocateBatchOutputPaths } from "../domain/batch-output-path";
+import {
+  allocateBatchOutputPaths,
+  canonicalBatchResolvedInputPath,
+} from "../domain/batch-output-path";
 import type { CliRequest } from "../domain/cli-request";
 import {
   aggregateBatchExitCodes,
@@ -17,12 +22,19 @@ import {
 import type { DoctorReport } from "../domain/doctor-report";
 import type { ExitCodeValue } from "../domain/exit-codes";
 import { ExitCode } from "../domain/exit-codes";
+import { resolveDidYouMeanMediaPath } from "../domain/input-path-hint";
+import { describeMissingInputPath } from "../domain/output-path";
+import {
+  implicitDefaultOutputExtWithDot,
+  planMediaOutputPrelude,
+} from "../domain/output-plan";
 import {
   type CleanCliOutcome,
   type CleanDeps,
   type CleanRunInput,
   runCleanRequest,
 } from "./clean";
+import { describeFfprobeFailure } from "./inspect";
 
 export type BatchCliPayload = {
   readonly manifestPath: string;
@@ -183,12 +195,92 @@ export async function runBatchRequest(
     }
   }
 
+  const maybeWhich =
+    deps.clean?.maybeWhich ?? ((name: string) => Bun.which(name));
+  const runProcess = deps.clean?.runProcess ?? runProcessCommand;
+  const ffprobePath = maybeWhich("ffprobe");
+
+  if (ffprobePath === null) {
+    return {
+      kind: "failure",
+      reason: { kind: "missing-tools", tools: ["ffprobe"] },
+    };
+  }
+
+  const implicitExtByResolved = new Map<string, string>();
+
+  for (const rawInput of expanded) {
+    const resolvedInputPath = canonicalBatchResolvedInputPath(cwd, rawInput);
+
+    if (!outputExists(resolvedInputPath)) {
+      return {
+        kind: "failure",
+        reason: {
+          kind: "planning-failure",
+          message: describeMissingInputPath(
+            resolvedInputPath,
+            resolveDidYouMeanMediaPath(resolvedInputPath),
+          ),
+        },
+      };
+    }
+
+    const probeResult = await runFfprobeProbe({
+      ffprobePath,
+      inputPath: resolvedInputPath,
+      runProcess,
+    });
+
+    if (!probeResult.ok) {
+      return {
+        kind: "failure",
+        reason: {
+          kind: "planning-failure",
+          message: describeFfprobeFailure(probeResult.error),
+        },
+      };
+    }
+
+    const prelude = planMediaOutputPrelude(probeResult.value);
+
+    if (prelude.kind === "unsupported") {
+      return {
+        kind: "failure",
+        reason: {
+          kind: "invalid-input",
+          message:
+            "Unsupported input for batch. Run av-denoiser inspect to review this file and confirm modality before processing.",
+        },
+      };
+    }
+
+    implicitExtByResolved.set(
+      resolvedInputPath,
+      implicitDefaultOutputExtWithDot({
+        modality: prelude.modality,
+        plannedContainer: prelude.plannedContainer,
+        resolvedInputPath,
+      }),
+    );
+  }
+
   const pairs = allocateBatchOutputPaths({
     cwd,
     orderedInputPaths: expanded,
     maybeOutputDir: request.maybeOutputDir,
     doesOutputExist: outputExists,
     force: request.force,
+    getImplicitExtWithDot: (p) => {
+      const hit = implicitExtByResolved.get(p);
+
+      if (hit !== undefined) {
+        return hit;
+      }
+
+      const fb = extname(p);
+
+      return fb.length > 0 ? fb : "";
+    },
   });
 
   const n = pairs.length;

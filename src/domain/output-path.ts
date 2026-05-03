@@ -10,10 +10,28 @@ import {
 /** Literal suffix segment inserted before the preserved extension (`clip.m4a` → `clip.avdn.m4a`). */
 export const DEFAULT_OUTPUT_SUFFIX_SEGMENT = "avdn";
 
+function normalizeImplicitExtMaybe(
+  implicitOutputExtWithDot?: string,
+): string | undefined {
+  if (implicitOutputExtWithDot === undefined) {
+    return undefined;
+  }
+
+  const t = implicitOutputExtWithDot.trim();
+
+  if (t.length === 0 || !t.startsWith(".")) {
+    return undefined;
+  }
+
+  return t;
+}
+
 export type ResolveOutputPathInput = {
   readonly cwd: string;
   readonly inputPath: string;
   readonly maybeExplicitOutput?: string;
+  /** When unset / explicit output path omitted, replaces input extension beside `stem.avdn.*`. Ignored when `maybeExplicitOutput` is set (must start with "."). Malformed → treated as omitted. */
+  readonly implicitOutputExtWithDot?: string;
   readonly force: boolean;
   readonly doesOutputExist: (absolutePath: string) => boolean;
 };
@@ -85,9 +103,16 @@ export function resolveOutputPath(
       ? undefined
       : input.maybeExplicitOutput.trim();
 
+  const normalizedImplicit =
+    explicit === undefined
+      ? normalizeImplicitExtMaybe(input.implicitOutputExtWithDot)
+      : undefined;
+
   const resolvedOutputPath =
     explicit === undefined
-      ? defaultOutputPathBesideInput(resolvedInputPath)
+      ? defaultOutputPathBesideInput(resolvedInputPath, {
+          implicitExtWithDot: normalizedImplicit,
+        })
       : canonicalPath(input.cwd, explicit);
 
   if (resolvedOutputPath === resolvedInputPath) {
@@ -112,18 +137,28 @@ export function resolveOutputPath(
   };
 }
 
+export type DefaultOutputPathBesideInputOptions = {
+  readonly implicitExtWithDot?: string;
+};
+
 /**
  * Default cleaned output path beside the resolved input (`clip.m4a` → `clip.avdn.m4a`).
+ *
+ * With `implicitExtWithDot` (normalized: non-empty string starting with "."), replaces
+ * the input extension (`clip.mov` + `.mp4` → `clip.avdn.mp4`).
  */
 export function defaultOutputPathBesideInput(
   resolvedInputPath: string,
+  options?: DefaultOutputPathBesideInputOptions,
 ): string {
   const dir = dirname(resolvedInputPath);
   const base = basename(resolvedInputPath);
-  const ext = extname(base);
-  const stem = ext.length > 0 ? base.slice(0, -ext.length) : base;
+  const inputExt = extname(base);
+  const stem = inputExt.length > 0 ? base.slice(0, -inputExt.length) : base;
+  const implicit = normalizeImplicitExtMaybe(options?.implicitExtWithDot);
+  const suffixExt = implicit ?? (inputExt.length > 0 ? inputExt : "");
 
-  const nextBase = `${stem}.${DEFAULT_OUTPUT_SUFFIX_SEGMENT}${ext}`;
+  const nextBase = `${stem}.${DEFAULT_OUTPUT_SUFFIX_SEGMENT}${suffixExt}`;
 
   return normalize(join(dir, nextBase));
 }

@@ -15,7 +15,11 @@ import {
   type OutputPathFailure,
   resolveOutputPath,
 } from "../domain/output-path";
-import { planMediaOutput } from "../domain/output-plan";
+import {
+  implicitDefaultOutputExtWithDot,
+  planMediaOutput,
+  planMediaOutputPrelude,
+} from "../domain/output-plan";
 
 export type InspectCliSuccess = {
   readonly json: boolean;
@@ -82,10 +86,26 @@ export async function runInspectRequest(
     };
   }
 
+  const prelude = planMediaOutputPrelude(probeResult.value);
+
+  const hasExplicitOutput =
+    request.maybeOutputPath !== undefined &&
+    request.maybeOutputPath.trim().length > 0;
+
+  const implicitOutputExtWithDot =
+    !hasExplicitOutput && prelude.kind === "ok"
+      ? implicitDefaultOutputExtWithDot({
+          modality: prelude.modality,
+          plannedContainer: prelude.plannedContainer,
+          resolvedInputPath,
+        })
+      : undefined;
+
   const pathResult = resolveOutputPath({
     cwd,
     inputPath: request.inputPath,
     maybeExplicitOutput: request.maybeOutputPath,
+    implicitOutputExtWithDot,
     force: request.force,
     doesOutputExist: outputExists,
   });

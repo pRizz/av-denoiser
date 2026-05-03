@@ -54,3 +54,17 @@ test("triple basename collision yields -3 on third output", () => {
     `/out/foo-3.${DEFAULT_OUTPUT_SUFFIX_SEGMENT}.wav`,
   );
 });
+
+test("implicit ext per input replaces .mov with .mp4 for planned MP4 defaults", () => {
+  const [row] = allocateBatchOutputPaths({
+    cwd,
+    orderedInputPaths: ["/media/foo.mov"],
+    doesOutputExist: existsNever,
+    force: false,
+    getImplicitExtWithDot: () => ".mp4",
+  });
+
+  expect(row?.resolvedOutputPath).toBe(
+    `/media/foo.${DEFAULT_OUTPUT_SUFFIX_SEGMENT}.mp4`,
+  );
+});

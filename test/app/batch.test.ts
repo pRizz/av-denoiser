@@ -1,11 +1,35 @@
 import { describe, expect, mock, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { runBatchRequest } from "../../src/app/batch";
 import type { CliRequest } from "../../src/domain/cli-request";
 import { ExitCode } from "../../src/domain/exit-codes";
+
+const minimalAudioFixture = await Bun.file(
+  `${import.meta.dir}/../fixtures/ffprobe/minimal-audio.json`,
+).text();
+
+function batchCleanDepsForAudioWav(dir: string) {
+  return {
+    cwd: dir,
+    outputExists: (p: string) => existsSync(p),
+    maybeWhich: (name: string) => (name === "ffprobe" ? "/bin/ffprobe" : null),
+    runProcess: async () => ({
+      kind: "exited" as const,
+      exitCode: 0,
+      stdout: minimalAudioFixture,
+      stderr: "",
+    }),
+  };
+}
 
 describe("runBatchRequest", () => {
   test("writes manifest with mocked clean success", async () => {
@@ -50,7 +74,7 @@ describe("runBatchRequest", () => {
     );
 
     const outcome = await runBatchRequest(request, {
-      clean: { cwd: dir, outputExists: () => false },
+      clean: batchCleanDepsForAudioWav(dir),
       batch: { runClean },
     });
 
@@ -126,7 +150,7 @@ describe("runBatchRequest", () => {
     );
 
     const outcome = await runBatchRequest(request, {
-      clean: { cwd: dir, outputExists: () => false },
+      clean: batchCleanDepsForAudioWav(dir),
       batch: { runClean },
     });
 
