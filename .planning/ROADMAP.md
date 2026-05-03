@@ -29,6 +29,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 12: Milestone Gap — Phase 8 verification** — Author `08-VERIFICATION.md`; add or extend app-layer tests wherever audit cited thin execution coverage (`TOOL-03`–`TOOL-08`). (completed 2026-05-02)
 - [x] **Phase 13: Milestone Gap — Batch manifest doctor snapshot** — Wire default `batch` CLI path to populate `manifest.maybeDoctorFacts` (reuse doctor/discovery pathway from `clean`/deps) plus regression tests (`BATCH-05`, broken flow batch manifest completeness). (completed 2026-05-02)
 - [x] **Phase 14: Milestone Gap — Guided optional-tool parity & Phase 6/7 verification** — Extend guided selections/prompts and argv equivalence for Demucs, Audacity, and LADSPA opt-in parity with `clean`/`batch`; author `06-VERIFICATION.md` and `07-VERIFICATION.md` (`CLI-04`, `UX-01`–`UX-05`, integration guided→heavy tools). (completed 2026-05-02)
+- [ ] **Phase 15: Milestone Gap — Requirements traceability sync** — Reconcile `.planning/REQUIREMENTS.md` checklist and traceability table with shipped v1 (`bun run verify`) and ROADMAP Phases **1–14**; fix stale `[ ]`/“Pending” rows per [.planning/v1.0-MILESTONE-AUDIT.md](./v1.0-MILESTONE-AUDIT.md) tech debt (**docs-governance**).
+- [ ] **Phase 16: Milestone Gap — TOOL-07 semantics & verification** — Resolve re-audit `gaps.integration`: align **TOOL-07** wording and `08-VERIFICATION.md` with either diagnostics-only **`melt`** posture or an explicit minimal opt-in runnable path (**must** reconcile requirement text, verification evidence, docs).
+- [ ] **Phase 17: Milestone Gap — Verification pointer stubs** — Add lightweight `*-VERIFICATION.md` (or `VERIFICATION-Pointers.md`) under gap-phase dirs **09–14** linking to authoritative `03`–`08` verification artifacts (**planning-layout** tech debt from audit).
 
 ## Phase Details
 
@@ -229,10 +232,40 @@ Plans:
 - [x] 14-01-PLAN.md — Guided **`clean`** parity: Demucs preset, Audacity macro + pipe-risk confirm, LADSPA triple validation; **`argvTokensForEquivalentClean`** + tests (**CLI-04**, **UX-01–UX-05**).
 - [x] 14-02-PLAN.md — **`06-VERIFICATION.md`** / **`07-VERIFICATION.md`** + SUMMARY **`requirements-completed`** hygiene (**CLI-04**, **UX-*** , **BATCH-01–BATCH-04**).
 
+### Phase 15: Milestone Gap — Requirements traceability sync
+**Goal**: Human-facing **REQUIREMENTS.md** checklist and traceability match ROADMAP completion and authoritative verification artifacts (**01–08** `*-VERIFICATION.md`) after v1.0 re-audit.
+**Depends on**: Phase 14 *(v1 verification surface complete)* — **recommended** before Phase **16**
+**Gap closure**: v1.0-MILESTONE-AUDIT `tech_debt` — **docs-governance**
+**Requirements**: *(editorial — all v1 checklist + trace rows; no REQ semantics change intended)*
+**Plans**: _(TBD via `/gsd-plan-phase 15`)_
+
+Plans:
+- [ ] 15-01-PLAN.md — Normalize checklist `[x]`/`[ ]` + traceability **Status**/Phase attribution vs roadmap **Requirement Coverage**.
+
+### Phase 16: Milestone Gap — TOOL-07 semantics & verification
+**Goal**: Explicit closure of **`gaps.integration`** (doctor **`melt`** visibility vs runnable Kdenlive/MLT-derived step) plus **TOOL-07** REQ / **`08-VERIFICATION.md`** / doc alignment (**REQ semantics** tech debt).
+**Depends on**: Phase 15 *(recommended — clean trace table before rewriting TOOL-07 row semantics)*
+**Gap closure**: v1.0-MILESTONE-AUDIT `gaps.integration` (**TOOL-07**); `tech_debt` **REQ semantics**
+**Requirements**: TOOL-07
+**Plans**: _(TBD via `/gsd-plan-phase 16`)_
+
+Plans:
+- [ ] 16-01-PLAN.md — Decide and implement narrowed requirement + verification **or** opt-in runnable **`melt`/`ffmpeg`** bridge path; **`bun run verify`**.
+
+### Phase 17: Milestone Gap — Verification pointer stubs
+**Goal**: One discoverable artifact per gap-phase directory **09–14** pointing to canonical **feature-phase** `*-VERIFICATION.md` for tooling that keys off “verification file per roadmap row”.
+**Depends on**: Phase 16 *(optional — can parallel with **16** if file-only stubs; sequencing with **15** avoids churn)*
+**Gap closure**: v1.0-MILESTONE-AUDIT **planning-layout** tech debt
+**Requirements**: *(none — planning ergonomics only)*
+**Plans**: _(TBD via `/gsd-plan-phase 17`)_
+
+Plans:
+- [ ] 17-01-PLAN.md — Add stub `*-VERIFICATION.md` (or index markdown) linking to **`03`**–`**08`** verification sources per gap-phase intent.
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 … 14. Gap phases **9–14** depend on merged v1 work (audit closure); Phase **13** may start once Phase **7** is complete without blocking on Phases **9–12**.
+Phases execute in numeric order: 1 … 17. Second-pass gap work **15–17** closes v1.0 re-audit **tech_debt** / **TOOL-07** semantics; **Phase 17** stubs may lag **Phase 15** minimally if pointer text references stable verification paths only.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -250,6 +283,9 @@ Phases execute in numeric order: 1 … 14. Gap phases **9–14** depend on merge
 | 12. Milestone Gap — Phase 8 verification | 1/1 | Complete    | 2026-05-02 |
 | 13. Milestone Gap — Batch manifest doctor snapshot | 1/1 | Complete    | 2026-05-02 |
 | 14. Milestone Gap — Guided optional-tool parity & Phase 6/7 verification | 2/2 | Complete    | 2026-05-02 |
+| 15. Milestone Gap — Requirements traceability sync | 0/1 | Not started | — |
+| 16. Milestone Gap — TOOL-07 semantics & verification | 0/1 | Not started | — |
+| 17. Milestone Gap — Verification pointer stubs | 0/1 | Not started | — |
 
 ## Requirement Coverage
 
@@ -281,7 +317,7 @@ Phases execute in numeric order: 1 … 14. Gap phases **9–14** depend on merge
 | TOOL-04 | Phase 12 | Gap closure (**was** Phase 8 delivery) |
 | TOOL-05 | Phase 12 | Gap closure (**was** Phase 8 delivery) |
 | TOOL-06 | Phase 12 | Gap closure (**was** Phase 8 delivery) |
-| TOOL-07 | Phase 12 | Gap closure (**was** Phase 8 delivery) |
+| TOOL-07 | Phase 16 | Re-audit semantic closure (**was** Phase 12 verification artifact; **implements** Phase 8) |
 | TOOL-08 | Phase 12 | Gap closure (**was** Phase 8 delivery) |
 | UX-01 | Phase 14 | Gap closure (**was** Phase 6 delivery) |
 | UX-02 | Phase 14 | Gap closure (**was** Phase 6 delivery) |
@@ -298,4 +334,4 @@ Phases execute in numeric order: 1 … 14. Gap phases **9–14** depend on merge
 | TRUST-03 | Phase 11 | Gap closure (**was** Phase 5 delivery) |
 | TRUST-04 | Phase 1 | |
 
-**Coverage:** 42/42 v1 requirements mapped across original delivery phases + milestone gap closure phases 9–14.
+**Coverage:** 42/42 v1 requirements mapped across original delivery phases + milestone gap closure phases 9–14 + follow-up **15–16** (**17** adds planning stubs only).

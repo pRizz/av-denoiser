@@ -115,6 +115,8 @@ Explicitly excluded. Documented to prevent scope creep.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
+Follow-up roadmap phases **15** (editorial checklist + table sync), **16** (**TOOL-07** semantic closure from v1.0 re-audit), and **17** (gap-dir verification stubs) refine documentation and planning ergonomics **without inventing unmapped REQ IDs**.
+
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | CLI-01 | Phase 1 | Complete |
@@ -143,7 +145,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TOOL-04 | Phase 12 | Pending |
 | TOOL-05 | Phase 12 | Pending |
 | TOOL-06 | Phase 12 | Pending |
-| TOOL-07 | Phase 12 | Pending |
+| TOOL-07 | Phase 16 | Pending |
 | TOOL-08 | Phase 12 | Pending |
 | UX-01 | Phase 14 | Pending |
 | UX-02 | Phase 14 | Pending |
@@ -162,9 +164,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 **Coverage:**
 - v1 requirements: 42 total
-- Mapped to phases (including milestone gap closure phases 9–14): 42
+- Mapped to phases (including milestone gap closure phases 9–14 and follow-up **15–17** stubs): 42
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-01*
-*Last updated: 2026-05-02 after Phase 9 gap verification execution*
+*Last updated: 2026-05-03 — ROADMAP Phases **15–17** created from `/gsd-plan-milestone-gaps` (**TOOL-07** → Phase **16**); checklist `[ ]`/Pending rows slated for Phase **15**.*
