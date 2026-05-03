@@ -1,5 +1,30 @@
-import type { PlannedAudioCodec } from "./output-plan";
+/**
+ * FFmpeg argv for extract + video remux (MULTI-06 / MULTI-07 — v1.1 mux policy).
+ *
+ * | plannedContainer | Audio in remux output   | FFmpeg audio args                         | Muxer flag before output |
+ * | ----------------- | ---------------------- | ----------------------------------------- | ------------------------ |
+ * | mp4               | AAC-LC                 | -c:a aac -b:a 192k                        | (omit -f mp4)            |
+ * | webm              | Opus                   | -c:a libopus -b:a 128k                   | -f webm                  |
+ * | matroska          | AAC-LC                 | -c:a aac -b:a 192k                       | -f matroska              |
+ */
+import type { PlannedAudioCodec, PlannedContainer } from "./output-plan";
 import { createProcessCommand, type ProcessCommand } from "./process-command";
+
+/** Video-file remux targets (wav is WAV deliverable/intermediate-only, not this builder). */
+export type PlannedVideoMuxContainer = Exclude<PlannedContainer, "wav">;
+
+/** Narrow planner output for remux argv — **`wav`** is invalid here and indicates a wiring bug. */
+export function plannedContainerForVideoRemux(
+  plannedContainer: PlannedContainer,
+): PlannedVideoMuxContainer {
+  if (plannedContainer === "wav") {
+    throw new Error(
+      "plannedContainerForVideoRemux: wav is not a typed video remux target",
+    );
+  }
+
+  return plannedContainer;
+}
 
 export type ExtractAudioWavParams = {
   readonly ffmpegExecutable: string;
@@ -16,6 +41,7 @@ export type RemuxVideoCopyParams = {
   readonly processedAudioPath: string;
   readonly resolvedOutputPath: string;
   readonly plannedAudioCodec: PlannedAudioCodec;
+  readonly plannedContainer: PlannedVideoMuxContainer;
 };
 
 /** `copy` when the probe is on a stream-copy matrix row; `reencode-h264` when the source needs MP4 transcode (e.g. VP8 → MP4 fallback). */
@@ -79,6 +105,14 @@ export function buildRemuxVideoWithProcessedAudioCommand(
     return { kind: "invalid", reason: "empty ffmpeg executable" };
   }
 
+  if (params.plannedAudioCodec === "pcm_s16le") {
+    return {
+      kind: "invalid",
+      reason:
+        "pcm_s16le is reserved for WAV/intermediate extracts, not typed video remux outputs",
+    };
+  }
+
   const audioArgs: string[] = [];
 
   switch (params.plannedAudioCodec) {
@@ -86,10 +120,7 @@ export function buildRemuxVideoWithProcessedAudioCommand(
       audioArgs.push("-c:a", "aac", "-b:a", "192k");
       break;
     case "opus":
-      audioArgs.push("-c:a", "libopus");
-      break;
-    case "pcm_s16le":
-      audioArgs.push("-c:a", "pcm_s16le");
+      audioArgs.push("-c:a", "libopus", "-b:a", "128k");
       break;
     default: {
       const _exhaustive: never = params.plannedAudioCodec;
@@ -112,6 +143,13 @@ export function buildRemuxVideoWithProcessedAudioCommand(
           "fast",
         ];
 
+  const muxFormatArgs: string[] =
+    params.plannedContainer === "webm"
+      ? ["-f", "webm"]
+      : params.plannedContainer === "matroska"
+        ? ["-f", "matroska"]
+        : [];
+
   const created = createProcessCommand({
     executable: ff,
     args: [
@@ -130,6 +168,7 @@ export function buildRemuxVideoWithProcessedAudioCommand(
       "1:a:0",
       ...videoArgs,
       ...audioArgs,
+      ...muxFormatArgs,
       params.resolvedOutputPath,
     ],
   });

@@ -54,6 +54,7 @@ import { renderDisplayCommand } from "../domain/process-command";
 import {
   buildExtractPrimaryAudioWavCommand,
   buildRemuxVideoWithProcessedAudioCommand,
+  plannedContainerForVideoRemux,
 } from "../domain/video-clean-argv";
 
 import { describeFfprobeFailure, describePathFailure } from "./inspect";
@@ -807,12 +808,18 @@ export async function runCleanRequest(
       demucsModulePrefix,
     }).steps;
 
+    // Remux invariant: modality fallback-required ⇒ videoStreamMode reencode-h264 and prelude
+    // plannedContainer mp4 — only pass planner fields through; argv builder avoids -f mp4 anyway.
+
     const remuxBuilt = buildRemuxVideoWithProcessedAudioCommand({
       ffmpegExecutable: ffmpegPath,
       originalVideoPath: executablePlan.resolvedInputPath,
       processedAudioPath: pipelineAudioPreviewPath,
       resolvedOutputPath: executablePlan.resolvedOutputPath,
       plannedAudioCodec: executablePlan.plannedAudioCodec,
+      plannedContainer: plannedContainerForVideoRemux(
+        executablePlan.plannedContainer,
+      ),
       videoStreamMode:
         executablePlan.modality === "fallback-required"
           ? "reencode-h264"
@@ -959,6 +966,9 @@ export async function runCleanRequest(
         processedAudioPath: pipelineAudioPath,
         resolvedOutputPath: executablePlan.resolvedOutputPath,
         plannedAudioCodec: executablePlan.plannedAudioCodec,
+        plannedContainer: plannedContainerForVideoRemux(
+          executablePlan.plannedContainer,
+        ),
         videoStreamMode:
           executablePlan.modality === "fallback-required"
             ? "reencode-h264"

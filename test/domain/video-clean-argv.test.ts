@@ -45,6 +45,7 @@ describe("buildRemuxVideoCopyCommand", () => {
       processedAudioPath: "/tmp/audio.m4a",
       resolvedOutputPath: "/out/final.mp4",
       plannedAudioCodec: "aac",
+      plannedContainer: "mp4",
     });
 
     expect(built.kind).toBe("created");
@@ -62,10 +63,65 @@ describe("buildRemuxVideoCopyCommand", () => {
     expect(argv).toContain("copy");
     expect(argv).toContain("-c:a");
     expect(argv).toContain("aac");
+
+    /** Deliberately omit `-f mp4` per MULTI-06 CONTEXT — extension + codecs suffice. */
+    expect(joined).not.toContain("-f mp4");
   });
 });
 
 describe("buildRemuxVideoWithProcessedAudioCommand", () => {
+  test("copy webm includes -f webm before output libopus and 128k", () => {
+    const out = "/out/final.avdn.webm";
+
+    const built = buildRemuxVideoWithProcessedAudioCommand({
+      ffmpegExecutable: "/bin/ffmpeg",
+      originalVideoPath: "/in/in.webm",
+      processedAudioPath: "/tmp/pipe-opus.wav",
+      resolvedOutputPath: out,
+      plannedAudioCodec: "opus",
+      plannedContainer: "webm",
+      videoStreamMode: "copy",
+    });
+
+    expect(built.kind).toBe("created");
+    if (built.kind !== "created") {
+      return;
+    }
+
+    const argv = built.command.args;
+    expect(argv.at(-3)).toBe("-f");
+    expect(argv.at(-2)).toBe("webm");
+    expect(argv.at(-1)).toBe(out);
+    expect(argv).toContain("libopus");
+    expect(argv).toContain("128k");
+    expect(argv).not.toContain("matroska");
+  });
+
+  test("copy matroska includes -f matroska before output and AAC 192k", () => {
+    const out = "/out/final.avdn.mkv";
+
+    const built = buildRemuxVideoWithProcessedAudioCommand({
+      ffmpegExecutable: "/bin/ffmpeg",
+      originalVideoPath: "/in/in.mkv",
+      processedAudioPath: "/tmp/audio.m4a",
+      resolvedOutputPath: out,
+      plannedAudioCodec: "aac",
+      plannedContainer: "matroska",
+      videoStreamMode: "copy",
+    });
+
+    expect(built.kind).toBe("created");
+    if (built.kind !== "created") {
+      return;
+    }
+
+    const argv = built.command.args;
+    expect(argv.at(-3)).toBe("-f");
+    expect(argv.at(-2)).toBe("matroska");
+    expect(argv.at(-1)).toBe(out);
+    expect(argv).toContain("192k");
+  });
+
   test("reencode-h264 argv uses libx264 and yuv420p, not stream copy", () => {
     const built = buildRemuxVideoWithProcessedAudioCommand({
       ffmpegExecutable: "/bin/ffmpeg",
@@ -73,6 +129,7 @@ describe("buildRemuxVideoWithProcessedAudioCommand", () => {
       processedAudioPath: "/tmp/audio.m4a",
       resolvedOutputPath: "/out/final.mp4",
       plannedAudioCodec: "aac",
+      plannedContainer: "mp4",
       videoStreamMode: "reencode-h264",
     });
 
@@ -90,5 +147,25 @@ describe("buildRemuxVideoWithProcessedAudioCommand", () => {
     expect(argv).toContain("yuv420p");
     expect(joined).not.toContain(" copy");
     expect(joined.indexOf("-c:v")).toBeLessThan(joined.indexOf("libx264"));
+  });
+
+  test("reject pcm_s16le for video remux", () => {
+    const built = buildRemuxVideoWithProcessedAudioCommand({
+      ffmpegExecutable: "/bin/ffmpeg",
+      originalVideoPath: "/in/v.mp4",
+      processedAudioPath: "/tmp/x.wav",
+      resolvedOutputPath: "/out/out.mp4",
+      plannedAudioCodec: "pcm_s16le",
+      plannedContainer: "mp4",
+      videoStreamMode: "copy",
+    });
+
+    expect(built.kind).toBe("invalid");
+    if (built.kind !== "invalid") {
+      return;
+    }
+
+    expect(built.reason).toContain("pcm_s16le");
+    expect(built.reason).toContain("remux");
   });
 });

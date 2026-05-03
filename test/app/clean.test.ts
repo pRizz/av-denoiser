@@ -34,6 +34,29 @@ const vp8OpusFallbackVideoProbe = JSON.stringify({
   },
 });
 
+const vp9WebmCopySafeProbe = JSON.stringify({
+  streams: [
+    {
+      index: 0,
+      codec_name: "vp9",
+      codec_type: "video",
+      disposition: { default: 1 },
+    },
+    {
+      index: 1,
+      codec_name: "opus",
+      codec_type: "audio",
+      channels: 2,
+      sample_rate: "48000",
+      disposition: { default: 1 },
+    },
+  ],
+  format: {
+    duration: "120.000000",
+    format_name: "webm",
+  },
+});
+
 const hevcMinimalVideoProbe = JSON.stringify({
   streams: [
     {
@@ -186,6 +209,40 @@ test("runCleanRequest video-copy-safe dry-run succeeds with extract and remux st
   expect(joined).toContain("-vn");
   expect(joined).toContain("-c:v");
   expect(joined).toContain("copy");
+});
+
+test("runCleanRequest video-copy-safe dry-run VP9 includes -f webm and libopus in remux step", async () => {
+  const outcome = await runCleanRequest(
+    baseCleanInput({
+      inputPath: "clip.webm",
+      dryRun: true,
+      knobs: { noiseStrength: 0.2 },
+    }),
+    {
+      cwd: "/project",
+      maybeWhich: fakeWhichVideoScenario(),
+      runProcess: async () => ({
+        kind: "exited",
+        exitCode: 0,
+        stdout: vp9WebmCopySafeProbe,
+        stderr: "",
+      }),
+      outputExists: outputExistsForCleanProbeOnly("/project", "clip.webm"),
+    },
+  );
+
+  expect(outcome.kind).toBe("success");
+  if (outcome.kind !== "success" || outcome.clean === undefined) {
+    return;
+  }
+
+  expect(outcome.clean.summary.modality).toBe("video-copy-safe");
+  const joined = outcome.clean.summary.steps
+    .map((s) => s.displayCommand)
+    .join("\n");
+  expect(joined).toContain("-f webm");
+  expect(joined).toContain("libopus");
+  expect(joined).toContain("128k");
 });
 
 test("runCleanRequest video-copy-safe dry-run succeeds for lone hevc probe with stream copy remux step", async () => {
@@ -500,6 +557,7 @@ test("runCleanRequest video-copy-safe execute runs extract remux and output prob
 test("runCleanRequest fallback-required execute remuxes video with libx264 when allowVideoFallback", async () => {
   let ffprobeCalls = 0;
   let ffmpegArgsJoined = "";
+  const ffmpegArgvs: string[][] = [];
 
   const outcome = await runCleanRequest(
     baseCleanInput({
@@ -531,6 +589,7 @@ test("runCleanRequest fallback-required execute remuxes video with libx264 when 
           };
         }
 
+        ffmpegArgvs.push([...cmd.args]);
         ffmpegArgsJoined += cmd.args.join(" ");
 
         return {
@@ -547,6 +606,10 @@ test("runCleanRequest fallback-required execute remuxes video with libx264 when 
   expect(ffprobeCalls).toBe(2);
   expect(ffmpegArgsJoined).toContain("-vn");
   expect(ffmpegArgsJoined).toContain("libx264");
+
+  const libx264Argv = ffmpegArgvs.find((a) => a.includes("libx264"));
+  expect(libx264Argv).toBeDefined();
+  expect(libx264Argv?.join(" ")).not.toContain("-f webm");
   if (outcome.kind === "success" && outcome.clean !== undefined) {
     expect(outcome.clean.maybeReportText).toContain("re-encoded");
     expect(outcome.clean.maybeReportText).toContain("Video: re-encoded");
