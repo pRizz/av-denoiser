@@ -4,14 +4,14 @@ milestone: v1.1
 milestone_name: — Multi-container stream copy
 status: executing
 stopped_at: Phase 02 planned (02-01, 02-02)
-last_updated: "2026-05-03T22:45:00.000Z"
-last_activity: 2026-05-03 -- Phase 02 plan-phase; RESEARCH + PLAN.md + plan-check revisions
+last_updated: "2026-05-03T23:59:59.000Z"
+last_activity: 2026-05-03 -- Phase 05 added to roadmap (`/gsd-add-phase`)
 progress:
-  total_phases: 4
+  total_phases: 5
   completed_phases: 1
   total_plans: 4
   completed_plans: 2
-  percent: 25
+  percent: 20
 ---
 
 # Project State
@@ -48,6 +48,7 @@ None yet.
 
 ### Roadmap Evolution
 
+- **2026-05-03**: **Phase **05** added**: x265-preferred video re‑encode — default **libx265** where video re‑encode uses **libx264** today (**depends on Phase **04**); workspace **`.planning/phases/05-x265-preferred-video-reencode/`**.
 - **2026-05-03**: Ad-hoc Phase 1 roadmap line (duplicate **`01-*`** folder) superseded by **`/gsd-new-milestone --reset-phase-numbers`**: all **`.planning/phases/*`** moved to [.planning/milestones/v1.0-phases/](.planning/milestones/v1.0-phases/); live **`ROADMAP.md`** recreated for **v1.1** phases **01–04**.
 
 ### Blockers/Concerns

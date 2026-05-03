@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **[v1.0 — CLI & v1 requirements](milestones/v1.0-ROADMAP.md)** — shipped **2026-05-03** — frozen checklist + reqs + audit artifacts. Phase execution workspace snapshot: [.planning/milestones/v1.0-phases/](.planning/milestones/v1.0-phases/)
-- 🚧 **v1.1 — Multi-container stream copy** — **active** ([REQUIREMENTS.md](REQUIREMENTS.md)); phases **01–04** numbered **afresh**.
+- 🚧 **v1.1 — Multi-container stream copy** — **active** ([REQUIREMENTS.md](REQUIREMENTS.md)); phased roadmap **01–05** (**01–04** MULTI roadmap + **Phase 05** codec preference extension).
 
 ---
 
@@ -68,6 +68,25 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 **Depends on:** Phase 03  
 **Requirements:** MULTI-08, MULTI-09, MULTI-10, MULTI-11, MULTI-12
+
+---
+
+### Phase 05: x265-preferred video re-encode
+
+**Goal:** When **`clean`** **must** **re‑encode video** (**`fallback-required`** with **`--allow-video-fallback`**, matrix escapes), implement **libx265** FFmpeg paths and **prefer x265 over x264** as the **default/first-choice** re‑encode (**HEVC**/H.265), subject to **`PlannedContainer`** and Phase **03** mux/format policy.
+
+**Success criteria**
+
+1. argv builders (**`video-clean-argv`** / successors) emit **`libx265`** (**and sane defaults**: e.g. **`-pix_fmt yuv420p`**, **`hvc1`** tagging for MP4 as needed) where **`libx264`** applies today for video re‑encode.
+2. **`inspect`** / summaries / **`--json`** stay truthful on **planned re‑encode codec** (HEVC/x265 naming consistent with probes).
+3. Tests cover **verifyCleanOutput**/codec canonicalization for **x265-encoded** fallback outputs (**`h265`** / **`hevc`** probe synonyms).
+4. Document performance trade-offs (slower/heavier than x264) for operators; optional **`doctor`** hint can be phased.
+
+**Depends on:** Phase **04** (verification harness); coordination with Phase **03** when **`fallback-required`** still references **libx264** inline — PLAN **Phase **03**/ **Phase **05** order** clarified at **`/gsd-plan-phase`** time.
+
+**Requirements:** TBD (add requirement ID row in **`REQUIREMENTS.md`** when planning Phase **05**).
+
+**Artifacts:** [.planning/phases/05-x265-preferred-video-reencode/](.planning/phases/05-x265-preferred-video-reencode/)
 
 ---
 
