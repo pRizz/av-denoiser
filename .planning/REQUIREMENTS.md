@@ -47,7 +47,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **TOOL-04**: User receives clear warnings before Demucs uses significant CPU/GPU resources, downloads models, or runs slowly.
 - [x] **TOOL-05**: User can run an Audacity automation step when Audacity scripting or macro prerequisites are installed, enabled, and accepted by the user.
 - [x] **TOOL-06**: User receives actionable diagnostics when Audacity cannot be automated because scripting, macro, pipe, GUI, or export settings are unavailable.
-- [ ] **TOOL-07**: User can run a Kdenlive/MLT or Kdenlive-derived audio-filter integration when a practical headless path and required plugins are available.
+- [x] **TOOL-07**: User can run **Kdenlive/MLT–derived** cleanup through a **headless FFmpeg ladspa filter step** using `--ladspa-plugin-path`, `--ladspa-label`, and optional `--ladspa-controls` when FFmpeg exposes ladspa (doctor confirms capability). Doctor reports ladspa readiness and optionally surfaces melt probe output (`melt -version`) for MLT/Kdenlive ecosystem parity without orchestrating melt as a cleanup step. **TOOL-08** applies when prerequisites are insufficient or unavailable.
 - [x] **TOOL-08**: User receives actionable diagnostics when Kdenlive/MLT integration is unavailable and can still complete supported FFmpeg/SoX/Demucs pipelines.
 
 ### Guided Experience
@@ -115,7 +115,7 @@ Explicitly excluded. Documented to prevent scope creep.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-Follow-up roadmap phases **15** (this editorial sync), **16** (**TOOL-07** semantic closure from v1.0 re-audit), and **17** (gap-dir verification stubs) refine documentation — **TOOL-07** awaits **Phase 16** before checklist + REQ prose can be finalized.
+Phase **16** completed the **TOOL-07** checklist + trace wording (narrowed **ladspa** semantics, **2026-05-03**). Phase **17** adds gap-dir verification pointer stubs only.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
@@ -145,7 +145,7 @@ Follow-up roadmap phases **15** (this editorial sync), **16** (**TOOL-07** seman
 | TOOL-04 | Phase 12 | Complete |
 | TOOL-05 | Phase 12 | Complete |
 | TOOL-06 | Phase 12 | Complete |
-| TOOL-07 | Phase 16 | Pending |
+| TOOL-07 | Phase 16 | Complete |
 | TOOL-08 | Phase 12 | Complete |
 | UX-01 | Phase 14 | Complete |
 | UX-02 | Phase 14 | Complete |
@@ -163,10 +163,11 @@ Follow-up roadmap phases **15** (this editorial sync), **16** (**TOOL-07** seman
 | TRUST-04 | Phase 1 | Complete |
 
 **Coverage:**
-- v1 requirements: **42** total — **41** checklist-complete in shipped product; **`TOOL-07`** checklist open pending Phase **16**.
-- Delivery phases **1**–**14** complete per ROADMAP; follow-up phases **15**–**17** document/trace only (except Phase **16** closes **TOOL-07** semantics).
+- v1 requirements: **42** total — **42** checklist-complete (including **TOOL-07** narrowed in Phase **16**).
+- Delivery phases **1**–**14** complete per ROADMAP; phases **15**–**17** are documentation / pointer follow-ups (**16** closes **TOOL-07** REQ semantics).
+
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-01*
-*Last updated: 2026-05-03 — Phase **15** executed: checklist + trace **Complete** synced to ROADMAP / verification artifacts; **`TOOL-07`** → Phase **16** (**Pending**).*
+*Last updated: 2026-05-03 — Phase **16** executed: **TOOL-07** narrowed + checklist `[x]`; trace **`Complete`**; `08-VERIFICATION` roadmap row **5** aligned.*

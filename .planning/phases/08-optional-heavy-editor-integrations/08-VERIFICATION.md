@@ -1,6 +1,6 @@
 ---
 phase: 08-optional-heavy-editor-integrations
-verified: "2026-05-02T12:25:00.000Z"
+verified: "2026-05-03T20:35:00.000Z"
 status: passed
 score: roadmap 5/5 success criteria + 6/6 REQ IDs verified
 generated_by: inline-verifier
@@ -14,7 +14,7 @@ lifecycle_validated: true
 
 **Phase goal:** Users can opt into Demucs, Audacity automation, and FFmpeg LADSPA / melt-related signals when prerequisites exist, with clear warnings and diagnostics.
 
-**Verified:** 2026-05-02T12:25:00.000Z
+**Verified:** 2026-05-03T20:35:00.000Z
 
 **Status:** passed
 
@@ -28,7 +28,7 @@ lifecycle_validated: true
 | 2 | User receives clear warnings before Demucs uses significant CPU/GPU resources, downloads models, or runs slowly. | ✓ VERIFIED | Warning objects **`WARN_DEMUCS_MODEL`**, **`WARN_DEMUCS_HEAVY`**, **`WARN_DEMUCS_RESOURCE`** → ids **`warn-demucs-model-download`**, **`warn-demucs-heavy-runtime`**, **`warn-demucs-resource`** (`src/domain/audio-pipeline-plan.ts`). Asserted in **`test/domain/audio-pipeline-plan.test.ts`** (**`expandPreset speech-vocals-demucs inserts demucs step and warnings`**). |
 | 3 | User can run an Audacity automation step when scripting or macro prerequisites are installed, enabled, and accepted. | ✓ VERIFIED | **`runAudacityMacro`**, opt-in gating via **`acceptAudacityPipeRisk`** / CLI wiring (`src/adapters/audacity-pipe.ts`, `src/app/clean.ts`, `src/domain/cli-request.ts`). **`test/adapters/audacity-pipe.test.ts`**. |
 | 4 | User receives actionable diagnostics when Audacity cannot be automated because scripting, macro, pipe, GUI, or export settings are unavailable. | ✓ VERIFIED | **`formatAudacityDiagnostic`**, **`AudacityDiagnosticKind`** (`src/adapters/audacity-pipe.ts`). Covered in **`test/adapters/audacity-pipe.test.ts`**. |
-| 5 | User can run a Kdenlive/MLT or Kdenlive-derived audio-filter integration when a practical headless path and required plugins are available, and can still complete supported FFmpeg/SoX/Demucs pipelines when it is unavailable. | ✓ VERIFIED | **`probeFfmpegLadspaFilter`**, **`melt`** discovery, doctor optional facts (`src/app/doctor.ts`, `src/adapters/tool-discovery.ts`, `src/domain/doctor-report.ts`). **`test/adapters/tool-discovery.test.ts`**, **`test/app/doctor.test.ts`**. Graceful degradation: planning fails LADSPA only when **`maybeLadspa`** requested without filter; Demucs path independent (**`src/app/clean.ts`**). |
+| 5 | User can apply Kdenlive/MLT–derived cleanup through **FFmpeg ladspa** when the user supplies `--ladspa-plugin-path`, `--ladspa-label`, and optional `--ladspa-controls` and **doctor** confirms FFmpeg exposes ladspa; **doctor** may report **`melt`** probe output (`melt -version`) for MLT/Kdenlive ecosystem visibility **without orchestrating** `melt` as a sequential cleanup step; supported FFmpeg/SoX/Demucs pipelines remain when prerequisites are insufficient (**TOOL-08**). | ✓ VERIFIED | Runnable **`ladspa-apply`** via **`buildLogicalStepCommand`** (`src/domain/audio-pipeline-argv.ts`), integration in **`runCleanRequest`** (`src/app/clean.ts`). **`probeFfmpegLadspaFilter`**, **`melt`** discovery + doctor facts (`src/app/doctor.ts`, `src/adapters/tool-discovery.ts`). **`test/adapters/tool-discovery.test.ts`**, **`test/app/doctor.test.ts`**, **`test/domain/audio-pipeline-argv.test.ts`**. |
 
 ### Requirements coverage (`REQUIREMENTS.md`)
 
@@ -38,7 +38,7 @@ lifecycle_validated: true
 | **TOOL-04** | `08-01-PLAN.md`, `08-02-PLAN.md` | ✓ SATISFIED | Pipeline warnings + batch/manifest parity per Phase 7/8 plans; warning ids in **`audio-pipeline-plan.ts`**; **`test/domain/audio-pipeline-plan.test.ts`**. |
 | **TOOL-05** | `08-03-PLAN.md` | ✓ SATISFIED | Audacity opt-in and macro step integration (`src/adapters/audacity-pipe.ts`, `src/app/clean.ts`, `src/cli/command.ts`). |
 | **TOOL-06** | `08-03-PLAN.md` | ✓ SATISFIED | **`formatAudacityDiagnostic`** + kinds (`src/adapters/audacity-pipe.ts`); **`test/adapters/audacity-pipe.test.ts`**. |
-| **TOOL-07** | `08-04-PLAN.md` | ✓ SATISFIED | Doctor **`ladspa`** / **`melt`** / Demucs discovery (`src/app/doctor.ts`, `src/adapters/tool-discovery.ts`). **`test/app/doctor.test.ts`**, **`test/adapters/tool-discovery.test.ts`**. |
+| **TOOL-07** | `08-04-PLAN.md` | ✓ SATISFIED | Runnable **`ladspa-apply`** step via **`buildLogicalStepCommand`** (`src/domain/audio-pipeline-argv.ts`) + **`runSequentialPipeline`** / **`clean.ts`** wiring; **`parseLadspaCliTriple`** / CLI flags (`src/domain/audio-pipeline-plan.ts`, **`src/cli/command.ts`**). **`melt`** + **`probeFfmpegLadspaFilter`** discovery in **`tool-discovery`**, doctor (**no** **`melt` execution**). **`test/domain/audio-pipeline-argv.test.ts`**, **`test/adapters/tool-discovery.test.ts`**, **`test/app/doctor.test.ts`**. Req text + roadmap success **#5** narrowed **Phase **16** (documentation). |
 | **TOOL-08** | `08-04-PLAN.md` | ✓ SATISFIED | Degraded optional paths without hard coupling to melt; docs + clean integration (`docs/doctor.md`, `src/app/clean.ts` per **08-04**). |
 
 ### Anti-patterns
@@ -56,6 +56,8 @@ lifecycle_validated: true
 ### Gaps summary
 
 **CI vs real machine:** Unit and app-layer tests use **mocked** `runProcess` and fixtures. **`v1.0-MILESTONE-AUDIT.md`** *tech_debt* still notes real-machine validation for Demucs, Audacity **mod-script-pipe**, and distro **LADSPA** installs — this artifact does **not** claim green E2E coverage for those environments.
+
+**Phase 16 (2026-05-03):** **TOOL-07** + roadmap success criterion **#5** semantics narrowed to **FFmpeg ladspa** as the runnable Kdenlive/MLT–derived path; **`melt`** remains **doctor** visibility only (no melt orchestration). See **REQUIREMENTS.md** and **`.planning/ROADMAP.md`** Phase **16**.
 
 ---
 

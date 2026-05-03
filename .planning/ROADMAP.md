@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 13: Milestone Gap — Batch manifest doctor snapshot** — Wire default `batch` CLI path to populate `manifest.maybeDoctorFacts` (reuse doctor/discovery pathway from `clean`/deps) plus regression tests (`BATCH-05`, broken flow batch manifest completeness). (completed 2026-05-02)
 - [x] **Phase 14: Milestone Gap — Guided optional-tool parity & Phase 6/7 verification** — Extend guided selections/prompts and argv equivalence for Demucs, Audacity, and LADSPA opt-in parity with `clean`/`batch`; author `06-VERIFICATION.md` and `07-VERIFICATION.md` (`CLI-04`, `UX-01`–`UX-05`, integration guided→heavy tools). (completed 2026-05-02)
 - [x] **Phase 15: Milestone Gap — Requirements traceability sync** — Reconcile `.planning/REQUIREMENTS.md` checklist and traceability table with shipped v1 (`bun run verify`) and ROADMAP Phases **1–14**; fix stale `[ ]`/“Pending” rows per [.planning/v1.0-MILESTONE-AUDIT.md](./v1.0-MILESTONE-AUDIT.md) tech debt (**docs-governance**). (completed 2026-05-03)
-- [ ] **Phase 16: Milestone Gap — TOOL-07 semantics & verification** — Resolve re-audit `gaps.integration`: align **TOOL-07** wording and `08-VERIFICATION.md` with either diagnostics-only **`melt`** posture or an explicit minimal opt-in runnable path (**must** reconcile requirement text, verification evidence, docs).
+- [x] **Phase 16: Milestone Gap — TOOL-07 semantics & verification** — Resolve re-audit `gaps.integration`: align **TOOL-07** wording and `08-VERIFICATION.md` with either diagnostics-only **`melt`** posture or an explicit minimal opt-in runnable path (**must** reconcile requirement text, verification evidence, docs). (completed 2026-05-03)
 - [ ] **Phase 17: Milestone Gap — Verification pointer stubs** — Add lightweight `*-VERIFICATION.md` (or `VERIFICATION-Pointers.md`) under gap-phase dirs **09–14** linking to authoritative `03`–`08` verification artifacts (**planning-layout** tech debt from audit).
 
 ## Phase Details
@@ -162,7 +162,7 @@ Plans:
   2. User receives clear warnings before Demucs uses significant CPU/GPU resources, downloads models, or runs slowly.
   3. User can run an Audacity automation step when scripting or macro prerequisites are installed, enabled, and accepted.
   4. User receives actionable diagnostics when Audacity cannot be automated because scripting, macro, pipe, GUI, or export settings are unavailable.
-  5. User can run a Kdenlive/MLT or Kdenlive-derived audio-filter integration when a practical headless path and required plugins are available, and can still complete supported FFmpeg/SoX/Demucs pipelines when it is unavailable.
+  5. User can apply Kdenlive/MLT–derived cleanup via FFmpeg ladspa (`--ladspa-plugin-path`, `--ladspa-label`, optional `--ladspa-controls`) when **doctor** confirms FFmpeg exposes ladspa; **doctor** may surface **`melt`** probe output for ecosystem parity **without orchestrating melt** cleanup in the sequential pipeline; users complete supported FFmpeg/SoX/Demucs pipelines when prerequisites are insufficient (**TOOL-08**).
 **Plans**: 4 plans
 
 Plans:
@@ -247,10 +247,10 @@ Plans:
 **Depends on**: Phase 15 *(recommended — clean trace table before rewriting TOOL-07 row semantics)*
 **Gap closure**: v1.0-MILESTONE-AUDIT `gaps.integration` (**TOOL-07**); `tech_debt` **REQ semantics**
 **Requirements**: TOOL-07
-**Plans**: _(TBD via `/gsd-plan-phase 16`)_
+**Plans**: 1 plan
 
 Plans:
-- [ ] 16-01-PLAN.md — Decide and implement narrowed requirement + verification **or** opt-in runnable **`melt`/`ffmpeg`** bridge path; **`bun run verify`**.
+- [x] 16-01-PLAN.md — Narrowed **TOOL-07** REQ + **`08-VERIFICATION.md`** / ROADMAP / audit alignment (**no** runnable **`melt` bridge**); **`bun run verify`**.
 
 ### Phase 17: Milestone Gap — Verification pointer stubs
 **Goal**: One discoverable artifact per gap-phase directory **09–14** pointing to canonical **feature-phase** `*-VERIFICATION.md` for tooling that keys off “verification file per roadmap row”.
@@ -284,7 +284,7 @@ Phases execute in numeric order: 1 … 17. Second-pass gap work **15–17** clos
 | 13. Milestone Gap — Batch manifest doctor snapshot | 1/1 | Complete    | 2026-05-02 |
 | 14. Milestone Gap — Guided optional-tool parity & Phase 6/7 verification | 2/2 | Complete    | 2026-05-02 |
 | 15. Milestone Gap — Requirements traceability sync | 1/1 | Complete    | 2026-05-03 |
-| 16. Milestone Gap — TOOL-07 semantics & verification | 0/1 | Not started | — |
+| 16. Milestone Gap — TOOL-07 semantics & verification | 1/1 | Complete   | 2026-05-03 |
 | 17. Milestone Gap — Verification pointer stubs | 0/1 | Not started | — |
 
 ## Requirement Coverage
@@ -317,7 +317,7 @@ Phases execute in numeric order: 1 … 17. Second-pass gap work **15–17** clos
 | TOOL-04 | Phase 12 | Gap closure (**was** Phase 8 delivery) |
 | TOOL-05 | Phase 12 | Gap closure (**was** Phase 8 delivery) |
 | TOOL-06 | Phase 12 | Gap closure (**was** Phase 8 delivery) |
-| TOOL-07 | Phase 16 | Re-audit semantic closure (**was** Phase 12 verification artifact; **implements** Phase 8) |
+| TOOL-07 | Phase 16 | **TOOL-07** narrowed REQ + `08-VERIFICATION` aligned Phase **16** (implementation Phase **8** `ladspa`/doctor; no `melt` orchestration) |
 | TOOL-08 | Phase 12 | Gap closure (**was** Phase 8 delivery) |
 | UX-01 | Phase 14 | Gap closure (**was** Phase 6 delivery) |
 | UX-02 | Phase 14 | Gap closure (**was** Phase 6 delivery) |
@@ -334,4 +334,4 @@ Phases execute in numeric order: 1 … 17. Second-pass gap work **15–17** clos
 | TRUST-03 | Phase 11 | Gap closure (**was** Phase 5 delivery) |
 | TRUST-04 | Phase 1 | |
 
-**Coverage:** 42/42 v1 requirements mapped across original delivery phases + milestone gap closure phases 9–14 + follow-up **15–16** (**17** adds planning stubs only).
+**Coverage:** 42/42 v1 requirements mapped; checklist complete after Phase **16** (**TOOL-07**). Original delivery phases **1**–**8** plus gap closure **9**–**17** (Phase **17** stubs only).
