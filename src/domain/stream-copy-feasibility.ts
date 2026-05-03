@@ -39,7 +39,7 @@ const MP4_STREAM_COPY_SUCCESS: Readonly<
  */
 export function canonicalMp4CopyVideoCodec(codecName: string): string {
   const n = codecName.trim().toLowerCase();
-  if (n === "h265") {
+  if (n === "h265" || n === "hev1") {
     return "hevc";
   }
 

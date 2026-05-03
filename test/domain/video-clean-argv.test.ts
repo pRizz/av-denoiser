@@ -122,7 +122,7 @@ describe("buildRemuxVideoWithProcessedAudioCommand", () => {
     expect(argv).toContain("192k");
   });
 
-  test("reencode-h264 argv uses libx264 and yuv420p, not stream copy", () => {
+  test("reencode-hevc argv uses libx265, yuv420p, crf 28, preset slow, hvc1", () => {
     const built = buildRemuxVideoWithProcessedAudioCommand({
       ffmpegExecutable: "/bin/ffmpeg",
       originalVideoPath: "/in/w.ogv",
@@ -130,7 +130,7 @@ describe("buildRemuxVideoWithProcessedAudioCommand", () => {
       resolvedOutputPath: "/out/final.mp4",
       plannedAudioCodec: "aac",
       plannedContainer: "mp4",
-      videoStreamMode: "reencode-h264",
+      videoStreamMode: "reencode-hevc",
     });
 
     expect(built.kind).toBe("created");
@@ -142,11 +142,18 @@ describe("buildRemuxVideoWithProcessedAudioCommand", () => {
     const joined = argv.join(" ");
 
     expect(argv).toContain("-c:v");
-    expect(argv).toContain("libx264");
+    expect(argv).toContain("libx265");
+    expect(argv).not.toContain("libx264");
     expect(argv).toContain("-pix_fmt");
     expect(argv).toContain("yuv420p");
+    expect(argv).toContain("-crf");
+    expect(argv).toContain("28");
+    expect(argv).toContain("-preset");
+    expect(argv).toContain("slow");
+    expect(argv).toContain("-tag:v");
+    expect(argv).toContain("hvc1");
     expect(joined).not.toContain(" copy");
-    expect(joined.indexOf("-c:v")).toBeLessThan(joined.indexOf("libx264"));
+    expect(joined.indexOf("-c:v")).toBeLessThan(joined.indexOf("libx265"));
   });
 
   test("reject pcm_s16le for video remux", () => {

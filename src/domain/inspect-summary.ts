@@ -79,6 +79,10 @@ export function buildPreservationNotesFromPlan(
         notes.push(`Primary preservation reason code: ${primary}.`);
       }
 
+      notes.push(
+        "With --allow-video-fallback, video re-encodes to HEVC (libx265) in MP4 (CRF 28, preset slow)—slower than typical AVC (libx264) fallbacks.",
+      );
+
       break;
     }
   }

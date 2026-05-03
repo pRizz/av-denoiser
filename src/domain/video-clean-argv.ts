@@ -44,8 +44,8 @@ export type RemuxVideoCopyParams = {
   readonly plannedContainer: PlannedVideoMuxContainer;
 };
 
-/** `copy` when the probe is on a stream-copy matrix row; `reencode-h264` when the source needs MP4 transcode (e.g. VP8 → MP4 fallback). */
-export type RemuxVideoStreamMode = "copy" | "reencode-h264";
+/** `copy` when the probe is on a stream-copy matrix row; `reencode-hevc` when the source needs HEVC-in-MP4 transcode (e.g. VP8 → MP4 fallback, MULTI-13). */
+export type RemuxVideoStreamMode = "copy" | "reencode-hevc";
 
 export type RemuxVideoWithProcessedAudioParams = RemuxVideoCopyParams & {
   readonly videoStreamMode: RemuxVideoStreamMode;
@@ -134,13 +134,15 @@ export function buildRemuxVideoWithProcessedAudioCommand(
       ? ["-c:v", "copy"]
       : [
           "-c:v",
-          "libx264",
+          "libx265",
           "-pix_fmt",
           "yuv420p",
           "-crf",
-          "23",
+          "28",
           "-preset",
-          "fast",
+          "slow",
+          "-tag:v",
+          "hvc1",
         ];
 
   const muxFormatArgs: string[] =

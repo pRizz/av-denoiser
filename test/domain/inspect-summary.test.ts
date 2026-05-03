@@ -24,6 +24,7 @@ test("buildPreservationNotesFromPlan emits would require for fallback-required",
 
   const notes = buildPreservationNotesFromPlan(plan);
   expect(notes.some((n) => n.includes("would require"))).toBe(true);
+  expect(notes.some((n) => n.includes("libx265"))).toBe(true);
 });
 
 test("buildPreservationNotesFromPlan emits Stream-copy for video-copy-safe", () => {

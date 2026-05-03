@@ -26,6 +26,10 @@ The CLI maps outcomes to stable integers (see `src/domain/exit-codes.ts`):
 | `processingFailure` | 5 | A processing step failed after planning. |
 | `fallbackRequired` | 6 | Continuing would need re-encoding or another fallback the user must approve. |
 
+## Video fallback (`--allow-video-fallback`)
+
+When the planner marks a file **`fallback-required`**, passing **`--allow-video-fallback`** on **`inspect`** or **`clean`** approves a path that **re-encodes video to HEVC (`libx265`)** into **MP4**—**slower** than **stream-copy** or a hypothetical **AVC** re-encode, but matches the **Phase 05 / MULTI-13** default.
+
 ## Test fixtures
 
 Short **audio** WAVs live under [`test/fixtures/audio/`](./test/fixtures/audio/). Short **video** samples (Commons sourced Theora/Vorbis **OGV** plus an **H.264** MP4 derivative) live under [`test/fixtures/video/`](./test/fixtures/video/); under the current stream-copy matrix the OGV probes as **video-copy-safe** **Matroska** output (AAC audio, copied video)—see [`test/fixtures/video/README.md`](./test/fixtures/video/README.md). Each folder has a README with licenses and regeneration commands.

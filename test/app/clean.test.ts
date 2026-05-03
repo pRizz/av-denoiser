@@ -557,7 +557,7 @@ test("runCleanRequest video-copy-safe execute runs extract remux and output prob
   expect(ffmpegArgsJoined).toContain("copy");
 });
 
-test("runCleanRequest fallback-required execute remuxes video with libx264 when allowVideoFallback", async () => {
+test("runCleanRequest fallback-required execute remuxes video with libx265 when allowVideoFallback", async () => {
   let ffprobeCalls = 0;
   let ffmpegArgsJoined = "";
   const ffmpegArgvs: string[][] = [];
@@ -608,13 +608,15 @@ test("runCleanRequest fallback-required execute remuxes video with libx264 when 
   expect(outcome.kind).toBe("success");
   expect(ffprobeCalls).toBe(2);
   expect(ffmpegArgsJoined).toContain("-vn");
-  expect(ffmpegArgsJoined).toContain("libx264");
+  expect(ffmpegArgsJoined).toContain("libx265");
 
-  const libx264Argv = ffmpegArgvs.find((a) => a.includes("libx264"));
-  expect(libx264Argv).toBeDefined();
-  expect(libx264Argv?.join(" ")).not.toContain("-f webm");
+  const libx265Argv = ffmpegArgvs.find((a) => a.includes("libx265"));
+  expect(libx265Argv).toBeDefined();
+  expect(libx265Argv?.join(" ")).not.toContain("-f webm");
   if (outcome.kind === "success" && outcome.clean !== undefined) {
     expect(outcome.clean.maybeReportText).toContain("re-encoded");
-    expect(outcome.clean.maybeReportText).toContain("Video: re-encoded");
+    expect(outcome.clean.maybeReportText).toContain(
+      "Video: re-encoded (HEVC, libx265)",
+    );
   }
 });

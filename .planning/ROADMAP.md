@@ -49,7 +49,7 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 1. **Dry-run** summaries show **`-f matroska`** / **`-f webm`** (or equivalent explicit mux selection) when required.
 2. Opus / AAC selection follows documented policy table; no raw user filtergraphs.
-3. **`fallback-required`** execute path still uses existing **libx264** recipe when matrix demands re-encode.
+3. **`fallback-required`** execute path used **libx264** through Phase **04**; **Phase 05 / MULTI-13** replaces fallback **video** with **`libx265`** (HEVC).
 
 **Depends on:** Phase 02  
 **Requirements:** MULTI-06, MULTI-07
@@ -77,6 +77,8 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 **Goal:** When **`clean`** **must** **re‑encode video** (**`fallback-required`** with **`--allow-video-fallback`**, matrix escapes), implement **libx265** FFmpeg paths and **prefer x265 over x264** as the **default/first-choice** re‑encode (**HEVC**/H.265), subject to **`PlannedContainer`** and Phase **03** mux/format policy.
 
+**Status:** Implemented (**MULTI-13**); see [.planning/phases/05-x265-preferred-video-reencode/](.planning/phases/05-x265-preferred-video-reencode/).
+
 **Success criteria**
 
 1. argv builders (**`video-clean-argv`** / successors) emit **`libx265`** (**and sane defaults**: e.g. **`-pix_fmt yuv420p`**, **`hvc1`** tagging for MP4 as needed) where **`libx264`** applies today for video re‑encode.
@@ -86,7 +88,7 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 **Depends on:** Phase **04** (verification harness); coordination with Phase **03** when **`fallback-required`** still references **libx264** inline — PLAN **Phase **03**/ **Phase **05** order** clarified at **`/gsd-plan-phase`** time.
 
-**Requirements:** TBD (add requirement ID row in **`REQUIREMENTS.md`** when planning Phase **05**).
+**Requirements:** MULTI-13
 
 **Artifacts:** [.planning/phases/05-x265-preferred-video-reencode/](.planning/phases/05-x265-preferred-video-reencode/)
 
@@ -94,6 +96,6 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 ## Next action
 
-Phase **04** implemented (**MULTI-08**–**MULTI-12**) — **`/gsd-discuss-phase 05`** or **`/gsd-plan-phase 05`** for x265-preferred video re-encode when ready.
+Milestone **v1.1** Phase **05** complete for **MULTI-13** — remaining **MULTI-01–05** (Phases **1–2**) still open on the roadmap.
 
-- Phase **04** artifacts: [.planning/phases/04-ux-verification-fixtures-regression/](.planning/phases/04-ux-verification-fixtures-regression/)
+- Phase **05** artifacts: [.planning/phases/05-x265-preferred-video-reencode/](.planning/phases/05-x265-preferred-video-reencode/)

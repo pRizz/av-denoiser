@@ -36,7 +36,12 @@ export function labelsForDroppedStreams(
 export function renderCleanRunReportText(report: CleanRunReport): string {
   const lines: string[] = [];
 
-  lines.push(`Video: ${report.videoPolicy}`);
+  const videoLine =
+    report.videoPolicy === "re-encoded"
+      ? "re-encoded (HEVC, libx265)"
+      : report.videoPolicy;
+
+  lines.push(`Video: ${videoLine}`);
 
   lines.push(`Audio: ${report.audioCodecSummary}`);
 

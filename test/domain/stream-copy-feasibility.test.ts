@@ -78,3 +78,7 @@ test("planVideoStreamCopyFeasibility multi-video falls back before codec matrix"
 test("canonicalVideoCodecForMatrix normalizes h265 alias", () => {
   expect(canonicalVideoCodecForMatrix("H265")).toBe("hevc");
 });
+
+test("canonicalVideoCodecForMatrix normalizes hev1 alias to hevc", () => {
+  expect(canonicalVideoCodecForMatrix("hev1")).toBe("hevc");
+});

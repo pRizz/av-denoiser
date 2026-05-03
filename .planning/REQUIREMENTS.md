@@ -34,6 +34,10 @@ Each item maps one-to-one into the live roadmap phases.
 - [x] **MULTI-11**: **Ffprobe-style fixtures** (VP9/WebM‑ish, **Theora**/Ogg‑ish minimally) unlock planning + argv tests without mandating heavyweight binaries beyond existing harness.
 - [x] **MULTI-12**: **Regression locks** preserve **MP4** **H.264/HEVC/AV1** **video-copy-safe** behaviors from shipped v1.1 codebase.
 
+### Video fallback re-encode
+
+- [x] **MULTI-13**: When **`clean`** runs **`fallback-required`** with **`--allow-video-fallback`**, FFmpeg **video** re-encode uses **`libx265`** with **MP4-appropriate defaults** (**`-pix_fmt yuv420p`**, **`-crf 28`**, **`-preset slow`**, **`-tag:v hvc1`** per **Phase 05** context), replacing **`libx264`**; **inspect** / **JSON** / **`verifyCleanOutput`** / tests remain truthful.
+
 ## Future (post‑v1.1)
 
 Defer unless explicitly scheduled:
@@ -68,8 +72,9 @@ Defer unless explicitly scheduled:
 | MULTI-10 | Phase 4 | Done |
 | MULTI-11 | Phase 4 | Done |
 | MULTI-12 | Phase 4 | Done |
+| MULTI-13 | Phase 5 | Done |
 
-**Coverage:** **12**/12 v1.1 IDs mapped (**4** phases).
+**Coverage:** **13**/13 v1.1 IDs mapped (**5** phase tracks; Phases **1–2** still pending).
 
 ---
 

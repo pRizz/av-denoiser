@@ -813,7 +813,7 @@ export async function runCleanRequest(
       demucsModulePrefix,
     }).steps;
 
-    // Remux invariant: modality fallback-required ⇒ videoStreamMode reencode-h264 and prelude
+    // Remux invariant: modality fallback-required ⇒ videoStreamMode reencode-hevc (MULTI-13) and prelude
     // plannedContainer mp4 — only pass planner fields through; argv builder avoids -f mp4 anyway.
 
     const remuxBuilt = buildRemuxVideoWithProcessedAudioCommand({
@@ -827,7 +827,7 @@ export async function runCleanRequest(
       ),
       videoStreamMode:
         executablePlan.modality === "fallback-required"
-          ? "reencode-h264"
+          ? "reencode-hevc"
           : "copy",
     });
 
@@ -979,7 +979,7 @@ export async function runCleanRequest(
         ),
         videoStreamMode:
           executablePlan.modality === "fallback-required"
-            ? "reencode-h264"
+            ? "reencode-hevc"
             : "copy",
       });
 

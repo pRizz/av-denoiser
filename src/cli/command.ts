@@ -131,7 +131,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
     .option("--json", "Print machine-readable JSON instead of text", false)
     .option(
       "--allow-video-fallback",
-      "Allow executing fallback-required preservation plans (same semantics as inspect)",
+      "Allow executing fallback-required plans; video re-encodes to HEVC (libx265), slower than stream-copy or AVC.",
       false,
     )
     .option(

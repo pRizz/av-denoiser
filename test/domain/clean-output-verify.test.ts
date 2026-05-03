@@ -121,6 +121,35 @@ describe("verifyCleanOutput", () => {
     expect(result.kind).toBe("ok");
   });
 
+  test("hev1 vs hevc probe strings canonical match => ok for video-copy-safe verify (MULTI-13)", () => {
+    const input: MediaProbe = {
+      streams: [
+        { index: 0, codec_type: "video", codec_name: "hev1" },
+        { index: 1, codec_type: "audio", codec_name: "aac" },
+      ],
+      format: { duration: "10.0" },
+    };
+    const output: MediaProbe = {
+      streams: [
+        { index: 0, codec_type: "video", codec_name: "hevc" },
+        { index: 1, codec_type: "audio", codec_name: "aac" },
+      ],
+      format: { duration: "10.0" },
+    };
+
+    const result = verifyCleanOutput({
+      outputPath: "/out.mp4",
+      outputExists: existsTrue,
+      outputFileSize: sizeNonEmpty,
+      inputProbe: input,
+      outputProbe: output,
+      plannedModality: "video-copy-safe",
+      claimedVideoCopied: true,
+    });
+
+    expect(result.kind).toBe("ok");
+  });
+
   test("hevc vs h264 => video-copy-mismatch", () => {
     const input = probeVideoAudio("10.0", "h264");
     const output = probeVideoAudio("10.0", "hevc");
