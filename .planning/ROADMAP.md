@@ -168,6 +168,6 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 ## Next action
 
-Run **`/discuss-phase`** (recommended) then **`/gsd-plan-phase`** for **Phase 06**, or **`/gsd-plan-phase 06`** directly. After **06–09** complete, **`/gsd-audit-milestone`** then **`/gsd-complete-milestone`** when the audit passes.
+Phase **06** gap closure is complete (**[01-VERIFICATION.md](phases/01-multi-container-output-model-path-derivation/01-VERIFICATION.md)**). Continue with **`/gsd-yolo-discuss 07`** or **`/gsd-plan-phase 07`** for **MULTI-03** feasibility vs requirements.
 
 **Audit:** [.planning/v1.1-MILESTONE-AUDIT.md](v1.1-MILESTONE-AUDIT.md)

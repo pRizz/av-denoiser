@@ -9,8 +9,8 @@ Each item maps one-to-one into the live roadmap phases.
 
 ### Output container expansion
 
-- [ ] **MULTI-01**: Planner emits a **planned output container** of **MP4**, **Matroska**, or **WebM** (typed domain value), derived deterministically from **ffprobe** facts plus the feasibility matrix—not from raw user FFmpeg strings alone.
-- [ ] **MULTI-02**: Default **output path derivation** (**`resolveOutputPath`** / **`avdn`**) produces a correct extension (**`.mkv`**, **`.webm`**, **`.mp4`**) aligned with **`plannedContainer`**, keeping collision‑safe basename rules from v1.
+- [x] **MULTI-01**: Planner emits a **planned output container** of **MP4**, **Matroska**, or **WebM** (typed domain value), derived deterministically from **ffprobe** facts plus the feasibility matrix—not from raw user FFmpeg strings alone.
+- [x] **MULTI-02**: Default **output path derivation** (**`resolveOutputPath`** / **`avdn`**) produces a correct extension (**`.mkv`**, **`.webm`**, **`.mp4`**) aligned with **`plannedContainer`**, keeping collision‑safe basename rules from v1.
 
 ### Stream-copy feasibility (VP9 / Theora)
 
@@ -60,8 +60,8 @@ Defer unless explicitly scheduled:
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MULTI-01 | Phase 6 (gap closure) | Pending |
-| MULTI-02 | Phase 6 (gap closure) | Pending |
+| MULTI-01 | Phase 1 (verified Phase 6 gap closure) | Complete |
+| MULTI-02 | Phase 1 (verified Phase 6 gap closure) | Complete |
 | MULTI-03 | Phase 7 (gap closure) | Pending |
 | MULTI-04 | Phase 2 | Complete |
 | MULTI-05 | Phase 2 | Complete |
@@ -74,7 +74,7 @@ Defer unless explicitly scheduled:
 | MULTI-12 | Phase 9 (gap closure) | Pending |
 | MULTI-13 | Phase 9 (gap closure) | Pending |
 
-**Coverage:** **13**/13 v1.1 IDs mapped — **11** IDs in **gap-closure Phases 06–09** (see [v1.1-MILESTONE-AUDIT.md](v1.1-MILESTONE-AUDIT.md)); **MULTI-04** / **MULTI-05** remain **Complete** from Phase **02** verification.
+**Coverage:** **13**/13 v1.1 IDs mapped — **6** **Complete** (**MULTI-01**, **MULTI-02** via [01-VERIFICATION.md](phases/01-multi-container-output-model-path-derivation/01-VERIFICATION.md); **MULTI-04**, **MULTI-05** via Phase **02**); **7** **Pending** in gap-closure Phases **07–09** (see [v1.1-MILESTONE-AUDIT.md](v1.1-MILESTONE-AUDIT.md)).
 
 ---
 
