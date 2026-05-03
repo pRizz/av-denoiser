@@ -14,29 +14,29 @@ Each item maps one-to-one into the live roadmap phases.
 
 ### Stream-copy feasibility (VP9 / Theora)
 
-- [x] **MULTI-03**: Lone **VP9** video + eligible audio qualifies for **`video-copy-safe`** against **WebM** and/or **Matroska** per matrix rows (`reasonCodes`, no silent optimism when gates fail).
+- [ ] **MULTI-03**: Lone **VP9** video + eligible audio qualifies for **`video-copy-safe`** against **WebM** and/or **Matroska** per matrix rows (`reasonCodes`, no silent optimism when gates fail).
 - [x] **MULTI-04**: Lone **theora** video + eligible audio qualifies for **`video-copy-safe`** against **Matroska** (and optionally **WebM**) per documented matrix constraints.
 - [x] **MULTI-05**: **Additional popular codecs** (e.g. **VP8**) get explicit matrix rows (**allow**, **fallback**, or **`unsupported`**) — every observation must carry a stable **reason token**; defaults remain conservative when uncertain.
 
 ### Remux execution
 
-- [x] **MULTI-06**: Typed **FFmpeg argv** builders select **mux-specific** defaults (e.g. **`-f webm`** / **`matroska`** when required) alongside **`-map`** / **`c:v`** / planned audio codec policy.
-- [x] **MULTI-07**: **Per-container planned audio codec** documented and implemented (**AAC**, **opus**, **`pcm_*`** subsets as allowed—for example WebM‑first **Opus** where required by policy—with **AAC** continuity where FFmpeg/muxer accepts it reliably).
+- [ ] **MULTI-06**: Typed **FFmpeg argv** builders select **mux-specific** defaults (e.g. **`-f webm`** / **`matroska`** when required) alongside **`-map`** / **`c:v`** / planned audio codec policy.
+- [ ] **MULTI-07**: **Per-container planned audio codec** documented and implemented (**AAC**, **opus**, **`pcm_*`** subsets as allowed—for example WebM‑first **Opus** where required by policy—with **AAC** continuity where FFmpeg/muxer accepts it reliably).
 
 ### Surfaces & trust
 
-- [x] **MULTI-08**: **`inspect`** preservation bullets and **`--json`** payloads describe **planned container**, **success/fallback tokens**, and **HDR / side‑data caveats** where copy applies.
-- [x] **MULTI-09**: **`fallback-required`** + **`allowVideoFallback`** semantics remain truthful when the matrix demands **video re‑encode** (unchanged acknowledgment story).
-- [x] **MULTI-10**: **`verifyCleanOutput`** (or successor) validates **canonical codec equality** compatible with mux output probes for new containers.
+- [ ] **MULTI-08**: **`inspect`** preservation bullets and **`--json`** payloads describe **planned container**, **success/fallback tokens**, and **HDR / side‑data caveats** where copy applies.
+- [ ] **MULTI-09**: **`fallback-required`** + **`allowVideoFallback`** semantics remain truthful when the matrix demands **video re‑encode** (unchanged acknowledgment story).
+- [ ] **MULTI-10**: **`verifyCleanOutput`** (or successor) validates **canonical codec equality** compatible with mux output probes for new containers.
 
 ### Tests & fixtures
 
-- [x] **MULTI-11**: **Ffprobe-style fixtures** (VP9/WebM‑ish, **Theora**/Ogg‑ish minimally) unlock planning + argv tests without mandating heavyweight binaries beyond existing harness.
-- [x] **MULTI-12**: **Regression locks** preserve **MP4** **H.264/HEVC/AV1** **video-copy-safe** behaviors from shipped v1.1 codebase.
+- [ ] **MULTI-11**: **Ffprobe-style fixtures** (VP9/WebM‑ish, **Theora**/Ogg‑ish minimally) unlock planning + argv tests without mandating heavyweight binaries beyond existing harness.
+- [ ] **MULTI-12**: **Regression locks** preserve **MP4** **H.264/HEVC/AV1** **video-copy-safe** behaviors from shipped v1.1 codebase.
 
 ### Video fallback re-encode
 
-- [x] **MULTI-13**: When **`clean`** runs **`fallback-required`** with **`--allow-video-fallback`**, FFmpeg **video** re-encode uses **`libx265`** with **MP4-appropriate defaults** (**`-pix_fmt yuv420p`**, **`-crf 28`**, **`-preset slow`**, **`-tag:v hvc1`** per **Phase 05** context), replacing **`libx264`**; **inspect** / **JSON** / **`verifyCleanOutput`** / tests remain truthful.
+- [ ] **MULTI-13**: When **`clean`** runs **`fallback-required`** with **`--allow-video-fallback`**, FFmpeg **video** re-encode uses **`libx265`** with **MP4-appropriate defaults** (**`-pix_fmt yuv420p`**, **`-crf 28`**, **`-preset slow`**, **`-tag:v hvc1`** per **Phase 05** context), replacing **`libx264`**; **inspect** / **JSON** / **`verifyCleanOutput`** / tests remain truthful.
 
 ## Future (post‑v1.1)
 
@@ -60,21 +60,21 @@ Defer unless explicitly scheduled:
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MULTI-01 | Phase 1 | Pending |
-| MULTI-02 | Phase 1 | Pending |
-| MULTI-03 | Phase 2 | Complete |
+| MULTI-01 | Phase 6 (gap closure) | Pending |
+| MULTI-02 | Phase 6 (gap closure) | Pending |
+| MULTI-03 | Phase 7 (gap closure) | Pending |
 | MULTI-04 | Phase 2 | Complete |
 | MULTI-05 | Phase 2 | Complete |
-| MULTI-06 | Phase 3 | Done |
-| MULTI-07 | Phase 3 | Done |
-| MULTI-08 | Phase 4 | Done |
-| MULTI-09 | Phase 4 | Done |
-| MULTI-10 | Phase 4 | Done |
-| MULTI-11 | Phase 4 | Done |
-| MULTI-12 | Phase 4 | Done |
-| MULTI-13 | Phase 5 | Done |
+| MULTI-06 | Phase 8 (gap closure) | Pending |
+| MULTI-07 | Phase 8 (gap closure) | Pending |
+| MULTI-08 | Phase 9 (gap closure) | Pending |
+| MULTI-09 | Phase 9 (gap closure) | Pending |
+| MULTI-10 | Phase 9 (gap closure) | Pending |
+| MULTI-11 | Phase 9 (gap closure) | Pending |
+| MULTI-12 | Phase 9 (gap closure) | Pending |
+| MULTI-13 | Phase 9 (gap closure) | Pending |
 
-**Coverage:** **13**/13 v1.1 IDs mapped (**5** phase tracks; Phases **1–2** still pending).
+**Coverage:** **13**/13 v1.1 IDs mapped — **11** IDs in **gap-closure Phases 06–09** (see [v1.1-MILESTONE-AUDIT.md](v1.1-MILESTONE-AUDIT.md)); **MULTI-04** / **MULTI-05** remain **Complete** from Phase **02** verification.
 
 ---
 

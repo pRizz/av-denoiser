@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **[v1.0 — CLI & v1 requirements](milestones/v1.0-ROADMAP.md)** — shipped **2026-05-03** — frozen checklist + reqs + audit artifacts. Phase execution workspace snapshot: [.planning/milestones/v1.0-phases/](.planning/milestones/v1.0-phases/)
-- 🚧 **v1.1 — Multi-container stream copy** — **active** ([REQUIREMENTS.md](REQUIREMENTS.md)); phased roadmap **01–05** (**01–04** MULTI roadmap + **Phase 05** codec preference extension).
+- 🚧 **v1.1 — Multi-container stream copy** — **active** ([REQUIREMENTS.md](REQUIREMENTS.md)); core delivery **01–05**; **06–09** [gap closure](v1.1-MILESTONE-AUDIT.md) after `/gsd-audit-milestone`.
 
 ---
 
@@ -94,8 +94,80 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 ---
 
+### Phase 06: Gap closure — Phase 01 verification & MULTI-01/02 traceability
+
+**Goal:** Add **Phase 01** `*-VERIFICATION.md`, reconcile **MULTI-01** / **MULTI-02** in [REQUIREMENTS.md](REQUIREMENTS.md) (checkboxes + traceability) with evidence from existing implementation and **`bun run verify`**.
+
+**Gap closure:** [v1.1-MILESTONE-AUDIT.md](v1.1-MILESTONE-AUDIT.md) — missing **01** verification; integration/doc drift **MULTI-01**, **MULTI-02**.
+
+**Success criteria**
+
+1. **01-VERIFICATION.md** exists with `status: passed | gaps_found` and requirement evidence table.
+2. **MULTI-01** / **MULTI-02** checkboxes and traceability reflect verified state (no “implemented but Pending” drift).
+
+**Depends on:** Phase 05 (original delivery)  
+**Requirements:** MULTI-01, MULTI-02 (closure)
+
+**Artifacts:** [.planning/phases/06-gap-closure-phase-01-verification-multi-01-02/](.planning/phases/06-gap-closure-phase-01-verification-multi-01-02/)
+
+---
+
+### Phase 07: Gap closure — MULTI-03 feasibility vs requirements
+
+**Goal:** Close audit **unsatisfied** gap: **MULTI-03** text allows **VP9** copy-safe for **WebM and/or Matroska**; code is **WebM-only** for VP9 today. Either narrow **REQUIREMENTS.md** / docs to match shipped matrix **or** implement and test a **Matroska** pairing — no silent optimism.
+
+**Gap closure:** Audit **gaps.requirements** (MULTI-03); **tech_debt** Phase 02 Matroska-for-VP9 decision.
+
+**Success criteria**
+
+1. **MULTI-03** requirement text, **02-VERIFICATION.md** (or addendum), and **`planVideoStreamCopyFeasibility`** behavior are mutually consistent.
+2. **`bun run verify`** green after any code change.
+
+**Depends on:** Phase 06 (recommended — traceability hygiene first)  
+**Requirements:** MULTI-03 (closure)
+
+**Artifacts:** [.planning/phases/07-gap-closure-multi-03-feasibility-alignment/](.planning/phases/07-gap-closure-multi-03-feasibility-alignment/)
+
+---
+
+### Phase 08: Gap closure — Phase 03 remux pipeline trust
+
+**Goal:** Add **03-VERIFICATION.md**; fix **intermediate pipeline artifact naming** where deliverable mux is **WebM/Matroska** but on-disk intermediate suggests **`.mp4`** (audit **MULTI-06** / **MULTI-07** integration).
+
+**Gap closure:** Missing Phase **03** verification; mux/filename mismatch.
+
+**Success criteria**
+
+1. **03-VERIFICATION.md** with evidence for **MULTI-06**, **MULTI-07**.
+2. Intermediate filenames (where applicable) align with mux policy or are documented if unchanged for FFmpeg-compat reasons.
+
+**Depends on:** Phase 07 (recommended — MULTI-03 truth stable)  
+**Requirements:** MULTI-06, MULTI-07 (closure)
+
+**Artifacts:** [.planning/phases/08-gap-closure-phase-03-remux-pipeline-trust/](.planning/phases/08-gap-closure-phase-03-remux-pipeline-trust/)
+
+---
+
+### Phase 09: Gap closure — output verify & Phase 04/05 verification
+
+**Goal:** Add **04-VERIFICATION.md** and **05-VERIFICATION.md**; extend **`verifyCleanOutput`** (or successor) so **fallback / re-encode** paths assert **canonical video codec** on output where **MULTI-10** / **MULTI-13** promise truthfulness — not only copy-safe **`claimedVideoCopied`** branch.
+
+**Gap closure:** Orphan/partial **MULTI-08**–**MULTI-13** relative to phase **VERIFICATION** artifacts; E2E verify gap on fallback video.
+
+**Success criteria**
+
+1. Verification files exist for phases **04** and **05** with requirement ↔ evidence mapping (**MULTI-08**–**MULTI-13**).
+2. Tests cover post-fallback output video codec verification (or documented equivalent), **`bun run verify`** green.
+
+**Depends on:** Phase 08 (recommended — remux naming/mux policy settled)  
+**Requirements:** MULTI-08, MULTI-09, MULTI-10, MULTI-11, MULTI-12, MULTI-13 (closure)
+
+**Artifacts:** [.planning/phases/09-gap-closure-output-verify-trust/](.planning/phases/09-gap-closure-output-verify-trust/)
+
+---
+
 ## Next action
 
-Milestone **v1.1** roadmap phases **01–05** are executed — **MULTI-03**, **MULTI-04**, and **MULTI-05** are marked complete after Phase **02** retrospective closure (**[.planning/phases/02-feasibility-matrix-vp9-theora-extras/02-VERIFICATION.md](.planning/phases/02-feasibility-matrix-vp9-theora-extras/02-VERIFICATION.md)**). Optionally run **`/gsd-complete-milestone`** when you want formal archive/next-milestone bookkeeping.
+Run **`/discuss-phase`** (recommended) then **`/gsd-plan-phase`** for **Phase 06**, or **`/gsd-plan-phase 06`** directly. After **06–09** complete, **`/gsd-audit-milestone`** then **`/gsd-complete-milestone`** when the audit passes.
 
-**Traceability:** reconcile **MULTI-01–02** checkboxes in **[REQUIREMENTS.md](REQUIREMENTS.md)** with Phase **01** summaries if anything still reads “pending.”
+**Audit:** [.planning/v1.1-MILESTONE-AUDIT.md](v1.1-MILESTONE-AUDIT.md)
