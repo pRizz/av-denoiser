@@ -29,7 +29,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 12: Milestone Gap — Phase 8 verification** — Author `08-VERIFICATION.md`; add or extend app-layer tests wherever audit cited thin execution coverage (`TOOL-03`–`TOOL-08`). (completed 2026-05-02)
 - [x] **Phase 13: Milestone Gap — Batch manifest doctor snapshot** — Wire default `batch` CLI path to populate `manifest.maybeDoctorFacts` (reuse doctor/discovery pathway from `clean`/deps) plus regression tests (`BATCH-05`, broken flow batch manifest completeness). (completed 2026-05-02)
 - [x] **Phase 14: Milestone Gap — Guided optional-tool parity & Phase 6/7 verification** — Extend guided selections/prompts and argv equivalence for Demucs, Audacity, and LADSPA opt-in parity with `clean`/`batch`; author `06-VERIFICATION.md` and `07-VERIFICATION.md` (`CLI-04`, `UX-01`–`UX-05`, integration guided→heavy tools). (completed 2026-05-02)
-- [ ] **Phase 15: Milestone Gap — Requirements traceability sync** — Reconcile `.planning/REQUIREMENTS.md` checklist and traceability table with shipped v1 (`bun run verify`) and ROADMAP Phases **1–14**; fix stale `[ ]`/“Pending” rows per [.planning/v1.0-MILESTONE-AUDIT.md](./v1.0-MILESTONE-AUDIT.md) tech debt (**docs-governance**).
+- [x] **Phase 15: Milestone Gap — Requirements traceability sync** — Reconcile `.planning/REQUIREMENTS.md` checklist and traceability table with shipped v1 (`bun run verify`) and ROADMAP Phases **1–14**; fix stale `[ ]`/“Pending” rows per [.planning/v1.0-MILESTONE-AUDIT.md](./v1.0-MILESTONE-AUDIT.md) tech debt (**docs-governance**). (completed 2026-05-03)
 - [ ] **Phase 16: Milestone Gap — TOOL-07 semantics & verification** — Resolve re-audit `gaps.integration`: align **TOOL-07** wording and `08-VERIFICATION.md` with either diagnostics-only **`melt`** posture or an explicit minimal opt-in runnable path (**must** reconcile requirement text, verification evidence, docs).
 - [ ] **Phase 17: Milestone Gap — Verification pointer stubs** — Add lightweight `*-VERIFICATION.md` (or `VERIFICATION-Pointers.md`) under gap-phase dirs **09–14** linking to authoritative `03`–`08` verification artifacts (**planning-layout** tech debt from audit).
 
@@ -240,7 +240,7 @@ Plans:
 **Plans**: _(TBD via `/gsd-plan-phase 15`)_
 
 Plans:
-- [ ] 15-01-PLAN.md — Normalize checklist `[x]`/`[ ]` + traceability **Status**/Phase attribution vs roadmap **Requirement Coverage**.
+- [x] 15-01-PLAN.md — Normalize checklist `[x]`/`[ ]` + traceability **Status**/Phase attribution vs roadmap **Requirement Coverage**.
 
 ### Phase 16: Milestone Gap — TOOL-07 semantics & verification
 **Goal**: Explicit closure of **`gaps.integration`** (doctor **`melt`** visibility vs runnable Kdenlive/MLT-derived step) plus **TOOL-07** REQ / **`08-VERIFICATION.md`** / doc alignment (**REQ semantics** tech debt).
@@ -283,7 +283,7 @@ Phases execute in numeric order: 1 … 17. Second-pass gap work **15–17** clos
 | 12. Milestone Gap — Phase 8 verification | 1/1 | Complete    | 2026-05-02 |
 | 13. Milestone Gap — Batch manifest doctor snapshot | 1/1 | Complete    | 2026-05-02 |
 | 14. Milestone Gap — Guided optional-tool parity & Phase 6/7 verification | 2/2 | Complete    | 2026-05-02 |
-| 15. Milestone Gap — Requirements traceability sync | 0/1 | Not started | — |
+| 15. Milestone Gap — Requirements traceability sync | 1/1 | Complete    | 2026-05-03 |
 | 16. Milestone Gap — TOOL-07 semantics & verification | 0/1 | Not started | — |
 | 17. Milestone Gap — Verification pointer stubs | 0/1 | Not started | — |
 
