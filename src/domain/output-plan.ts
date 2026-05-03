@@ -141,6 +141,7 @@ export function planMediaOutputPrelude(
   }
 
   const plannedContainer = streamCopy.plannedContainer;
+  // Phase 02 / MULTI-03: VP9→WebM copy-safe uses Opus deliverable codec; Matroska/MP4 paths stay AAC baseline (CONTEXT narrow exception vs D-09).
   const plannedAudioCodec =
     plannedContainer === "webm" ? "opus" : defaultPlannedAudioCodec;
 
