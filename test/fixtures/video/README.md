@@ -4,13 +4,13 @@ Short clips sourced from **[Wikimedia Commons](https://commons.wikimedia.org/)**
 
 ## Why two files?
 
-[`stream-copy-feasibility.ts`](../../../src/domain/stream-copy-feasibility.ts) only treats **`h264`** video as **video-copy-safe** for MP4 output. Commons-native **Theora** (`.ogv`) inputs therefore classify as **`fallback-required`** unless the user passes `--allow-video-fallback`. A separate **H.264+AAC** file is committed as a **local transcode derivative** so you can test the stream-copy-safe path without hunting for Wikimedia-hosted MP4 (Commons discourages H.264/MP4 uploads).
+[`stream-copy-feasibility.ts`](../../../src/domain/stream-copy-feasibility.ts) treats lone **H.264**, **HEVC / H.265**, and **AV1** video as **video-copy-safe** for the default **MP4** plan. **Theora**/**VP9**/**ProRes**/**other** codecs still land in **`fallback-required`** unless the user passes **`--allow-video-fallback`**. **H.264+AAC** (`fanfare…mp4`) is a small committed derivative for the copy-safe path without hunting for Wikimedia-hosted MP4 (Commons discourages H.264/MP4 uploads).
 
 ## Bundled files
 
 | File | Role | License |
 |------|------|---------|
-| `water-slow-motion-wikimedia-cc-by-sa-2p8s.ogv` | ~2.8 s, **Theora + Vorbis** in Ogg (~74 KB). **Audio + video**; use for **inspect / clean with `--allow-video-fallback`** (non-H.264 ⇒ fallback in v1 matrix). | **CC BY-SA 4.0** — [File:Water_slow_motion_edited_0.ogv](https://commons.wikimedia.org/wiki/File:Water_slow_motion_edited_0.ogv) (Symode09). Direct download resolves via [Special:Redirect](https://commons.wikimedia.org/wiki/Special:Redirect/file/Water_slow_motion_edited_0.ogv). Derivatives must remain **share-alike** and credit the author. |
+| `water-slow-motion-wikimedia-cc-by-sa-2p8s.ogv` | ~2.8 s, **Theora + Vorbis** in Ogg (~74 KB). **Audio + video**; use for **inspect / clean with `--allow-video-fallback`** (Theora is outside the MP4 copy allowlist). | **CC BY-SA 4.0** — [File:Water_slow_motion_edited_0.ogv](https://commons.wikimedia.org/wiki/File:Water_slow_motion_edited_0.ogv) (Symode09). Direct download resolves via [Special:Redirect](https://commons.wikimedia.org/wiki/Special:Redirect/file/Water_slow_motion_edited_0.ogv). Derivatives must remain **share-alike** and credit the author. |
 | `fanfare-wikimedia-cc0-h264-aac-4s.mp4` | ~4 s, **H.264 + AAC** in MP4 (~250 KB). **Transcoded derivative** from the Commons **CC0** “Fanfare for common film” clip (trim + scale/crf locally). Matches **video-copy-safe** modality for defaults. | **CC0** for the upstream work — [File:Fanfare_for_common_film.ogv](https://commons.wikimedia.org/wiki/File:Fanfare_for_common_film.ogv) (Tradimus). This MP4 is a format conversion; cite the original file when redistributing. |
 
 ## Refresh upstream OGV from Commons

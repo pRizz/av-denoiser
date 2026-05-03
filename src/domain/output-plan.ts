@@ -38,7 +38,7 @@ export type PlanMediaOutputInput = {
 
 /**
  * Computes output modality before any FFmpeg execution. Video + audio uses Phase 3
- * stream-copy rules (narrow H.264 + MP4 whitelist); Phase 4+ may widen the matrix.
+ * stream-copy feasibility (single video, MP4 plan, MP4-safe codec whitelist: H.264, HEVC, AV1).
  */
 export function planMediaOutput(input: PlanMediaOutputInput): OutputPlan {
   const plannedAudioCodec: PlannedAudioCodec = "aac";

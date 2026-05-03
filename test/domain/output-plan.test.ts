@@ -239,7 +239,7 @@ test("planMediaOutput prefers lower-index default stream over higher channel cou
   expect(plan.selectedAudioStreamIndex).toBe(0);
 });
 
-test("planMediaOutput fallback-required for hevc plus aac and extra audio without codec_name", () => {
+test("planMediaOutput video-copy-safe for hevc plus aac and extra audio without codec_name", () => {
   const probe: MediaProbe = {
     streams: [
       {
@@ -275,13 +275,66 @@ test("planMediaOutput fallback-required for hevc plus aac and extra audio withou
     pathOutcome: pathOk("/in.mov", "/out.mp4"),
   });
 
-  expect(plan.modality).toBe("fallback-required");
+  expect(plan.modality).toBe("video-copy-safe");
   if (plan.modality === "unsupported") {
     return;
   }
 
-  expect(plan.reasonCodes).toContain("video-fallback-non-h264-video");
+  expect(plan.reasonCodes).toContain("video-copy-hevc-mp4-v1");
   expect(plan.selectedAudioStreamIndex).toBe(1);
+});
+
+test("planMediaOutput video-copy-safe when video codec is h265 alias", () => {
+  const probe: MediaProbe = {
+    streams: [
+      {
+        index: 0,
+        codec_name: "h265",
+        codec_type: "video",
+      },
+      {
+        index: 1,
+        codec_name: "aac",
+        codec_type: "audio",
+        channels: 2,
+      },
+    ],
+    format: { format_name: "isoav,mov,mp4,m4a,3gp,3g2,mj2" },
+  };
+
+  const plan = planMediaOutput({
+    probe,
+    pathOutcome: pathOk("/in.mp4", "/out.avdn.mp4"),
+  });
+
+  expect(plan.modality).toBe("video-copy-safe");
+  if (plan.modality === "unsupported") {
+    return;
+  }
+
+  expect(plan.reasonCodes).toContain("video-copy-hevc-mp4-v1");
+});
+
+test("planMediaOutput video-copy-safe for av1 plus aac when format metadata present", () => {
+  const probe: MediaProbe = {
+    streams: [
+      { index: 0, codec_name: "av1", codec_type: "video" },
+      { index: 1, codec_name: "aac", codec_type: "audio", channels: 2 },
+    ],
+    format: { format_name: "mov,mp4,m4a,3gp,3g2,mj2,webm" },
+  };
+
+  const plan = planMediaOutput({
+    probe,
+    pathOutcome: pathOk("/in.mp4", "/out.avdn.mp4"),
+  });
+
+  expect(plan.modality).toBe("video-copy-safe");
+  if (plan.modality === "unsupported") {
+    return;
+  }
+
+  expect(plan.reasonCodes).toContain("video-copy-av1-mp4-v1");
 });
 
 test("planMediaOutput fallback-required when video stream lacks codec_name", () => {

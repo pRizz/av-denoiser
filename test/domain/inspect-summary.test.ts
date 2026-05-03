@@ -38,6 +38,7 @@ test("buildPreservationNotesFromPlan emits Stream-copy for video-copy-safe", () 
 
   const notes = buildPreservationNotesFromPlan(plan);
   expect(notes.some((n) => n.includes("Stream-copy"))).toBe(true);
+  expect(notes.some((n) => n.includes("HEVC"))).toBe(true);
 });
 
 test("buildPreservationNotesFromPlan emits audio-only phrasing", () => {

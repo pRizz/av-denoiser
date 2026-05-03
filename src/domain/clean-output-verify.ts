@@ -1,4 +1,5 @@
 import type { MediaProbe } from "./media-probe";
+import { canonicalMp4CopyVideoCodec } from "./stream-copy-feasibility";
 
 export const DURATION_VERIFY_RELATIVE_FRACTION = 0.005;
 export const DURATION_VERIFY_MIN_ABS_SECONDS = 0.5;
@@ -152,7 +153,10 @@ export function verifyCleanOutput(
       };
     }
 
-    if (inCodec !== outCodec) {
+    if (
+      canonicalMp4CopyVideoCodec(inCodec) !==
+      canonicalMp4CopyVideoCodec(outCodec)
+    ) {
       return {
         kind: "failure",
         reason: "video-copy-mismatch",

@@ -34,6 +34,29 @@ const theoraVorbisVideoProbe = JSON.stringify({
   },
 });
 
+const hevcMinimalVideoProbe = JSON.stringify({
+  streams: [
+    {
+      index: 0,
+      codec_name: "hevc",
+      codec_type: "video",
+      disposition: { default: 1 },
+    },
+    {
+      index: 1,
+      codec_name: "aac",
+      codec_type: "audio",
+      channels: 2,
+      sample_rate: "48000",
+      disposition: { default: 1 },
+    },
+  ],
+  format: {
+    duration: "60.120000",
+    format_name: "mov,mp4,m4a,3gp,3g2,mj2",
+  },
+});
+
 const fallbackMultiVideoProbe = JSON.stringify({
   streams: [
     {
@@ -163,6 +186,40 @@ test("runCleanRequest video-copy-safe dry-run succeeds with extract and remux st
   expect(joined).toContain("-vn");
   expect(joined).toContain("-c:v");
   expect(joined).toContain("copy");
+});
+
+test("runCleanRequest video-copy-safe dry-run succeeds for lone hevc probe with stream copy remux step", async () => {
+  const outcome = await runCleanRequest(
+    baseCleanInput({
+      inputPath: "clip.mov",
+      dryRun: true,
+      knobs: { noiseStrength: 0.2 },
+    }),
+    {
+      cwd: "/project",
+      maybeWhich: fakeWhichVideoScenario(),
+      runProcess: async () => ({
+        kind: "exited",
+        exitCode: 0,
+        stdout: hevcMinimalVideoProbe,
+        stderr: "",
+      }),
+      outputExists: outputExistsForCleanProbeOnly("/project", "clip.mov"),
+    },
+  );
+
+  expect(outcome.kind).toBe("success");
+  if (outcome.kind !== "success" || outcome.clean === undefined) {
+    return;
+  }
+
+  expect(outcome.clean.summary.modality).toBe("video-copy-safe");
+  const joined = outcome.clean.summary.steps
+    .map((s) => s.displayCommand)
+    .join("\n");
+  expect(joined).toContain("-c:v");
+  expect(joined).toContain("copy");
+  expect(joined).not.toContain("libx264");
 });
 
 test("runCleanRequest fallback-required without allow flag returns fallback-required", async () => {

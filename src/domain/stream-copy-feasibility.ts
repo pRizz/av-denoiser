@@ -7,16 +7,43 @@ export type EvaluateStreamCopyFeasibilityArgs = {
   readonly plannedAudioCodec: PlannedAudioCodec;
 };
 
-/** Video stream copy assessment for Phase 3 narrow MP4 + H.264 v1 matrix. */
+/** Stable success tokens appended to `video-copy-safe` plans when the lone video codec is on the MP4 stream-copy allowlist. */
+export type Mp4VideoStreamCopySuccessReasonCode =
+  | "video-copy-h264-mp4-v1"
+  | "video-copy-hevc-mp4-v1"
+  | "video-copy-av1-mp4-v1";
+
+/** Video stream copy assessment: MP4 planned output + structural gates + codec allowlist (H.264 / HEVC / AV1). */
 export type StreamCopyFeasibilityResult =
   | {
       readonly kind: "video-copy-safe";
-      readonly reasonCodes: readonly ["video-copy-h264-mp4-v1"];
+      readonly reasonCodes: readonly [Mp4VideoStreamCopySuccessReasonCode];
     }
   | {
       readonly kind: "fallback-required";
       readonly reasonCodes: readonly string[];
     };
+
+const MP4_STREAM_COPY_SUCCESS: Readonly<
+  Record<"h264" | "hevc" | "av1", Mp4VideoStreamCopySuccessReasonCode>
+> = {
+  h264: "video-copy-h264-mp4-v1",
+  hevc: "video-copy-hevc-mp4-v1",
+  av1: "video-copy-av1-mp4-v1",
+};
+
+/**
+ * Canonical video codec tag for comparing input vs output probes after copy.
+ * Treats `h265` as equivalent to `hevc` when ffprobe differs between files.
+ */
+export function canonicalMp4CopyVideoCodec(codecName: string): string {
+  const n = codecName.trim().toLowerCase();
+  if (n === "h265") {
+    return "hevc";
+  }
+
+  return n;
+}
 
 /**
  * Deterministic feasibility for copying the lone video stream into the planned MP4 container.
@@ -66,16 +93,18 @@ export function evaluateStreamCopyFeasibility(
     };
   }
 
-  const codecNormalized = rawVideoCodec.toLowerCase();
-  if (codecNormalized !== "h264") {
+  const bucket = canonicalMp4CopyVideoCodec(rawVideoCodec);
+  if (bucket !== "h264" && bucket !== "hevc" && bucket !== "av1") {
     return {
       kind: "fallback-required",
       reasonCodes: ["video-fallback-non-h264-video"],
     };
   }
 
+  const successToken = MP4_STREAM_COPY_SUCCESS[bucket];
+
   return {
     kind: "video-copy-safe",
-    reasonCodes: ["video-copy-h264-mp4-v1"],
+    reasonCodes: [successToken],
   };
 }

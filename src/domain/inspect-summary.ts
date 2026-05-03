@@ -38,7 +38,10 @@ export function buildPreservationNotesFromPlan(
       break;
     case "video-copy-safe":
       notes.push(
-        "Stream-copy path: lone H.264 stream + MP4 plan matches the Phase 3 v1 matrix (FFmpeg must still validate at execution).",
+        "Stream-copy path: lone video on the MP4 allowlist (H.264, HEVC/H.265, or AV1); planned output is MP4 + AAC. FFmpeg must still validate remux at execution.",
+      );
+      notes.push(
+        "HEVC HDR or advanced side data is best-effort: stream copy preserves compressed video bytes; container/player behavior may still differ from the source.",
       );
       break;
     case "fallback-required": {
