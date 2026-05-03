@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: — Multi-container stream copy
 status: executing
-stopped_at: Phase 04 context gathered
-last_updated: "2026-05-03T17:20:53.195Z"
-last_activity: 2026-05-03 -- Phase 03 planning complete
+stopped_at: Phase 05 next — x265-preferred video re-encode
+last_updated: "2026-05-03T18:05:00.000Z"
+last_activity: 2026-05-03 -- Phase 04 implementation complete (MULTI-08–MULTI-12)
 progress:
   total_phases: 5
-  completed_phases: 2
-  total_plans: 6
-  completed_plans: 4
-  percent: 67
+  completed_phases: 4
+  total_plans: 8
+  completed_plans: 6
+  percent: 80
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-03)
 
 **Core value:** Users can pass audio or video through a guided denoise pipeline and get cleaned output while minimizing unnecessary video recompression.
-**Current focus:** **v1.1 Multi-container stream copy** — VP9/WebM, Theora/Matroska feasibility + remux.
+**Current focus:** **v1.1 Multi-container stream copy** — VP9/WebM, Theora/Matroska feasibility + remux; operator trust (**MULTI-08–12**) shipped.
 
 ## Current Position
 
-Phase: 03 — next (after **02** implementation landed)  
+Phase: **05** — x265-preferred video re-encode (next)  
 Plan: roadmap-driven  
-Status: Ready to execute
-Last activity: 2026-05-03 -- Phase 03 planning complete
+Status: Ready to discuss / plan when starting Phase **05**  
+Last activity: 2026-05-03 -- Phase **04** implementation complete
 
-Progress: Milestone **v1.1** — **2**/5 roadmap phases coded (**01–02**). Roadmap: [.planning/ROADMAP.md](.planning/ROADMAP.md).
+Progress: Milestone **v1.1** — **4**/5 roadmap phases coded through Phase **04** (see [.planning/ROADMAP.md](.planning/ROADMAP.md)).
 
 ## Performance Metrics
 
@@ -48,7 +48,8 @@ None yet.
 
 ### Roadmap Evolution
 
-- **2026-05-03**: **Phase **05** added**: x265-preferred video re‑encode — default **libx265** where video re‑encode uses **libx264** today (**depends on Phase **04**); workspace **`.planning/phases/05-x265-preferred-video-reencode/`**.
+- **2026-05-03**: Phase **04** executed — MULTI-08–12 (inspect/clean trust surfaces, **`verifyCleanOutput`** canonical codec synonyms, fixtures, MP4 regression literals). Summaries: [.planning/phases/04-ux-verification-fixtures-regression/](.planning/phases/04-ux-verification-fixtures-regression/)
+- **2026-05-03**: Phase **05** added — x265-preferred video re‑encode: default **`libx265`** where video re‑encode uses **`libx264`** today (depends on Phase **04**); workspace [.planning/phases/05-x265-preferred-video-reencode/](.planning/phases/05-x265-preferred-video-reencode/)
 - **2026-05-03**: Ad-hoc Phase 1 roadmap line (duplicate **`01-*`** folder) superseded by **`/gsd-new-milestone --reset-phase-numbers`**: all **`.planning/phases/*`** moved to [.planning/milestones/v1.0-phases/](.planning/milestones/v1.0-phases/); live **`ROADMAP.md`** recreated for **v1.1** phases **01–04**.
 
 ### Blockers/Concerns
@@ -58,6 +59,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-03T17:20:53.193Z
-Stopped at: Phase 04 context gathered
-Resume tip: [.planning/ROADMAP.md](.planning/ROADMAP.md) Phase **03**
+Last session: 2026-05-03T18:05:00.000Z  
+Stopped at: Phase **05** next  
+Resume tip: [.planning/ROADMAP.md](.planning/ROADMAP.md) Phase **05**

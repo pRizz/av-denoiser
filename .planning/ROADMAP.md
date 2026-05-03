@@ -60,6 +60,8 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 **Goal:** Ship operator-grade messaging + output verification + tests (**MULTI-08**–**MULTI-12**).
 
+**Status:** Implemented (see [.planning/phases/04-ux-verification-fixtures-regression/](.planning/phases/04-ux-verification-fixtures-regression/)).
+
 **Success criteria**
 
 1. Preservation notes / JSON mention container + HDR caveats coherently.
@@ -92,6 +94,6 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 ## Next action
 
-Phase **03** implemented — **`/gsd-discuss-phase 04`** then **`/gsd-plan-phase 04`**, or **`/gsd-execute-phase 04`** when plans exist.
+Phase **04** implemented (**MULTI-08**–**MULTI-12**) — **`/gsd-discuss-phase 05`** or **`/gsd-plan-phase 05`** for x265-preferred video re-encode when ready.
 
-- Phase **03** artifacts: [.planning/phases/03-ffmpeg-remux-muxers-audio-policy/](.planning/phases/03-ffmpeg-remux-muxers-audio-policy/)
+- Phase **04** artifacts: [.planning/phases/04-ux-verification-fixtures-regression/](.planning/phases/04-ux-verification-fixtures-regression/)

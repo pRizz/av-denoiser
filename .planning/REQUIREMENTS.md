@@ -25,14 +25,14 @@ Each item maps one-to-one into the live roadmap phases.
 
 ### Surfaces & trust
 
-- [ ] **MULTI-08**: **`inspect`** preservation bullets and **`--json`** payloads describe **planned container**, **success/fallback tokens**, and **HDR / side‑data caveats** where copy applies.
-- [ ] **MULTI-09**: **`fallback-required`** + **`allowVideoFallback`** semantics remain truthful when the matrix demands **video re‑encode** (unchanged acknowledgment story).
-- [ ] **MULTI-10**: **`verifyCleanOutput`** (or successor) validates **canonical codec equality** compatible with mux output probes for new containers.
+- [x] **MULTI-08**: **`inspect`** preservation bullets and **`--json`** payloads describe **planned container**, **success/fallback tokens**, and **HDR / side‑data caveats** where copy applies.
+- [x] **MULTI-09**: **`fallback-required`** + **`allowVideoFallback`** semantics remain truthful when the matrix demands **video re‑encode** (unchanged acknowledgment story).
+- [x] **MULTI-10**: **`verifyCleanOutput`** (or successor) validates **canonical codec equality** compatible with mux output probes for new containers.
 
 ### Tests & fixtures
 
-- [ ] **MULTI-11**: **Ffprobe-style fixtures** (VP9/WebM‑ish, **Theora**/Ogg‑ish minimally) unlock planning + argv tests without mandating heavyweight binaries beyond existing harness.
-- [ ] **MULTI-12**: **Regression locks** preserve **MP4** **H.264/HEVC/AV1** **video-copy-safe** behaviors from shipped v1.1 codebase.
+- [x] **MULTI-11**: **Ffprobe-style fixtures** (VP9/WebM‑ish, **Theora**/Ogg‑ish minimally) unlock planning + argv tests without mandating heavyweight binaries beyond existing harness.
+- [x] **MULTI-12**: **Regression locks** preserve **MP4** **H.264/HEVC/AV1** **video-copy-safe** behaviors from shipped v1.1 codebase.
 
 ## Future (post‑v1.1)
 
@@ -63,11 +63,11 @@ Defer unless explicitly scheduled:
 | MULTI-05 | Phase 2 | Pending |
 | MULTI-06 | Phase 3 | Done |
 | MULTI-07 | Phase 3 | Done |
-| MULTI-08 | Phase 4 | Pending |
-| MULTI-09 | Phase 4 | Pending |
-| MULTI-10 | Phase 4 | Pending |
-| MULTI-11 | Phase 4 | Pending |
-| MULTI-12 | Phase 4 | Pending |
+| MULTI-08 | Phase 4 | Done |
+| MULTI-09 | Phase 4 | Done |
+| MULTI-10 | Phase 4 | Done |
+| MULTI-11 | Phase 4 | Done |
+| MULTI-12 | Phase 4 | Done |
 
 **Coverage:** **12**/12 v1.1 IDs mapped (**4** phases).
 
