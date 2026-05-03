@@ -11,17 +11,17 @@ const minimalVideoAudioFixture = await Bun.file(
   `${import.meta.dir}/../fixtures/ffprobe/minimal-video-audio.json`,
 ).text();
 
-const theoraVorbisVideoProbe = JSON.stringify({
+const vp8OpusFallbackVideoProbe = JSON.stringify({
   streams: [
     {
       index: 0,
-      codec_name: "theora",
+      codec_name: "vp8",
       codec_type: "video",
       disposition: { default: 1 },
     },
     {
       index: 1,
-      codec_name: "vorbis",
+      codec_name: "opus",
       codec_type: "audio",
       channels: 2,
       sample_rate: "48000",
@@ -30,7 +30,7 @@ const theoraVorbisVideoProbe = JSON.stringify({
   ],
   format: {
     duration: "2.840000",
-    format_name: "ogg",
+    format_name: "webm",
   },
 });
 
@@ -503,7 +503,7 @@ test("runCleanRequest fallback-required execute remuxes video with libx264 when 
 
   const outcome = await runCleanRequest(
     baseCleanInput({
-      inputPath: "clip.ogv",
+      inputPath: "clip.webm",
       dryRun: false,
       knobs: { noiseStrength: 0.2 },
       force: true,
@@ -512,7 +512,7 @@ test("runCleanRequest fallback-required execute remuxes video with libx264 when 
     {
       cwd: "/project",
       maybeWhich: fakeWhichVideoScenario(),
-      mkdtempSync: () => "/tmp/av-test-clean-theora",
+      mkdtempSync: () => "/tmp/av-test-clean-vp8-fallback",
       rmSync: () => {},
       outputExists: () => true,
       outputFileSize: () => 4096,
@@ -525,7 +525,7 @@ test("runCleanRequest fallback-required execute remuxes video with libx264 when 
             exitCode: 0,
             stdout:
               ffprobeCalls === 1
-                ? theoraVorbisVideoProbe
+                ? vp8OpusFallbackVideoProbe
                 : minimalVideoAudioFixture,
             stderr: "",
           };

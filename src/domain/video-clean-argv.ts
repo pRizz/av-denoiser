@@ -18,7 +18,7 @@ export type RemuxVideoCopyParams = {
   readonly plannedAudioCodec: PlannedAudioCodec;
 };
 
-/** `copy` when the probe is on the MP4 stream-copy allowlist; `reencode-h264` when the source video is outside that list (e.g. Theora → MP4 fallback). */
+/** `copy` when the probe is on a stream-copy matrix row; `reencode-h264` when the source needs MP4 transcode (e.g. VP8 → MP4 fallback). */
 export type RemuxVideoStreamMode = "copy" | "reencode-h264";
 
 export type RemuxVideoWithProcessedAudioParams = RemuxVideoCopyParams & {

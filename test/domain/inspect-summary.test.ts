@@ -41,6 +41,22 @@ test("buildPreservationNotesFromPlan emits Stream-copy for video-copy-safe", () 
   expect(notes.some((n) => n.includes("HEVC"))).toBe(true);
 });
 
+test("buildPreservationNotesFromPlan emits WebM pairing phrasing for VP9 copy-safe", () => {
+  const plan: OutputPlan = {
+    modality: "video-copy-safe",
+    reasonCodes: ["video-copy-vp9-webm-v1"],
+    resolvedInputPath: "/in.webm",
+    resolvedOutputPath: "/out.avdn.webm",
+    selectedAudioStreamIndex: 1,
+    plannedAudioCodec: "opus",
+    plannedContainer: "webm",
+  };
+
+  const notes = buildPreservationNotesFromPlan(plan);
+  expect(notes.some((n) => n.toLowerCase().includes("webm"))).toBe(true);
+  expect(notes.some((n) => n.includes("Opus"))).toBe(true);
+});
+
 test("buildPreservationNotesFromPlan emits audio-only phrasing", () => {
   const plan: OutputPlan = {
     modality: "audio-only",

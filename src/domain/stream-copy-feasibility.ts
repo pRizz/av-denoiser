@@ -1,26 +1,27 @@
 import type { MediaProbe } from "./media-probe";
-import type { PlannedAudioCodec, PlannedContainer } from "./output-plan";
+import type { PlannedContainer } from "./output-plan";
 
-export type EvaluateStreamCopyFeasibilityArgs = {
-  readonly probe: MediaProbe;
-  readonly plannedContainer: PlannedContainer;
-  readonly plannedAudioCodec: PlannedAudioCodec;
-};
-
-/** Stable success tokens appended to `video-copy-safe` plans when the lone video codec is on the MP4 stream-copy allowlist. */
+/** Stable success tokens for MP4 stream-copy rows (MULTI-12 — no silent renames). */
 export type Mp4VideoStreamCopySuccessReasonCode =
   | "video-copy-h264-mp4-v1"
   | "video-copy-hevc-mp4-v1"
   | "video-copy-av1-mp4-v1";
 
-/** Video stream copy assessment: MP4 planned output + structural gates + codec allowlist (H.264 / HEVC / AV1). */
-export type StreamCopyFeasibilityResult =
+/** All copy-safe success tokens (MP4 whitelist + VP9/WebM + Theora/Matroska). */
+export type VideoStreamCopySuccessReasonCode =
+  | Mp4VideoStreamCopySuccessReasonCode
+  | "video-copy-vp9-webm-v1"
+  | "video-copy-theora-matroska-v1";
+
+export type StreamCopyFeasibilityPlanningResult =
   | {
       readonly kind: "video-copy-safe";
-      readonly reasonCodes: readonly [Mp4VideoStreamCopySuccessReasonCode];
+      readonly plannedContainer: PlannedContainer;
+      readonly reasonCodes: readonly [VideoStreamCopySuccessReasonCode];
     }
   | {
       readonly kind: "fallback-required";
+      readonly plannedContainer: PlannedContainer;
       readonly reasonCodes: readonly string[];
     };
 
@@ -45,76 +46,98 @@ export function canonicalMp4CopyVideoCodec(codecName: string): string {
   return n;
 }
 
+/**
+ * Canonical codec bucket for feasibility matrix branching (aliases shared with MP4 rows).
+ */
+export function canonicalVideoCodecForMatrix(codecName: string): string {
+  return canonicalMp4CopyVideoCodec(codecName);
+}
+
 /*
  * Reason-code naming (MULTI roadmap):
- * - Success (copy-safe row): prefer `video-copy-<canonicalCodec>-<container>-v<n>`,
- *   e.g. potential `video-copy-vp9-webm-v1` in Phase 02. Current MP4 allowlist retains
- *   `video-copy-h264-mp4-v1`, `video-copy-hevc-mp4-v1`, `video-copy-av1-mp4-v1` (MULTI-12 —
- *   no silent renames without regressions).
- * - Fallback/disallow: `video-fallback-*` or `unsupported-*`; encode container/particular
- *   denial in slug when meaningful (Phase 02 matrix rows).
+ * - Success rows: `video-copy-<canonicalCodec>-<container>-v<n>` (MULTI-12 literals for MP4 unchanged).
+ *   Deferred backlog: optional `video-copy-vp9-matroska-v1` (CONTEXT D-04) — not implemented in Phase 02.
+ * - Fallback/disallow: `video-fallback-*` or `unsupported-*`; encode container/particular denial in slug when meaningful.
  */
 
 /**
- * Deterministic feasibility for copying the lone video stream into the planned MP4 container.
+ * Probe-only feasibility: lone structural video stream + codec → copy-safe pairing or deterministic fallback.
  */
-export function evaluateStreamCopyFeasibility(
-  args: EvaluateStreamCopyFeasibilityArgs,
-): StreamCopyFeasibilityResult {
-  void args.plannedAudioCodec;
-
-  const plannedContainer = args.plannedContainer;
-  const videoStreams = args.probe.streams.filter(
+export function planVideoStreamCopyFeasibility(
+  probe: MediaProbe,
+): StreamCopyFeasibilityPlanningResult {
+  const videoStreams = probe.streams.filter(
     (stream) => stream.codec_type === "video",
   );
 
   if (videoStreams.length !== 1) {
     return {
       kind: "fallback-required",
+      plannedContainer: "mp4",
       reasonCodes: ["video-fallback-multi-video-streams"],
     };
   }
 
-  if (plannedContainer !== "mp4") {
-    return {
-      kind: "fallback-required",
-      reasonCodes: ["video-fallback-non-mp4-output-not-supported-for-video-v1"],
-    };
-  }
-
-  const formatName = args.probe.format?.format_name?.trim() ?? "";
+  const formatName = probe.format?.format_name?.trim() ?? "";
   if (formatName.length === 0) {
     return {
       kind: "fallback-required",
+      plannedContainer: "mp4",
       reasonCodes: ["video-fallback-missing-format-metadata"],
     };
   }
 
   const firstVideo = videoStreams[0];
   if (firstVideo === undefined) {
-    throw new Error("evaluateStreamCopyFeasibility requires one video stream");
+    throw new Error("planVideoStreamCopyFeasibility requires one video stream");
   }
 
   const rawVideoCodec = firstVideo.codec_name?.trim() ?? "";
   if (rawVideoCodec.length === 0) {
     return {
       kind: "fallback-required",
+      plannedContainer: "mp4",
       reasonCodes: ["video-fallback-missing-video-codec-name"],
     };
   }
 
-  const bucket = canonicalMp4CopyVideoCodec(rawVideoCodec);
-  if (bucket !== "h264" && bucket !== "hevc" && bucket !== "av1") {
+  const bucket = canonicalVideoCodecForMatrix(rawVideoCodec);
+
+  if (bucket === "h264" || bucket === "hevc" || bucket === "av1") {
     return {
-      kind: "fallback-required",
-      reasonCodes: ["video-fallback-non-h264-video"],
+      kind: "video-copy-safe",
+      plannedContainer: "mp4",
+      reasonCodes: [MP4_STREAM_COPY_SUCCESS[bucket]],
     };
   }
 
-  const successToken = MP4_STREAM_COPY_SUCCESS[bucket];
+  if (bucket === "vp9") {
+    return {
+      kind: "video-copy-safe",
+      plannedContainer: "webm",
+      reasonCodes: ["video-copy-vp9-webm-v1"],
+    };
+  }
+
+  if (bucket === "theora") {
+    return {
+      kind: "video-copy-safe",
+      plannedContainer: "matroska",
+      reasonCodes: ["video-copy-theora-matroska-v1"],
+    };
+  }
+
+  if (bucket === "vp8") {
+    return {
+      kind: "fallback-required",
+      plannedContainer: "mp4",
+      reasonCodes: ["video-fallback-vp8-matrix-explicit-v1"],
+    };
+  }
 
   return {
-    kind: "video-copy-safe",
-    reasonCodes: [successToken],
+    kind: "fallback-required",
+    plannedContainer: "mp4",
+    reasonCodes: ["video-fallback-non-h264-video"],
   };
 }

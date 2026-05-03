@@ -2,7 +2,7 @@ import { basename, extname } from "node:path";
 
 import type { MediaProbe } from "./media-probe";
 import type { OutputPathSuccess } from "./output-path";
-import { evaluateStreamCopyFeasibility } from "./stream-copy-feasibility";
+import { planVideoStreamCopyFeasibility } from "./stream-copy-feasibility";
 
 export type PlannedAudioCodec = "aac" | "opus" | "pcm_s16le";
 export type PlannedContainer = "mp4" | "matroska" | "webm" | "wav";
@@ -91,9 +91,8 @@ export function implicitDefaultOutputExtWithDot(
 export function planMediaOutputPrelude(
   probe: MediaProbe,
 ): PlanMediaOutputPrelude {
-  const plannedAudioCodec: PlannedAudioCodec = "aac";
-  /** PHASE 02: derive from feasibility matrix (VP9/Theora → matroska/webm rows). */
-  const plannedContainer: PlannedContainer = "mp4";
+  const defaultPlannedAudioCodec: PlannedAudioCodec = "aac";
+  const defaultPlannedContainer: PlannedContainer = "mp4";
 
   const audioStreams = probe.streams.filter(
     (stream) => stream.codec_type === "audio",
@@ -122,28 +121,28 @@ export function planMediaOutputPrelude(
       kind: "ok",
       modality: "audio-only",
       reasonCodes: ["phase-2-stub-audio-only"],
-      plannedAudioCodec,
-      plannedContainer,
+      plannedAudioCodec: defaultPlannedAudioCodec,
+      plannedContainer: defaultPlannedContainer,
       selectedAudioStreamIndex: selected.index,
     };
   }
 
-  const streamCopy = evaluateStreamCopyFeasibility({
-    probe,
-    plannedContainer,
-    plannedAudioCodec,
-  });
+  const streamCopy = planVideoStreamCopyFeasibility(probe);
 
   if (streamCopy.kind === "fallback-required") {
     return {
       kind: "ok",
       modality: "fallback-required",
       reasonCodes: streamCopy.reasonCodes,
-      plannedAudioCodec,
-      plannedContainer,
+      plannedAudioCodec: defaultPlannedAudioCodec,
+      plannedContainer: streamCopy.plannedContainer,
       selectedAudioStreamIndex: selected.index,
     };
   }
+
+  const plannedContainer = streamCopy.plannedContainer;
+  const plannedAudioCodec =
+    plannedContainer === "webm" ? "opus" : defaultPlannedAudioCodec;
 
   return {
     kind: "ok",
@@ -157,8 +156,8 @@ export function planMediaOutputPrelude(
 
 /**
  * Computes output modality before any FFmpeg execution. Video + audio uses
- * stream-copy feasibility (single video, planned container, MP4-safe codec whitelist
- * when planned container is mp4: H.264, HEVC, AV1).
+ * `planVideoStreamCopyFeasibility` (structural gates + codec × container matrix:
+ * MP4 H.264/HEVC/AV1, VP9→WebM, Theora→Matroska, explicit fallbacks).
  */
 export function planMediaOutput(input: PlanMediaOutputInput): OutputPlan {
   const prelude = planMediaOutputPrelude(input.probe);

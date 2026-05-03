@@ -112,6 +112,41 @@ test("encode aac mp4 includes 192k and aac codec", () => {
   expect(args).toContain("192k");
 });
 
+test("encode opus webm uses libopus and webm mux", () => {
+  const step: LogicalPipelineStep = {
+    tool: "ffmpeg",
+    step: {
+      kind: "encode-deliverable",
+      audioCodec: "opus",
+      container: "webm",
+    },
+  };
+
+  const result = buildLogicalStepCommand({
+    step,
+    ctx: {
+      ...baseCtx(),
+      plannedAudioCodec: "opus",
+      plannedContainer: "webm",
+      finalOutputPath: "/out/final.webm",
+    },
+    ffmpegExecutable: "/bin/ffmpeg",
+    maybeSoxExecutable: null,
+    ...demucsOff,
+  });
+
+  expect(result.kind).toBe("created");
+  if (result.kind !== "created") {
+    return;
+  }
+
+  const { args } = result.command;
+  expect(args).toContain("-c:a");
+  expect(args).toContain("libopus");
+  expect(args).toContain("-f");
+  expect(args).toContain("webm");
+});
+
 test("SoX gentle dynamics prefixes executable and includes highpass and compand", () => {
   const step: LogicalPipelineStep = {
     tool: "sox",

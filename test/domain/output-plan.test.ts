@@ -197,7 +197,7 @@ test("planMediaOutput fallback-required when two video streams", () => {
   expect(plan.reasonCodes).toContain("video-fallback-multi-video-streams");
 });
 
-test("planMediaOutput fallback-required when lone video codec is vp9", () => {
+test("planMediaOutput video-copy-safe when lone video codec is VP9 with format metadata", () => {
   const probe: MediaProbe = {
     streams: [
       { index: 0, codec_name: "vp9", codec_type: "video" },
@@ -208,7 +208,55 @@ test("planMediaOutput fallback-required when lone video codec is vp9", () => {
 
   const plan = planMediaOutput({
     probe,
-    pathOutcome: pathOk("/in.webm", "/out.mp4"),
+    pathOutcome: pathOk("/in.webm", "/out.avdn.webm"),
+  });
+
+  expect(plan.modality).toBe("video-copy-safe");
+  if (plan.modality === "unsupported") {
+    return;
+  }
+
+  expect(plan.reasonCodes).toContain("video-copy-vp9-webm-v1");
+  expect(plan.plannedContainer).toBe("webm");
+  expect(plan.plannedAudioCodec).toBe("opus");
+});
+
+test("planMediaOutput video-copy-safe when lone video codec is theora", () => {
+  const probe: MediaProbe = {
+    streams: [
+      { index: 0, codec_name: "theora", codec_type: "video" },
+      { index: 1, codec_name: "vorbis", codec_type: "audio", channels: 2 },
+    ],
+    format: { format_name: "ogg" },
+  };
+
+  const plan = planMediaOutput({
+    probe,
+    pathOutcome: pathOk("/in.ogv", "/out.avdn.mkv"),
+  });
+
+  expect(plan.modality).toBe("video-copy-safe");
+  if (plan.modality === "unsupported") {
+    return;
+  }
+
+  expect(plan.reasonCodes).toContain("video-copy-theora-matroska-v1");
+  expect(plan.plannedContainer).toBe("matroska");
+  expect(plan.plannedAudioCodec).toBe("aac");
+});
+
+test("planMediaOutput fallback-required when lone video codec is vp8", () => {
+  const probe: MediaProbe = {
+    streams: [
+      { index: 0, codec_name: "vp8", codec_type: "video" },
+      { index: 1, codec_name: "opus", codec_type: "audio", channels: 2 },
+    ],
+    format: { format_name: "webm" },
+  };
+
+  const plan = planMediaOutput({
+    probe,
+    pathOutcome: pathOk("/in.webm", "/out.avdn.mp4"),
   });
 
   expect(plan.modality).toBe("fallback-required");
@@ -216,7 +264,7 @@ test("planMediaOutput fallback-required when lone video codec is vp9", () => {
     return;
   }
 
-  expect(plan.reasonCodes).toContain("video-fallback-non-h264-video");
+  expect(plan.reasonCodes).toContain("video-fallback-vp8-matrix-explicit-v1");
 });
 
 test("planMediaOutput fallback-required when format_name missing", () => {

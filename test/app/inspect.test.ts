@@ -205,7 +205,7 @@ test("runInspectRequest surfaces planning-failure when output collides", async (
 test("runInspectRequest denies fallback-required without allowVideoFallback flag", async () => {
   const stdout = JSON.stringify({
     streams: [
-      { index: 0, codec_name: "vp9", codec_type: "video" },
+      { index: 0, codec_name: "vp8", codec_type: "video" },
       {
         index: 1,
         codec_name: "aac",
@@ -256,7 +256,7 @@ test("runInspectRequest denies fallback-required without allowVideoFallback flag
 test("runInspectRequest allows fallback-required when acknowledged", async () => {
   const stdout = JSON.stringify({
     streams: [
-      { index: 0, codec_name: "vp9", codec_type: "video" },
+      { index: 0, codec_name: "vp8", codec_type: "video" },
       {
         index: 1,
         codec_name: "aac",
