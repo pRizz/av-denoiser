@@ -14,9 +14,9 @@ Each item maps one-to-one into the live roadmap phases.
 
 ### Stream-copy feasibility (VP9 / Theora)
 
-- [ ] **MULTI-03**: Lone **VP9** video + eligible audio qualifies for **`video-copy-safe`** against **WebM** and/or **Matroska** per matrix rows (`reasonCodes`, no silent optimism when gates fail).
-- [ ] **MULTI-04**: Lone **theora** video + eligible audio qualifies for **`video-copy-safe`** against **Matroska** (and optionally **WebM**) per documented matrix constraints.
-- [ ] **MULTI-05**: **Additional popular codecs** (e.g. **VP8**) get explicit matrix rows (**allow**, **fallback**, or **`unsupported`**) — every observation must carry a stable **reason token**; defaults remain conservative when uncertain.
+- [x] **MULTI-03**: Lone **VP9** video + eligible audio qualifies for **`video-copy-safe`** against **WebM** and/or **Matroska** per matrix rows (`reasonCodes`, no silent optimism when gates fail).
+- [x] **MULTI-04**: Lone **theora** video + eligible audio qualifies for **`video-copy-safe`** against **Matroska** (and optionally **WebM**) per documented matrix constraints.
+- [x] **MULTI-05**: **Additional popular codecs** (e.g. **VP8**) get explicit matrix rows (**allow**, **fallback**, or **`unsupported`**) — every observation must carry a stable **reason token**; defaults remain conservative when uncertain.
 
 ### Remux execution
 
@@ -62,9 +62,9 @@ Defer unless explicitly scheduled:
 |-------------|-------|--------|
 | MULTI-01 | Phase 1 | Pending |
 | MULTI-02 | Phase 1 | Pending |
-| MULTI-03 | Phase 2 | Pending |
-| MULTI-04 | Phase 2 | Pending |
-| MULTI-05 | Phase 2 | Pending |
+| MULTI-03 | Phase 2 | Complete |
+| MULTI-04 | Phase 2 | Complete |
+| MULTI-05 | Phase 2 | Complete |
 | MULTI-06 | Phase 3 | Done |
 | MULTI-07 | Phase 3 | Done |
 | MULTI-08 | Phase 4 | Done |

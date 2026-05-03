@@ -96,6 +96,6 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 ## Next action
 
-Milestone **v1.1** Phase **05** complete for **MULTI-13** — remaining **MULTI-01–05** (Phases **1–2**) still open on the roadmap.
+Milestone **v1.1** roadmap phases **01–05** are executed — **MULTI-03**, **MULTI-04**, and **MULTI-05** are marked complete after Phase **02** retrospective closure (**[.planning/phases/02-feasibility-matrix-vp9-theora-extras/02-VERIFICATION.md](.planning/phases/02-feasibility-matrix-vp9-theora-extras/02-VERIFICATION.md)**). Optionally run **`/gsd-complete-milestone`** when you want formal archive/next-milestone bookkeeping.
 
-- Phase **05** artifacts: [.planning/phases/05-x265-preferred-video-reencode/](.planning/phases/05-x265-preferred-video-reencode/)
+**Traceability:** reconcile **MULTI-01–02** checkboxes in **[REQUIREMENTS.md](REQUIREMENTS.md)** with Phase **01** summaries if anything still reads “pending.”

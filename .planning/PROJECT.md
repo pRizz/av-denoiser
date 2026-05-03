@@ -95,6 +95,8 @@ Processes above follow Bright Builds/GSD milestones.
 
 **Boundary event — v1.0 shipped & archived (**2026-05-03**):** roadmap + REQ snapshot under **`.planning/milestones/v1.0-*`**, **`v1.0`** git tag; **`v1.0`** phase workspaces moved wholesale to [.planning/milestones/v1.0-phases/](.planning/milestones/v1.0-phases/) when **v1.1** numbering reset (**2026-05-03**).
 
+**Phase 02 retrospective closure (**2026-05-03**):** **`planVideoStreamCopyFeasibility`** feasibility matrix (**MULTI-03–MULTI-05**) is verified and traced; prelude **Opus** selection for VP9/WebM documented in **`output-plan.ts`**.
+
 ---
 
-*Last updated: 2026-05-03 — **v1.1** milestone initialized (multi-container stream copy scope).*
+*Last updated: 2026-05-03 — **v1.1** feasibility matrix (**Phase 02**) closed in GSD; optional milestone archive next.*
