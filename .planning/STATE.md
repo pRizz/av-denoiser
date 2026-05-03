@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: completed
-stopped_at: Phase 17 plan 01 complete (verification pointer stubs)
-last_updated: "2026-05-03T14:08:58.986Z"
+milestone: v1.1
+milestone_name: Multi-container stream copy
+status: planning
+stopped_at: Milestone initialized — requirements + roadmap drafted (2026-05-03)
+last_updated: "2026-05-03T17:40:00.000Z"
 last_activity: 2026-05-03
 progress:
-  total_phases: 17
-  completed_phases: 17
-  total_plans: 37
-  completed_plans: 37
-  percent: 100
+  total_phases: 4
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -20,80 +20,43 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-05-03)
 
-**Core value:** Users can pass an audio or video file through a guided denoise pipeline and get a cleaned output while avoiding video recompression whenever possible.
-**Current focus:** **v1.0 shipped & archived** — plan **v1.1+** with `/gsd-new-milestone` (recreate `.planning/REQUIREMENTS.md`).
+**Core value:** Users can pass audio or video through a guided denoise pipeline and get cleaned output while minimizing unnecessary video recompression.
+**Current focus:** **v1.1 Multi-container stream copy** — VP9/WebM, Theora/Matroska feasibility + remux.
 
 ## Current Position
 
-Phase: —
-Plan: —
-Status: **v1.0 archived** — next milestone undefined
-Last activity: 2026-05-03
+Phase: Not started (ready for discuss/plan)  
+Plan: —  
+Status: **v1.1** requirements + roadmap captured — start **Phase 01** when ready  
+Last activity: 2026-05-03 — milestone bootstrap
 
-Progress: [.planning/milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md) freezes **17**/17 phases (**37** plans). Live [.planning/ROADMAP.md](ROADMAP.md) awaits `/gsd-new-milestone`.
+Progress: **0**/4 phases (**0** plans). Roadmap: [.planning/ROADMAP.md](.planning/ROADMAP.md). Requirements: [.planning/REQUIREMENTS.md](.planning/REQUIREMENTS.md).
 
 ## Performance Metrics
 
-**Velocity:**
-
-- Total plans completed: 28
-- Average duration: N/A
-- Total execution time: 0.0 hours
-
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| Phase 01 P01 | 4 min | 3 tasks | 10 files |
-| Phase 01 P02 | 3 min | 3 tasks | 8 files |
-| Phase 01 P03 | 2 min | 1 tasks | 4 files |
-| Phase 01 P04 | 4 min | 2 tasks | 11 files |
-| 01 | 4 | - | - |
-| 2 | 3 | - | - |
-| 1 | 4 | - | - |
-| 3 | 2 | - | - |
-| 4 | 4 | - | - |
-| 5 | 4 | - | - |
-| 6 | 3 | - | - |
-| 9 | 1 | - | - |
-| 11 | 1 | - | - |
-| 12 | 1 | - | - |
-| 14 | 2 | - | - |
+**(Carried from v1.0 for history — reset velocity at first v1.1 plan execution.)**
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- [Roadmap]: Use 8 standard-granularity phases because v1 has 42 requirements and five integration paths.
-- [Roadmap]: Model video-copy planning before media execution because preserving video is the highest-risk promise.
-- [Roadmap]: Keep Demucs, Audacity, and Kdenlive/MLT as explicit optional integrations with preflight and diagnostics.
-- [Phase 01]: Scoped Biome verification to package/config/source/test files for Phase 1. — This keeps repo-owned code verification green without rewriting GSD planning metadata.
-- [Phase 01]: Kept doctor as typed routing with honest Phase 1 output. — Real tool readiness checks belong to later Phase 1 plans, while this plan establishes the CLI contract.
-- [Phase 01]: Centralized trust-model exit outcomes, argv-only process command specs, and structured doctor readiness facts.
-- [Phase 01]: Kept process execution behind one ProcessRunner adapter that only calls Bun.spawn with an executable plus argv array.
-- [Phase 01]: Used injectable maybeWhich and runProcess dependencies so tool discovery tests never require local media tools.
-- [Phase 01]: Reported future capability checks as explicit not-checked-yet facts instead of implying full tool readiness.
-- [Phase 01]: Kept Commander syntax-only and routed executable behavior through runCliRequest outcomes.
-- [Phase 01]: Rendered doctor output from structured DoctorReport facts instead of overclaiming capability readiness.
-- [Phase 01]: Documented target/current Bun runtime information as informational for Phase 1 compatibility.
-- [Phase 5]: Post-run verification uses duration tolerance and optional video codec match when modality is video-copy-safe and copy is claimed.
-- [Phase 7]: **`batch`** subcommand with **`--input`**, **`--glob`** (requires **`--accept-glob-risk`**), **`--from-dir`**, **`--output-dir`**, **`--fail-fast`**, **`--concurrency`**, manifest path override; **`runBatchRequest`** writes **`batch-manifest.json`**, aggregates worst exit code, uses **`p-limit`** for parallel runs.
+Decisions are logged in PROJECT.md Key Decisions table. v1.1 planning begins with **multi-container copy-first** expansion; see **REQUIREMENTS.md** **MULTI-\*** IDs.
 
 ### Pending Todos
 
 None yet.
 
+### Roadmap Evolution
+
+- **2026-05-03**: Ad-hoc Phase 1 roadmap line (duplicate **`01-*`** folder) superseded by **`/gsd-new-milestone --reset-phase-numbers`**: all **`.planning/phases/*`** moved to [.planning/milestones/v1.0-phases/](.planning/milestones/v1.0-phases/); live **`ROADMAP.md`** recreated for **v1.1** phases **01–04**.
+
 ### Blockers/Concerns
 
-- [Phase 4]: SoX versus SoX_ng install names and effects availability need validation on real machines (tests use mocks).
-- [Phase 5]: Codec/container compatibility matrix needs fixture-backed verification on real diverse inputs.
-- [Phase 8]: Real-machine validation still useful for Demucs installs, Audacity mod-script-pipe enablement, and distro-specific LADSPA plugin paths.
+- **Real mux coverage:** WebM/Matroska copy can still fail on hostile samples — policy must stay honest about **ffmpeg execution** risk.
+- Carry-over: SoX/Audacity/Demucs validation debt from v1 remains **non-blocking** for MULTI scope.
 
 ## Session Continuity
 
-Last session: 2026-05-03T13:59:23.915Z
-Stopped at: Phase 17 plan 01 complete (verification pointer stubs)
-Resume file: .planning/phases/17-milestone-gap-verification-pointer-stubs/17-01-SUMMARY.md
+Last session: **2026-05-03**  
+Stopped at: **v1.1 milestone bootstrap complete** — **Phase 01** awaiting **`/gsd-plan-phase`**  
+Resume tip: archived v1 workspaces live under **`.planning/milestones/v1.0-phases/`**

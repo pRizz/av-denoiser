@@ -1,5 +1,15 @@
 # Milestones
 
+## v1.1 Multi-container stream copy (In progress — started: 2026-05-03)
+
+**Objective:** Probe-driven **WebM/Matroska** outputs with **VP9** + **Theora** (and scoped extras) on the **video-copy-safe** matrix when provable; truthful fallbacks elsewhere.
+
+**Tracking:** [.planning/REQUIREMENTS.md](REQUIREMENTS.md) (**MULTI-\*** IDs) · [.planning/ROADMAP.md](ROADMAP.md) (Phases **01–04**) · [.planning/PROJECT.md](PROJECT.md)
+
+**Archived v1 workspaces:** [.planning/milestones/v1.0-phases/](milestones/v1.0-phases/) (frozen move **2026-05-03**)
+
+---
+
 ## v1.0 CLI & v1 requirements (Shipped: 2026-05-03)
 
 **Phases completed:** 17 phases, 37 plans (task counts unevenly recorded in summaries)

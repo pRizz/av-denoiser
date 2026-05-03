@@ -10,6 +10,18 @@ Casual users can run **`guided-clean`**; operators use **`clean`** and **`batch`
 
 Users can pass an audio or video file through a guided denoise pipeline and get a cleaned output **while minimizing unnecessary video recompression**.
 
+## Current Milestone: v1.1 Multi-container stream copy
+
+**Goal:** Extend stream-copy-first planning and remux so **VP9**/**WebM**, **Theora**/ **Matroska**, and carefully scoped **additional codecs** can complete **without unnecessary H.264 re-encode** when the planner can prove a container+codec pairing is **`video-copy-safe`**.
+
+**Target features:**
+- **Matroska** and **WebM** as first-class planned output containers alongside **MP4** (probe-driven container choice from a typed feasibility matrix).
+- Explicit **VP9** and **Theora** matrix rows (deterministic **`reasonCodes`**, unchanged fallback semantics when not copy-safe).
+- **Per-container final audio policy** for the remux step (AAC vs Opus/etc. documented per muxer—not ad hoc CLI strings).
+- **`inspect`** / preservation notes accurately describe multi-container posture; **`bun run verify`** gains fixture-backed coverage including regression for existing **MP4** **H.264/HEVC/AV1** copy-safe paths.
+
+**Phase numbering:** Restarted at **Phase 01** for this milestone; **v1.0** execution artifacts live under [.planning/milestones/v1.0-phases/](.planning/milestones/v1.0-phases/) (frozen move **2026-05-03**).
+
 ## Requirements
 
 ### Validated — v1.0 (frozen)
@@ -27,16 +39,18 @@ High-level confirmations:
 - ✅ **Batch**: parallelism cap, **`fail-fast`**, manifests record effective plans + **`maybeDoctorFacts`** (**BATCH-05**).
 - ✅ **Trust**: argv-only **`Bun.spawn`**, **`ProcessCommand`** immutability, post-run probes + codec/duration sanity.
 
-### Active — next milestone (v1.1+ placeholders)
+### Active — v1.1 (THIS milestone — in flight)
 
-Captured from **Deferred v2 backlog** concepts (see archived requirements **§ v2**) — prioritize during **`/gsd-new-milestone`**:
+Checkboxes and acceptance live in [.planning/REQUIREMENTS.md](.planning/REQUIREMENTS.md) (**MULTI-\*** IDs).
 
-- Audition/snippet previews before full runs (**ADV-*** family).
-- Optional RNNoise/DNN backends when installed (**ADV-*** / plugin discovery).
-- Richer structured JSON reporting for automation (**AUTO-*** — partial overlap with existing **`--json`** on **`inspect`**; expand deliberately).
-- Deeper multi-track/stream policies (**MEDIA2-***) beyond v1 sane-default single-audio-selection.
+### Active — backlog (defer past v1.1)
 
-*(Remove or tighten after the next roadmap pass — this list is not committed product scope yet.)*
+Captured from **Deferred backlog** — schedule after **v1.1** ships:
+
+- Audition/snippet previews before full runs (**ADV-\*** family).
+- Optional RNNoise/DNN backends when installed (**ADV-\*** / plugin discovery).
+- Richer structured JSON reporting for automation (**AUTO-\*** — partial overlap with existing **`--json`** on **`inspect`**; expand deliberately).
+- Deeper multi-track/stream policies (**MEDIA2-\***) beyond v1 sane-default single-audio-selection.
 
 ### Out of Scope
 
@@ -49,7 +63,7 @@ Boundary table remains accurate for **v1**; revisit only if a future milestone e
 
 *(Reasoning unchanged — archived copy still available for diff if needed.)*
 
-## Context (**2026-05-03 shipped state**)
+## Context (**2026-05-03 — v1.0 shipped**)
 
 - **Runtime/tooling**: Bun (**`bun test`**, **`bun run`**, compiled CLI entry), TypeScript **`strict`**, **`@biomejs/biome`** in CI (`biome ci`), FFmpeg 8-era argv builders (does not depend on **`fluent-ffmpeg`**).
 - **Tests**: deterministic subprocess mocks + representative **FFprobe JSON** fixtures; integration-style tests for **`clean`** on bundled speech/noise WAV and **dry-run**/execute video paths (`bun run verify`).
@@ -79,8 +93,8 @@ Boundary table remains accurate for **v1**; revisit only if a future milestone e
 
 Processes above follow Bright Builds/GSD milestones.
 
-**Boundary event — v1.0 shipped & archived (**2026-05-03**):** roadmap + REQ snapshot under **`.planning/milestones/v1.0-*`**, **`v1.0`** git tag, live **`ROADMAP.md`** truncated to milestones header + **`/gsd-new-milestone`** onboarding path.
+**Boundary event — v1.0 shipped & archived (**2026-05-03**):** roadmap + REQ snapshot under **`.planning/milestones/v1.0-*`**, **`v1.0`** git tag; **`v1.0`** phase workspaces moved wholesale to [.planning/milestones/v1.0-phases/](.planning/milestones/v1.0-phases/) when **v1.1** numbering reset (**2026-05-03**).
 
 ---
 
-*Last updated: 2026-05-03 after **`v1.0`** milestone completion & archive.*
+*Last updated: 2026-05-03 — **v1.1** milestone initialized (multi-container stream copy scope).*
