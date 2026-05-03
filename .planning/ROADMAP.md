@@ -73,4 +73,4 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 ## Next action
 
-**Phase 01** executed; continue with **`/gsd-discuss-phase 02`** or **`/gsd-plan-phase 02`** for the feasibility matrix (VP9, Theora, **MULTI-03**–**MULTI-05**).
+Phase **02** discuss complete — run **`/gsd-plan-phase 02`** (optional **`/gsd-research-phase 02`**) for the feasibility matrix (VP9, Theora, **MULTI-03**–**MULTI-05**). Context: [.planning/phases/02-feasibility-matrix-vp9-theora-extras/02-CONTEXT.md](.planning/phases/02-feasibility-matrix-vp9-theora-extras/02-CONTEXT.md).
