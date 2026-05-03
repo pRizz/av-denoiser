@@ -92,6 +92,6 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 ## Next action
 
-Phase **02** plans ready — **`/gsd-execute-phase 02`** (Wave **1** then **2**) or **`/gsd-plan-phase`** refresh if CONTEXT changes.
+Phase **03** implemented — **`/gsd-discuss-phase 04`** then **`/gsd-plan-phase 04`**, or **`/gsd-execute-phase 04`** when plans exist.
 
-- Context / research: [.planning/phases/02-feasibility-matrix-vp9-theora-extras/](.planning/phases/02-feasibility-matrix-vp9-theora-extras/)
+- Phase **03** artifacts: [.planning/phases/03-ffmpeg-remux-muxers-audio-policy/](.planning/phases/03-ffmpeg-remux-muxers-audio-policy/)

@@ -20,8 +20,8 @@ Each item maps one-to-one into the live roadmap phases.
 
 ### Remux execution
 
-- [ ] **MULTI-06**: Typed **FFmpeg argv** builders select **mux-specific** defaults (e.g. **`-f webm`** / **`matroska`** when required) alongside **`-map`** / **`c:v`** / planned audio codec policy.
-- [ ] **MULTI-07**: **Per-container planned audio codec** documented and implemented (**AAC**, **opus**, **`pcm_*`** subsets as allowed—for example WebM‑first **Opus** where required by policy—with **AAC** continuity where FFmpeg/muxer accepts it reliably).
+- [x] **MULTI-06**: Typed **FFmpeg argv** builders select **mux-specific** defaults (e.g. **`-f webm`** / **`matroska`** when required) alongside **`-map`** / **`c:v`** / planned audio codec policy.
+- [x] **MULTI-07**: **Per-container planned audio codec** documented and implemented (**AAC**, **opus**, **`pcm_*`** subsets as allowed—for example WebM‑first **Opus** where required by policy—with **AAC** continuity where FFmpeg/muxer accepts it reliably).
 
 ### Surfaces & trust
 
@@ -61,8 +61,8 @@ Defer unless explicitly scheduled:
 | MULTI-03 | Phase 2 | Pending |
 | MULTI-04 | Phase 2 | Pending |
 | MULTI-05 | Phase 2 | Pending |
-| MULTI-06 | Phase 3 | Pending |
-| MULTI-07 | Phase 3 | Pending |
+| MULTI-06 | Phase 3 | Done |
+| MULTI-07 | Phase 3 | Done |
 | MULTI-08 | Phase 4 | Pending |
 | MULTI-09 | Phase 4 | Pending |
 | MULTI-10 | Phase 4 | Pending |
