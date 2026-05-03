@@ -4,7 +4,7 @@ Active planning now targets the **next** milestone after **v1.0**. Full **v1.0**
 
 ## Milestones
 
-- ✅ **[v1.0 — CLI & v1 requirements](milestones/v1.0-ROADMAP.md)** — shipped **2026-05-03** — seventeen phases (**1–17**), **37** executable plans ([requirements archive](milestones/v1.0-REQUIREMENTS.md), [milestone audit](milestones/v1.0-MILESTONE-AUDIT.md), [changelog-style summary](MILESTONES.md#v10-cli--v1-requirements-shipped-2026-05-03))
+- ✅ **[v1.0 — CLI & v1 requirements](milestones/v1.0-ROADMAP.md)** — shipped **2026-05-03** — seventeen phases (**1–17**), **37** executable plans ([requirements archive](milestones/v1.0-REQUIREMENTS.md), [milestone audit](milestones/v1.0-MILESTONE-AUDIT.md), [milestone changelog](MILESTONES.md))
 
 ### Shipped overview (collapsed)
 
@@ -20,4 +20,4 @@ For per-phase titles, checklist lines, Requirement Coverage tables, and executio
 
 ## Next
 
-Define **v1.1+** scope with **`/gsd-new-milestone`** — that flow recreates **[`.planning/REQUIREMENTS.md`](./REQUIREMENTS.md)** for the upcoming milestone without renumbered phase directories (**execution history stays** under **`phases/`** until optional **`/gsd-cleanup`**).
+Define **v1.1+** scope with **`/gsd-new-milestone`** — it recreates **`.planning/REQUIREMENTS.md`** when you start the next planning cycle (there is intentionally no stub file immediately after **v1.0** archival). Execution history stays under **`.planning/phases/`** unless you relocate with **`/gsd-cleanup`**.
