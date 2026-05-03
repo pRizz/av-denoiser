@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Phase 17 context gathered (yolo)
-last_updated: "2026-05-03T14:04:45.047Z"
+status: completed
+stopped_at: Phase 17 plan 01 complete (verification pointer stubs)
+last_updated: "2026-05-03T14:08:58.986Z"
 last_activity: 2026-05-03
 progress:
   total_phases: 17
@@ -18,19 +18,19 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-01)
+See: .planning/PROJECT.md (updated 2026-05-03)
 
 **Core value:** Users can pass an audio or video file through a guided denoise pipeline and get a cleaned output while avoiding video recompression whenever possible.
-**Current focus:** v1 milestone closed — optional integrations landed behind explicit flags and doctor probes.
+**Current focus:** **v1.0 shipped & archived** — plan **v1.1+** with `/gsd-new-milestone` (recreate `.planning/REQUIREMENTS.md`).
 
 ## Current Position
 
-Phase: 17
+Phase: —
 Plan: —
-Status: Milestone phases 1–17 complete
+Status: **v1.0 archived** — next milestone undefined
 Last activity: 2026-05-03
 
-Progress: roadmap phases **1–17** complete (**37**/37 plans), including milestone gap stubs **17** (**planning-layout** pointers).
+Progress: [.planning/milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md) freezes **17**/17 phases (**37** plans). Live [.planning/ROADMAP.md](ROADMAP.md) awaits `/gsd-new-milestone`.
 
 ## Performance Metrics
 

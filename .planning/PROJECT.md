@@ -2,108 +2,85 @@
 
 ## What This Is
 
-`av-denoiser` is a simple TypeScript/Bun-based CLI for cleaning noisy audio in audio or video files. It accepts a media file, runs the source audio through a configurable sequence of free and open source denoise/cleanup tools, and writes a cleaned output file while preserving the video stream whenever possible.
+`av-denoiser` is a **shipped v1** TypeScript/Bun CLI for cleaning noisy audio in audio or video files. It probes input media, expands explicit presets into ordered FFmpeg/SoX/external-tool steps (optional Demucs, Audacity scripting, FFmpeg **ladspa** when available), remuxes **cleaned audio** while **avoiding video recompression whenever planning says stream-copy-safe**, and records batch runs in **JSON manifests** with **doctor**/discovery snapshots.
 
-The first version should feel friendly and guided: users can run an interactive workflow without learning flags, while power users can still use CLI options and batch processing for repeatable jobs. It is intended for general-purpose local media cleanup, creator workflows such as podcasts, videos, lectures, and interviews, and optional batch processing across many recordings.
+Casual users can run **`guided-clean`**; operators use **`clean`** and **`batch`** with flags and repeatable **`argv`** equivalence.
 
 ## Core Value
 
-Users can pass an audio or video file through a guided denoise pipeline and get a cleaned output while avoiding video recompression whenever possible.
+Users can pass an audio or video file through a guided denoise pipeline and get a cleaned output **while minimizing unnecessary video recompression**.
 
 ## Requirements
 
-### Validated
+### Validated — v1.0 (frozen)
 
-<!-- Shipped and confirmed valuable. -->
+Full checklist (42 REQ IDs × `[x]` + traceability **Complete**) is archived:
 
-- [x] User can install and run a Bun-based TypeScript CLI locally. Validated in Phase 1: Bun CLI Foundation & Trust Model.
+- [.planning/milestones/v1.0-REQUIREMENTS.md](.planning/milestones/v1.0-REQUIREMENTS.md)
 
-### Active
+High-level confirmations:
 
-<!-- Current scope. Building toward these. -->
+- ✅ **CLI**: **`bun install`** surface, **`doctor`**, stable exit taxonomy, **`inspect`**, **`clean`**, **`guided-clean`**, **`batch`**, argv-equivalence for automation.
+- ✅ **Safety & planning**: structured probe → modality (**`audio-only`**, **`video-copy-safe`**, **`fallback-required`**, **`unsupported`**) — collision-safe outputs, explicit overwrite semantics.
+- ✅ **Processing**: FFmpeg extract → sequential logical steps (**`afftdn`** presets + optional Demucs isolation + SoX + optional Audacity / **`ladspa`**) → AAC/M4A (or WAV intermediates) → remux/copy video (**`-c:v copy`** when feasible) with **`allowVideoFallback`** + explicit acknowledgement for **`fallback-required`** executions.
+- ✅ **Heavy opt-ins**: guarded Demucs (runtime warnings), **`mod-script-pipe`**-gated Audacity (**TOOL-06** honest failures), FFmpeg **`ladspa`** optional path; **doctor** surfaces **`melt -version`** without orchestrating **melt** as a cleanup step (**TOOL-07**, Phase **16**).
+- ✅ **Batch**: parallelism cap, **`fail-fast`**, manifests record effective plans + **`maybeDoctorFacts`** (**BATCH-05**).
+- ✅ **Trust**: argv-only **`Bun.spawn`**, **`ProcessCommand`** immutability, post-run probes + codec/duration sanity.
 
-- [ ] User can pass an audio file as input and receive a cleaned audio output file.
-- [ ] User can pass a video file as input and receive a video output with cleaned audio.
-- [ ] User can use a friendly guided interactive workflow without memorizing CLI flags.
-- [ ] Power user can use CLI flags for non-interactive and repeatable workflows.
-- [ ] User can process multiple files in a batch mode.
-- [ ] User can choose from simple recommended cleanup presets.
-- [ ] User can enable, disable, and configure pipeline steps behind those presets at a practical v1 level.
-- [ ] Pipeline can run sequential processing steps over extracted source audio and feed each step into the next.
-- [ ] Pipeline supports FFmpeg as the core media extraction/remuxing engine and filter surface.
-- [ ] Pipeline supports SoX for baseline scripted cleanup.
-- [ ] Pipeline supports Demucs for voice/source isolation.
-- [ ] Pipeline supports Audacity automation for workflows that benefit from its noise reduction and macro ecosystem.
-- [ ] Pipeline accounts for Kdenlive/FFmpeg/LADSPA-style cleanup options without making Kdenlive a mandatory runtime dependency unless research confirms a practical CLI integration path.
-- [ ] Video outputs preserve the original video stream without recompression whenever the input container and output format allow it.
-- [ ] Tool reports clearly when a requested no-video-recompression path is impossible and explains the fallback.
+### Active — next milestone (v1.1+ placeholders)
+
+Captured from **Deferred v2 backlog** concepts (see archived requirements **§ v2**) — prioritize during **`/gsd-new-milestone`**:
+
+- Audition/snippet previews before full runs (**ADV-*** family).
+- Optional RNNoise/DNN backends when installed (**ADV-*** / plugin discovery).
+- Richer structured JSON reporting for automation (**AUTO-*** — partial overlap with existing **`--json`** on **`inspect`**; expand deliberately).
+- Deeper multi-track/stream policies (**MEDIA2-***) beyond v1 sane-default single-audio-selection.
+
+*(Remove or tighten after the next roadmap pass — this list is not committed product scope yet.)*
 
 ### Out of Scope
 
-<!-- Explicit boundaries. Includes reasoning to prevent re-adding. -->
+Boundary table remains accurate for **v1**; revisit only if a future milestone explicitly expands:
 
-- GUI application — the product is a CLI-first workflow.
-- Cloud processing service — local processing keeps the tool simple, private, and dependency-light for v1.
-- Proprietary or paid denoise engines — the initial pipeline should use free and open source tools.
-- Full video editing timeline — the tool modifies or replaces audio tracks, not arbitrary video edits.
-- Perfect one-size-fits-all cleanup — different recordings need different tradeoffs, so v1 should expose guided presets and clear fallbacks.
+- CLI-first (**no bundled GUI**) — prompts only.
+- **No cloud render service** — local FOSS toolchain only by default narrative.
+- **No proprietary engines** — v1 toolchain stayed FOSS-aligned.
+- **No full NLE timeline** — audio/track replacement/remux posture, not non-destructive project files.
 
-## Context
+*(Reasoning unchanged — archived copy still available for diff if needed.)*
 
-The user wants a simple TypeScript/Bun CLI that can accept a video or audio file and output the same kind of media with cleaned audio. The denoise process should be a configurable sequential pipeline of free and open source tools that users can enable, disable, and tune.
+## Context (**2026-05-03 shipped state**)
 
-Important background tools and likely roles:
-
-- **FFmpeg**: Core media engine for probing, extracting audio, applying built-in filters, preserving video streams, and remuxing cleaned audio back into video containers.
-- **SoX**: Classic efficient command-line audio processor for baseline noise reduction, normalization, and scripted batch cleanup.
-- **Demucs**: AI-based source separation tool from the Meta AI ecosystem. The original repository was archived in 2025, but it remains usable and has active community forks and ports. Useful for voice isolation in noisy environments.
-- **Audacity**: Long-standing open source audio editor with noise reduction, spectral editing, batch macros, and possible automation through mod-script-pipe. Useful for compatibility with existing cleanup workflows, but integration complexity needs research.
-- **Kdenlive**: Open source video editor with access to FFmpeg/LADSPA-style audio filters. It may inform filter choices or workflows, but direct CLI integration should be validated before becoming a required v1 dependency.
-
-The desired "best of both worlds" direction is a pipeline such as SoX or Audacity baseline noise reduction followed by Demucs voice isolation for stronger cleanup in noisy conference, lecture, or interview recordings.
-
-The product should be approachable for non-flag users. The ideal first-run experience is guided and interactive, with recommended presets/options. Flags still matter for automation, repeatability, and batch jobs.
+- **Runtime/tooling**: Bun (**`bun test`**, **`bun run`**, compiled CLI entry), TypeScript **`strict`**, **`@biomejs/biome`** in CI (`biome ci`), FFmpeg 8-era argv builders (does not depend on **`fluent-ffmpeg`**).
+- **Tests**: deterministic subprocess mocks + representative **FFprobe JSON** fixtures; integration-style tests for **`clean`** on bundled speech/noise WAV and **dry-run**/execute video paths (`bun run verify`).
+- **Remaining confidence debt** (**non-blocking**): widen real-machine coverage (heterogeneous FFmpeg builds, **`sox`** vs **`sox_ng`** naming, Audacity scripting enablement, LADSPA install paths); called out under **`doctor`** / verification residual notes.
 
 ## Constraints
 
-- **Tech stack**: TypeScript on Bun — this is the preferred runtime and package/script surface for the CLI.
-- **Tooling**: Use free and open source processing tools — no proprietary or paid denoise engines for v1.
-- **Media integrity**: Avoid video recompression whenever possible — video streams should usually be copied/remuxed while only the audio track changes.
-- **UX**: Friendly guided workflow first — users should not need to learn flags before getting value.
-- **Power users**: CLI flags and batch mode are still required — automation and repeatability are part of the product.
-- **Pipeline model**: Sequential processing — each enabled tool step consumes the previous step's output and produces the next intermediate artifact.
-- **Dependency risk**: Demucs and Audacity/Kdenlive integrations need research — availability, install friction, and scriptability may vary by platform.
-- **Cross-platform expectations**: v1 should avoid unnecessary OS-specific assumptions where practical, but exact platform support needs research.
+(Unchanged fundamentals — Bun + FOSS toolchain + sequential pipeline + explicit optional integrations.)
+
+- **Tech stack**: TypeScript on Bun for the repo-owned CLI.
+- **Media integrity**: stream-copy-first for video wherever planning allows — user acknowledgement for **`fallback-required`** re-encode recipe.
+- **Power + guided**: **`@clack/prompts`** guided path + **`commander`** non-interactive surface share one execution spine (**`runCleanRequest`**).
+- **Optional heavyweight tools**: runtime discovery + honest degradation — never silently require Demucs/Audacity/**ladspa**/GPU stack.
 
 ## Key Decisions
 
-<!-- Decisions that constrain future work. Add throughout project lifecycle. -->
-
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Build as a Bun-based TypeScript CLI | Matches the user's requested stack and Bright Builds TypeScript guidance for new standalone TS projects. | Validated in Phase 1 with a runnable Bun CLI, strict TypeScript/Biome verification, focused Bun tests, and `doctor` preflight command. |
-| Treat audio and video inputs as v1 table stakes | The tool should be useful for both media types from the start. | — Pending |
-| Optimize video/container integrity first | The user explicitly prioritized avoiding video recompression and only modifying the audio track when possible. | — Pending |
-| Provide guided interactive flows plus flags | Friendly defaults help casual users; flags preserve power-user and batch workflows. | — Pending |
-| Start with recommended presets rather than a fully open-ended config language | Keeps v1 approachable while leaving room for deeper pipeline configuration later. | — Pending |
-| Research Kdenlive as optional/informational before requiring it | Kdenlive may not be a clean CLI dependency for this use case; FFmpeg/LADSPA capabilities may cover the same value. | — Pending |
+| Build as Bun + strict TS CLI | Fast cold start & Bright Builds aligned defaults. | ✓ **`bun run verify`** gates every PR; **`doctor`** + **`inspect`** surfaced early. |
+| Single orchestration choke-point (`runCliRequest`) | One place maps parsed CLI → typed app requests. | ✓ Inspect/clean/guided/batch share tooling + typed failures. |
+| Typed **`MediaProbe`** + **`planMediaOutput`** before execution | Highest-risk UX promise is **honest modality** labeling. | ✓ Video-copy vs fallback-required locked before **`ffmpeg`** spawn. |
+| FFmpeg argv builders + **`ProcessRunner`** | Safety + quoting correctness + testability (`argv` snapshots). | ✓ Tests lock **`afftdn`**, **`sox`** tokens, **`ladspa`** filtergraph fragments. |
+| Optional integrations behind explicit knobs + **`doctor`** | Heavy deps must not hijack baseline install story. | ✓ **`speech-vocals-demucs`** preset; risk/assume-yes style flags documented in CLI help surfaces. |
+| **`ladspa`** runnable; **`melt`** diagnostics only (**TOOL-07**, Phase **16**) | Do not imply **melt** execution without shipping a melt-derived cleanup graph. | ✓ Requirement + **`08-VERIFICATION`** harmonized (**milestone audit passed**). |
 
 ## Evolution
 
-This document evolves at phase transitions and milestone boundaries.
+Processes above follow Bright Builds/GSD milestones.
 
-**After each phase transition** (via `/gsd-transition`):
-1. Requirements invalidated? → Move to Out of Scope with reason
-2. Requirements validated? → Move to Validated with phase reference
-3. New requirements emerged? → Add to Active
-4. Decisions to log? → Add to Key Decisions
-5. "What This Is" still accurate? → Update if drifted
-
-**After each milestone** (via `/gsd-complete-milestone`):
-1. Full review of all sections
-2. Core Value check — still the right priority?
-3. Audit Out of Scope — reasons still valid?
-4. Update Context with current state
+**Boundary event — v1.0 shipped & archived (**2026-05-03**):** roadmap + REQ snapshot under **`.planning/milestones/v1.0-*`**, **`v1.0`** git tag, live **`ROADMAP.md`** truncated to milestones header + **`/gsd-new-milestone`** onboarding path.
 
 ---
-*Last updated: 2026-05-01 after Phase 1 completion*
+
+*Last updated: 2026-05-03 after **`v1.0`** milestone completion & archive.*
