@@ -28,7 +28,7 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 ### Phase 02: Feasibility matrix — VP9, Theora, extras
 
-**Goal:** Expand **`evaluateStreamCopyFeasibility`** (and friends) so **VP9** + **Theora** (and **MULTI-05** extras) map to **copy-safe** vs **fallback** with stable tokens (**MULTI-03**–**MULTI-05**).
+**Goal:** **Delivered (v1.1):** **`planVideoStreamCopyFeasibility`** wired through **`planMediaOutputPrelude`** so **VP9** → WebM (**MULTI-03**), **Theora** → Matroska (**MULTI-04**), and extras such as explicit **VP8** fallback (**MULTI-05**) map to **copy-safe** vs **`fallback-required`** with stable tokens.
 
 **Success criteria**
 

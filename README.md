@@ -28,7 +28,7 @@ The CLI maps outcomes to stable integers (see `src/domain/exit-codes.ts`):
 
 ## Test fixtures
 
-Short **audio** WAVs live under [`test/fixtures/audio/`](./test/fixtures/audio/). Short **video** samples (Commons sourced OGV + an H.264 MP4 derivative) live under [`test/fixtures/video/`](./test/fixtures/video/). Each folder has a README with licenses and regeneration commands.
+Short **audio** WAVs live under [`test/fixtures/audio/`](./test/fixtures/audio/). Short **video** samples (Commons sourced Theora/Vorbis **OGV** plus an **H.264** MP4 derivative) live under [`test/fixtures/video/`](./test/fixtures/video/); under the current stream-copy matrix the OGV probes as **video-copy-safe** **Matroska** output (AAC audio, copied video)—see [`test/fixtures/video/README.md`](./test/fixtures/video/README.md). Each folder has a README with licenses and regeneration commands.
 
 When **`ffmpeg`** and **`ffprobe`** are on `PATH`, the suite runs [`test/app/clean-fixture-audio-integration.test.ts`](./test/app/clean-fixture-audio-integration.test.ts), which drives **`speech-hush-with-brown-noise-cc0.wav`** through a `speech-light` dry-run and a full encode; those tests **`skip`** if the binaries are absent.
 
