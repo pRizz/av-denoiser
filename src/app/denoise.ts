@@ -32,6 +32,7 @@ import {
   presetRequiresSox,
 } from "../domain/audio-pipeline-plan";
 import type { CommandOutcome } from "../domain/command-outcome";
+import { formatDemucsFailureSnippet } from "../domain/demucs-cli-diagnostics";
 import {
   createExecutionTimingTracker,
   type DenoiseExecutionTiming,
@@ -203,8 +204,19 @@ function mapProcessFailure(
     return `${label}: terminated by signal ${result.signalCode}`;
   }
 
-  const stderr = result.stderr.trim();
   const cap = MAX_DENOISE_STDERR_SNIPPET;
+
+  if (label === "demucs") {
+    const snippet = formatDemucsFailureSnippet(
+      result.stderr,
+      result.stdout,
+      cap,
+    );
+
+    return `${label}: exited with code ${result.exitCode}: ${snippet}`;
+  }
+
+  const stderr = result.stderr.trim();
   const snippet = stderr.length <= cap ? stderr : `${stderr.slice(0, cap)}…`;
 
   return `${label}: exited with code ${result.exitCode}: ${snippet}`;

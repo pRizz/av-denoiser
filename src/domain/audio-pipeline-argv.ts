@@ -104,6 +104,10 @@ export function buildLogicalStepCommand(
         ctx.intermediateOutPath,
         ctx.intermediateInPath,
       ],
+      env: {
+        /** Piped stderr is not a TTY; tqdm spam hides real errors in captured logs. */
+        TQDM_DISABLE: "1",
+      },
     });
   }
 

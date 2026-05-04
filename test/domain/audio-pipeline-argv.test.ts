@@ -222,6 +222,7 @@ test("Demucs two-stems argv uses -o out dir and --two-stems vocals", () => {
   expect(args).toContain("-o");
   expect(args).toContain("/w/outdir");
   expect(args).toContain("/w/in/track.wav");
+  expect(result.command.env).toEqual({ TQDM_DISABLE: "1" });
 });
 
 test("Demucs via python3 -m demucs prefixes module args", () => {
@@ -249,6 +250,7 @@ test("Demucs via python3 -m demucs prefixes module args", () => {
   }
 
   expect(result.command.args.slice(0, 3)).toEqual(["-m", "demucs", "-n"]);
+  expect(result.command.env).toEqual({ TQDM_DISABLE: "1" });
 });
 
 test("ladspa-apply builds -af ladspa= with label and optional c=", () => {

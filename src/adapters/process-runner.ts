@@ -17,6 +17,23 @@ export type ProcessResult =
 
 export type ProcessRunner = (command: ProcessCommand) => Promise<ProcessResult>;
 
+/** Merge overrides into the current process env so spawned tools keep PATH and related vars. */
+function spawnEnv(
+  overrides: Readonly<Record<string, string>>,
+): Record<string, string> {
+  const out: Record<string, string> = {};
+
+  for (const [key, value] of Object.entries(process.env)) {
+    if (value !== undefined) {
+      out[key] = value;
+    }
+  }
+
+  Object.assign(out, overrides);
+
+  return out;
+}
+
 async function readStream(
   stream: ReadableStream<Uint8Array> | null,
 ): Promise<string> {
@@ -97,7 +114,7 @@ export async function runProcessCommand(
       stdout: "pipe",
       stderr: "pipe",
       cwd: command.cwd,
-      env: command.env,
+      env: command.env === undefined ? undefined : spawnEnv(command.env),
       timeout: command.timeoutMs,
       stdin: command.stdin ?? "ignore",
     });
