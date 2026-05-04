@@ -260,6 +260,35 @@ export function buildLogicalStepCommand(
   }
 }
 
+const PIPELINE_AUDIO_OUT_STEM = "pipeline-audio-out";
+
+/**
+ * Basename for processed-audio artifact before final video remux (`clean` temp dir).
+ * Keep in sync with `encodeDeliverableArgs` — Phase 08-01.
+ */
+export function pipelineAudioOutIntermediateBasename(
+  audioCodec: PlannedAudioCodec,
+  container: PlannedContainer,
+): string {
+  if (audioCodec === "aac" && container === "mp4") {
+    return `${PIPELINE_AUDIO_OUT_STEM}.mp4`;
+  }
+
+  if (audioCodec === "opus" && container === "matroska") {
+    return `${PIPELINE_AUDIO_OUT_STEM}.mkv`;
+  }
+
+  if (audioCodec === "pcm_s16le" && container === "wav") {
+    return `${PIPELINE_AUDIO_OUT_STEM}.wav`;
+  }
+
+  if (audioCodec === "opus" && container === "webm") {
+    return `${PIPELINE_AUDIO_OUT_STEM}.webm`;
+  }
+
+  return `${PIPELINE_AUDIO_OUT_STEM}.mp4`;
+}
+
 function encodeDeliverableArgs(
   ffmpegExecutable: string,
   inputWavPath: string,

@@ -5,6 +5,7 @@ import {
   afftdnNoiseFloor,
   buildLogicalStepCommand,
   demucsTrackStemFromWavPath,
+  pipelineAudioOutIntermediateBasename,
   resolveDemucsVocalsWavPath,
 } from "../../src/domain/audio-pipeline-argv";
 import type { LogicalPipelineStep } from "../../src/domain/audio-pipeline-plan";
@@ -286,4 +287,22 @@ test("resolveDemucsVocalsWavPath ends with vocals.wav", () => {
 
   expect(p.endsWith(`${"/"}htdemucs${"/"}song${"/"}vocals.wav`)).toBe(true);
   expect(demucsTrackStemFromWavPath("/a/b/foo.wav")).toBe("foo");
+});
+
+test("pipelineAudioOutIntermediateBasename matches encodeDeliverableArgs matrix", () => {
+  expect(pipelineAudioOutIntermediateBasename("aac", "mp4")).toBe(
+    "pipeline-audio-out.mp4",
+  );
+  expect(pipelineAudioOutIntermediateBasename("opus", "webm")).toBe(
+    "pipeline-audio-out.webm",
+  );
+  expect(pipelineAudioOutIntermediateBasename("opus", "matroska")).toBe(
+    "pipeline-audio-out.mkv",
+  );
+  expect(pipelineAudioOutIntermediateBasename("pcm_s16le", "wav")).toBe(
+    "pipeline-audio-out.wav",
+  );
+  expect(pipelineAudioOutIntermediateBasename("aac", "matroska")).toBe(
+    "pipeline-audio-out.mp4",
+  );
 });

@@ -17,6 +17,7 @@ import { formatAudacityDiagnostic } from "../domain/audacity";
 import {
   buildLogicalStepCommand,
   demucsTrackStemFromWavPath,
+  pipelineAudioOutIntermediateBasename,
   resolveDemucsVocalsWavPath,
 } from "../domain/audio-pipeline-argv";
 import {
@@ -775,7 +776,13 @@ export async function runCleanRequest(
     );
 
     const extractPathPreview = join(previewDir, "extracted.wav");
-    const pipelineAudioPreviewPath = join(previewDir, "pipeline-audio-out.mp4");
+    const pipelineAudioPreviewPath = join(
+      previewDir,
+      pipelineAudioOutIntermediateBasename(
+        executablePlan.plannedAudioCodec,
+        executablePlan.plannedContainer,
+      ),
+    );
 
     const extractBuilt = buildExtractPrimaryAudioWavCommand({
       ffmpegExecutable: ffmpegPath,
@@ -909,7 +916,13 @@ export async function runCleanRequest(
       );
 
       const extractPath = join(tempRoot, "extracted.wav");
-      const pipelineAudioPath = join(tempRoot, "pipeline-audio-out.mp4");
+      const pipelineAudioPath = join(
+        tempRoot,
+        pipelineAudioOutIntermediateBasename(
+          executablePlan.plannedAudioCodec,
+          executablePlan.plannedContainer,
+        ),
+      );
 
       const extractCmd = buildExtractPrimaryAudioWavCommand({
         ffmpegExecutable: ffmpegPath,
