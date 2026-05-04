@@ -315,4 +315,81 @@ describe("verifyCleanOutput", () => {
       expect(result.detail).toContain("empty-output");
     }
   });
+
+  test("fallback-required re-encode: input h264 output hevc => ok", () => {
+    const input = probeVideoAudio("10.0", "h264");
+    const output = probeVideoAudio("10.0", "hevc");
+
+    const result = verifyCleanOutput({
+      outputPath: "/out.mp4",
+      outputExists: existsTrue,
+      outputFileSize: sizeNonEmpty,
+      inputProbe: input,
+      outputProbe: output,
+      plannedModality: "fallback-required",
+      claimedVideoCopied: false,
+    });
+
+    expect(result.kind).toBe("ok");
+  });
+
+  test("fallback-required re-encode: output h264 => video-reencode-codec-mismatch", () => {
+    const input = probeVideoAudio("10.0", "h264");
+    const output = probeVideoAudio("10.0", "h264");
+
+    const result = verifyCleanOutput({
+      outputPath: "/out.mp4",
+      outputExists: existsTrue,
+      outputFileSize: sizeNonEmpty,
+      inputProbe: input,
+      outputProbe: output,
+      plannedModality: "fallback-required",
+      claimedVideoCopied: false,
+    });
+
+    expect(result.kind).toBe("failure");
+    if (result.kind === "failure") {
+      expect(result.reason).toBe("video-reencode-codec-mismatch");
+    }
+  });
+
+  test("fallback-required re-encode: output hev1 probe string => ok", () => {
+    const input = probeVideoAudio("10.0", "h264");
+    const output = probeVideoAudio("10.0", "hev1");
+
+    const result = verifyCleanOutput({
+      outputPath: "/out.mp4",
+      outputExists: existsTrue,
+      outputFileSize: sizeNonEmpty,
+      inputProbe: input,
+      outputProbe: output,
+      plannedModality: "fallback-required",
+      claimedVideoCopied: false,
+    });
+
+    expect(result.kind).toBe("ok");
+  });
+
+  test("fallback-required re-encode: missing output video stream => missing-video-stream", () => {
+    const input = probeVideoAudio("10.0", "h264");
+    const output: MediaProbe = {
+      streams: [{ index: 0, codec_type: "audio", codec_name: "aac" }],
+      format: { duration: "10.0" },
+    };
+
+    const result = verifyCleanOutput({
+      outputPath: "/out.m4a",
+      outputExists: existsTrue,
+      outputFileSize: sizeNonEmpty,
+      inputProbe: input,
+      outputProbe: output,
+      plannedModality: "fallback-required",
+      claimedVideoCopied: false,
+    });
+
+    expect(result.kind).toBe("failure");
+    if (result.kind === "failure") {
+      expect(result.reason).toBe("missing-video-stream");
+    }
+  });
 });

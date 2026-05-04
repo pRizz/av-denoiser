@@ -19,7 +19,8 @@ export type CleanVerifyFailureReason =
   | "probe-parse"
   | "duration-mismatch"
   | "video-copy-mismatch"
-  | "missing-video-stream";
+  | "missing-video-stream"
+  | "video-reencode-codec-mismatch";
 
 export type CleanVerifyParams = {
   readonly outputPath: string;
@@ -161,6 +162,41 @@ export function verifyCleanOutput(
         kind: "failure",
         reason: "video-copy-mismatch",
         detail: `video-copy-mismatch: input video ${inCodec} vs output ${outCodec}`,
+      };
+    }
+  }
+
+  if (
+    params.plannedModality === "fallback-required" &&
+    !params.claimedVideoCopied
+  ) {
+    const outVideo = firstVideoStream(params.outputProbe);
+
+    if (outVideo === null) {
+      return {
+        kind: "failure",
+        reason: "missing-video-stream",
+        detail:
+          "missing-video-stream: expected video stream on output after fallback re-encode",
+      };
+    }
+
+    const outCodec = outVideo.codec_name?.trim() ?? "";
+
+    if (outCodec.length === 0) {
+      return {
+        kind: "failure",
+        reason: "video-reencode-codec-mismatch",
+        detail:
+          "video-reencode-codec-mismatch: output video missing codec_name in probe (expected canonical hevc after libx265)",
+      };
+    }
+
+    if (canonicalVideoCodecForVerify(outCodec) !== "hevc") {
+      return {
+        kind: "failure",
+        reason: "video-reencode-codec-mismatch",
+        detail: `video-reencode-codec-mismatch: output video ${outCodec} (expected canonical hevc after libx265 re-encode)`,
       };
     }
   }
