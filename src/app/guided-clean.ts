@@ -132,7 +132,7 @@ async function defaultCollectSelections(): Promise<GuidedCleanSelections | null>
 
   const fallbackPick = await confirm({
     message:
-      "Allow video preservation fallback plans (--allow-video-fallback)?",
+      "Try to keep the video track as-is (no re-encode) when possible. If a file needs it, allow re-encoding the video when stream-copy is not possible? Adds --allow-video-fallback (HEVC to MP4, slower).",
     initialValue: false,
   });
 

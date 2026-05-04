@@ -24,11 +24,13 @@ The CLI maps outcomes to stable integers (see `src/domain/exit-codes.ts`):
 | `missingTools` | 3 | Required external tools (for example FFmpeg/FFprobe) are absent or unusable. |
 | `planningFailure` | 4 | The media plan could not be built from valid input. |
 | `processingFailure` | 5 | A processing step failed after planning. |
-| `fallbackRequired` | 6 | Continuing would need re-encoding or another fallback the user must approve. |
+| `fallbackRequired` | 6 | The plan would re-encode video or otherwise need a step you have not approved; pass `--allow-video-fallback` when stream-copy is not possible and re-encoding is OK. |
 
-## Video fallback (`--allow-video-fallback`)
+## Video handling and `--allow-video-fallback`
 
-When the planner marks a file **`fallback-required`**, passing **`--allow-video-fallback`** on **`inspect`** or **`clean`** approves a path that **re-encodes video to HEVC (`libx265`)** into **MP4**—**slower** than **stream-copy** or a hypothetical **AVC** re-encode, but matches the **Phase 05 / MULTI-13** default.
+By default, **`av-denoiser` tries to keep the video track as-is** (stream copy—no video re-encode) when the feasibility matrix allows it, while cleaning the audio.
+
+For inputs marked **`fallback-required`**, **stream-copy-only video is not possible**. Passing **`--allow-video-fallback`** on **`inspect`** or **`clean`** means you accept **re-encoding video to HEVC (`libx265`)** into **MP4** in those cases—**slower** than keeping video as-is, matching the current default fallback recipe.
 
 ## Test fixtures
 

@@ -8,6 +8,13 @@ import type {
 /** Upper bound on derived preservation bullets — drop oldest extras first. */
 export const MAX_PRESERVATION_NOTES = 5;
 
+/**
+ * User-facing video policy (inspect bullets / docs should stay aligned):
+ * We try to keep the video track as-is (stream copy) when the feasibility matrix allows.
+ * `--allow-video-fallback` means the user accepts re-encoding video (HEVC/libx265 to MP4 here)
+ * when stream-copy-only is not possible for that input.
+ */
+
 /** Serializable inspect output for CLI JSON mode and tests. */
 export type InspectPlanSummary = {
   readonly inputPath: string;
@@ -41,28 +48,28 @@ export function buildPreservationNotesFromPlan(
     case "video-copy-safe": {
       if (plan.plannedContainer === "mp4") {
         notes.push(
-          "Stream-copy path: lone video on the MP4 allowlist (H.264, HEVC/H.265, or AV1); planned output is MP4 + AAC. FFmpeg must still validate remux at execution.",
+          "Video stays as-is (stream copy) when possible: lone video on the MP4 allowlist (H.264, HEVC/H.265, or AV1); planned output is MP4 + AAC. FFmpeg must still validate remux at execution.",
         );
         notes.push(
           "HEVC HDR or advanced side data is best-effort: stream copy preserves compressed video bytes; container/player behavior may still differ from the source.",
         );
       } else if (plan.plannedContainer === "webm") {
         notes.push(
-          "Stream-copy path: VP9 with WebM container pairing; planned output is WebM + Opus. FFmpeg must still validate remux at execution.",
+          "Video stays as-is (stream copy) when possible: VP9 with WebM container pairing; planned output is WebM + Opus. FFmpeg must still validate remux at execution.",
         );
         notes.push(
           "VP9 HDR, transfer characteristics, or side metadata are best-effort: stream copy preserves compressed video bytes; container/player color behavior may still differ from the source.",
         );
       } else if (plan.plannedContainer === "matroska") {
         notes.push(
-          "Stream-copy path: Theora with Matroska container pairing; planned output is MKV + AAC. FFmpeg must still validate remux at execution.",
+          "Video stays as-is (stream copy) when possible: Theora with Matroska container pairing; planned output is MKV + AAC. FFmpeg must still validate remux at execution.",
         );
         notes.push(
           "Theora color metadata or side data is best-effort: stream copy preserves compressed video bytes; container/player behavior may still differ from the source.",
         );
       } else {
         notes.push(
-          "Stream-copy path: planned container follows the feasibility matrix; FFmpeg must still validate remux at execution.",
+          "Video stays as-is (stream copy) when possible: planned container follows the feasibility matrix; FFmpeg must still validate remux at execution.",
         );
       }
 
@@ -70,17 +77,19 @@ export function buildPreservationNotesFromPlan(
     }
     case "fallback-required": {
       notes.push(
-        "Planning would require FFmpeg fallback steps—the default stream-copy-first posture cannot honor this probe under the v1 matrix.",
+        "This file cannot be handled while keeping the video track as-is (stream copy only) under the v1 matrix. Without further approval, the CLI stops here instead of re-encoding video.",
       );
 
       const primary = plan.reasonCodes[0];
 
       if (primary !== undefined) {
-        notes.push(`Primary preservation reason code: ${primary}.`);
+        notes.push(
+          `Primary reason stream-copy-only video is not available: ${primary}.`,
+        );
       }
 
       notes.push(
-        "With --allow-video-fallback, video re-encodes to HEVC (libx265) in MP4 (CRF 28, preset slow)—slower than typical AVC (libx264) fallbacks.",
+        "Pass --allow-video-fallback to allow re-encoding the video to HEVC (libx265) in MP4 (CRF 28, preset slow)—slower than stream-copy.",
       );
 
       break;

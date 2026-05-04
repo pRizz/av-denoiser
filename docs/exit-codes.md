@@ -10,7 +10,7 @@
 | missingTools | 3 | A required external tool or required capability is missing. |
 | planningFailure | 4 | Valid inputs could not produce a safe processing plan. |
 | processingFailure | 5 | External processing or local filesystem work failed. |
-| fallbackRequired | 6 | The requested safe path cannot continue without explicit fallback approval. |
+| fallbackRequired | 6 | The plan needs video re-encoding or another step that requires explicit approval (e.g. pass `--allow-video-fallback` when stream-copy is not possible). |
 
 ## Current Phase Behavior
 

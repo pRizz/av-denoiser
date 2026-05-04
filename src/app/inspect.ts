@@ -131,7 +131,7 @@ export async function runInspectRequest(
       reason: {
         kind: "fallback-required",
         message:
-          "Planned output requires video preservation fallback approval. Pass --allow-video-fallback to acknowledge.",
+          "This plan needs video re-encoding; keeping the video as-is (stream copy) is not available. Pass --allow-video-fallback to acknowledge.",
       },
     };
   }

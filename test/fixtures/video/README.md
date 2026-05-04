@@ -2,6 +2,8 @@
 
 Short clips sourced from **[Wikimedia Commons](https://commons.wikimedia.org/)** (preferred open formats there are **Theora**/Ogg or **VP9**/WebM, not patent-avoiding **H.264** uploads). Sizes are kept small for repo tests.
 
+**CLI alignment:** tests assume the product default of keeping video as-is (**stream copy**) when the matrix allows. **`--allow-video-fallback`** is for inputs where stream-copy-only video is not possible and re-encoding is required.
+
 ## Feasibility matrix vs fixtures
 
 Stream-copy behavior for mixed audio+video is decided in [`planVideoStreamCopyFeasibility`](../../../src/domain/stream-copy-feasibility.ts) and surfaced through **`planMediaOutput`** / prelude in [`output-plan.ts`](../../../src/domain/output-plan.ts). For **one** identifiable video stream and nonempty **`format.format_name`** (structural gates; see module for full ordering):

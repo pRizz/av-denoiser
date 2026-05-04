@@ -11,7 +11,7 @@ test("MAX_PRESERVATION_NOTES is five", () => {
   expect(MAX_PRESERVATION_NOTES).toBe(5);
 });
 
-test("buildPreservationNotesFromPlan emits would require for fallback-required", () => {
+test("buildPreservationNotesFromPlan explains fallback-required vs stream copy", () => {
   const plan: OutputPlan = {
     modality: "fallback-required",
     reasonCodes: ["video-fallback-non-h264-video"],
@@ -23,11 +23,11 @@ test("buildPreservationNotesFromPlan emits would require for fallback-required",
   };
 
   const notes = buildPreservationNotesFromPlan(plan);
-  expect(notes.some((n) => n.includes("would require"))).toBe(true);
+  expect(notes.some((n) => n.includes("stream copy only"))).toBe(true);
   expect(notes.some((n) => n.includes("libx265"))).toBe(true);
 });
 
-test("buildPreservationNotesFromPlan emits Stream-copy for video-copy-safe", () => {
+test("buildPreservationNotesFromPlan emits stream-copy phrasing for video-copy-safe", () => {
   const plan: OutputPlan = {
     modality: "video-copy-safe",
     reasonCodes: ["video-copy-h264-mp4-v1"],
@@ -39,7 +39,7 @@ test("buildPreservationNotesFromPlan emits Stream-copy for video-copy-safe", () 
   };
 
   const notes = buildPreservationNotesFromPlan(plan);
-  expect(notes.some((n) => n.includes("Stream-copy"))).toBe(true);
+  expect(notes.some((n) => n.includes("stream copy"))).toBe(true);
   expect(notes.some((n) => n.includes("HEVC"))).toBe(true);
 });
 
@@ -72,7 +72,7 @@ test("buildPreservationNotesFromPlan emits Matroska Theora caveat with HDR or si
   };
 
   const notes = buildPreservationNotesFromPlan(plan);
-  expect(notes.some((n) => /theora|stream-copy/i.test(n))).toBe(true);
+  expect(notes.some((n) => /theora|stream.copy/i.test(n))).toBe(true);
   expect(
     notes.some((n) => /hdr|metadata|color|player|best-effort|side/i.test(n)),
   ).toBe(true);
@@ -130,7 +130,7 @@ test("outputPlanToInspectSummary MP4 whitelist reason codes are frozen literals"
     expect(summary.reasonCodes.length).toBe(1);
     expect(summary.reasonCodes[0]).toBe(code);
     expect(
-      summary.preservationNotes.some((n) => n.includes("Stream-copy")),
+      summary.preservationNotes.some((n) => n.includes("stream copy")),
     ).toBe(true);
     expect(summary.preservationNotes.length).toBeGreaterThanOrEqual(2);
   }

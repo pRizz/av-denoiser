@@ -91,7 +91,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
     .option("--json", "Print machine-readable JSON instead of text", false)
     .option(
       "--allow-video-fallback",
-      "Acknowledge fallback-required preservation plans instead of exiting non-zero.",
+      "When video cannot stay as-is (stream copy), allow inspect to print the plan instead of exiting fallback-required (inspect does not transcode).",
       false,
     )
     .action(
@@ -118,7 +118,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
   program
     .command("clean")
     .description(
-      "Run preset cleanup: audio-only inputs, or video inputs when inspect reports video-copy-safe / approved fallback",
+      "Run preset cleanup on audio, or on video when inspect says the video can stay as-is (stream copy) or you allow re-encoding via --allow-video-fallback",
     )
     .argument("<input>", "Path to the input audio or video file")
     .option("-o, --output <path>", "Explicit output path (optional)")
@@ -131,7 +131,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
     .option("--json", "Print machine-readable JSON instead of text", false)
     .option(
       "--allow-video-fallback",
-      "Allow executing fallback-required plans; video re-encodes to HEVC (libx265), slower than stream-copy or AVC.",
+      "When stream-copy is not possible for video: allow cleaning by re-encoding video to HEVC (libx265) to MP4—slower than keeping video as-is.",
       false,
     )
     .option(
@@ -242,7 +242,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
     .option("--json", "Machine-readable batch summary on stdout", false)
     .option(
       "--allow-video-fallback",
-      "Allow executing fallback-required preservation plans",
+      "When stream-copy is not possible for video: allow batch cleans that re-encode video to HEVC (libx265); slower than stream-copy.",
       false,
     )
     .option(

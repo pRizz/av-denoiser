@@ -685,7 +685,7 @@ export async function runCleanRequest(
       reason: {
         kind: "fallback-required",
         message:
-          "Planned output requires video preservation fallback approval. Run av-denoiser clean with --allow-video-fallback (or av-denoiser inspect with --allow-video-fallback to preview).",
+          "This plan needs video re-encoding; keeping the video as-is (stream copy) is not available. Run av-denoiser clean with --allow-video-fallback (or av-denoiser inspect with --allow-video-fallback to preview).",
       },
     };
   }
