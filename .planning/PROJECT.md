@@ -10,19 +10,34 @@ Casual users can run **`guided-clean`**; operators use **`clean`** and **`batch`
 
 Users can pass an audio or video file through a guided denoise pipeline and get a cleaned output **while minimizing unnecessary video recompression**.
 
-## Current Milestone: v1.1 Multi-container stream copy
+## Current State (shipped)
 
-**Goal:** Extend stream-copy-first planning and remux so **VP9**/**WebM**, **Theora**/ **Matroska**, and carefully scoped **additional codecs** can complete **without unnecessary H.264 re-encode** when the planner can prove a container+codec pairing is **`video-copy-safe`**.
+**Latest release:** **v1.1** — multi-container stream copy — **2026-05-04** (`git tag` **v1.1**). Roadmap collapsed in [.planning/ROADMAP.md](ROADMAP.md); full phase narrative archived in [.planning/milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md). **`bun run verify`** was **226** tests green at archival.
 
-**Target features:**
-- **Matroska** and **WebM** as first-class planned output containers alongside **MP4** (probe-driven container choice from a typed feasibility matrix).
-- Explicit **VP9** and **Theora** matrix rows (deterministic **`reasonCodes`**, unchanged fallback semantics when not copy-safe).
-- **Per-container final audio policy** for the remux step (AAC vs Opus/etc. documented per muxer—not ad hoc CLI strings).
-- **`inspect`** / preservation notes accurately describe multi-container posture; **`bun run verify`** gains fixture-backed coverage including regression for existing **MP4** **H.264/HEVC/AV1** copy-safe paths.
+<details>
+<summary>v1.1 milestone goals (historical summary)</summary>
 
-**Phase numbering:** Restarted at **Phase 01** for this milestone; **v1.0** execution artifacts live under [.planning/milestones/v1.0-phases/](.planning/milestones/v1.0-phases/) (frozen move **2026-05-03**).
+Extended stream-copy-first planning and remux so **VP9**/ **WebM**, **Theora**/ **Matroska**, and scoped extra codecs avoid unnecessary **H.264** re-encode when the planner proves **`video-copy-safe`**. **Matroska** / **WebM** sit alongside **MP4** as typed **`PlannedContainer`** outputs; **`libx265`** is the default video fallback when re-encode is required; **`verifyCleanOutput`** asserts HEVC on that path.
+
+</details>
+
+## Next milestone goals
+
+**Not started.** Bootstrap **v1.2** (or next) with **`/gsd-new-milestone`** — generates fresh **[.planning/REQUIREMENTS.md](REQUIREMENTS.md)** and roadmap rows. Candidate themes from archived **FUT-***/ backlog rows: optional container override flag, bounded copy dry-run probe, richer multi-track policy (**see** [.planning/milestones/v1.1-REQUIREMENTS.md](milestones/v1.1-REQUIREMENTS.md) **Future / Out of Scope** tables **as input only**).
 
 ## Requirements
+
+### Validated — v1.1 (frozen)
+
+**13/13** **MULTI-**\* IDs — archived: [.planning/milestones/v1.1-REQUIREMENTS.md](milestones/v1.1-REQUIREMENTS.md)
+
+High-level confirmations:
+
+- ✅ **Containers & paths**: typed planned output container + **`.avdn.*`** extension alignment (**MULTI-01**, **MULTI-02**).
+- ✅ **Feasibility matrix**: VP9/WebM, Theora/Matroska, explicit VP8 (and similar) rows with stable reason tokens (**MULTI-03**–**MULTI-05**).
+- ✅ **Remux**: mux **`‑f`** selection + AAC/Opus (and pipeline-consistent intermediate naming) (**MULTI-06**, **MULTI-07**).
+- ✅ **Trust surfaces**: inspect/JSON, fallback honesty, **`verifyCleanOutput`** + fixtures + MP4 regressions (**MULTI-08**–**MULTI-12**).
+- ✅ **Fallback video**: **libx265** argv + post-run HEVC verification (**MULTI-13**).
 
 ### Validated — v1.0 (frozen)
 
@@ -39,13 +54,13 @@ High-level confirmations:
 - ✅ **Batch**: parallelism cap, **`fail-fast`**, manifests record effective plans + **`maybeDoctorFacts`** (**BATCH-05**).
 - ✅ **Trust**: argv-only **`Bun.spawn`**, **`ProcessCommand`** immutability, post-run probes + codec/duration sanity.
 
-### Active — v1.1 (THIS milestone — in flight)
+### Active — next milestone
 
-Checkboxes and acceptance live in [.planning/REQUIREMENTS.md](.planning/REQUIREMENTS.md) (**MULTI-\*** IDs).
+Defined only after **`/gsd-new-milestone`** (new **REQUIREMENTS.md**).
 
-### Active — backlog (defer past v1.1)
+### Active — backlog
 
-Captured from **Deferred backlog** — schedule after **v1.1** ships:
+Captured from **Deferred backlog** — schedule when picked up in a future milestone:
 
 - Audition/snippet previews before full runs (**ADV-\*** family).
 - Optional RNNoise/DNN backends when installed (**ADV-\*** / plugin discovery).
@@ -63,10 +78,10 @@ Boundary table remains accurate for **v1**; revisit only if a future milestone e
 
 *(Reasoning unchanged — archived copy still available for diff if needed.)*
 
-## Context (**2026-05-03 — v1.0 shipped**)
+## Context (**2026-05-04 — v1.1 shipped**)
 
 - **Runtime/tooling**: Bun (**`bun test`**, **`bun run`**, compiled CLI entry), TypeScript **`strict`**, **`@biomejs/biome`** in CI (`biome ci`), FFmpeg 8-era argv builders (does not depend on **`fluent-ffmpeg`**).
-- **Tests**: deterministic subprocess mocks + representative **FFprobe JSON** fixtures; integration-style tests for **`clean`** on bundled speech/noise WAV and **dry-run**/execute video paths (`bun run verify`).
+- **Tests**: deterministic subprocess mocks + representative **FFprobe JSON** fixtures; integration-style tests for **`clean`** on bundled speech/noise WAV and **dry-run**/execute video paths (`bun run verify` — **226** tests at **v1.1** archival).
 - **Remaining confidence debt** (**non-blocking**): widen real-machine coverage (heterogeneous FFmpeg builds, **`sox`** vs **`sox_ng`** naming, Audacity scripting enablement, LADSPA install paths); called out under **`doctor`** / verification residual notes.
 
 ## Constraints
@@ -88,6 +103,7 @@ Boundary table remains accurate for **v1**; revisit only if a future milestone e
 | FFmpeg argv builders + **`ProcessRunner`** | Safety + quoting correctness + testability (`argv` snapshots). | ✓ Tests lock **`afftdn`**, **`sox`** tokens, **`ladspa`** filtergraph fragments. |
 | Optional integrations behind explicit knobs + **`doctor`** | Heavy deps must not hijack baseline install story. | ✓ **`speech-vocals-demucs`** preset; risk/assume-yes style flags documented in CLI help surfaces. |
 | **`ladspa`** runnable; **`melt`** diagnostics only (**TOOL-07**, Phase **16**) | Do not imply **melt** execution without shipping a melt-derived cleanup graph. | ✓ Requirement + **`08-VERIFICATION`** harmonized (**milestone audit passed**). |
+| Multi-container copy matrix + **libx265** fallback (**v1.1**) | Preserve stream-copy honesty across **MP4** / **WebM** / **Matroska**; no silent optimism on VP9 container pairing. | ✓ **MULTI-01**–**MULTI-13** archived; milestone audit **passed**. |
 
 ## Evolution
 
@@ -95,8 +111,8 @@ Processes above follow Bright Builds/GSD milestones.
 
 **Boundary event — v1.0 shipped & archived (**2026-05-03**):** roadmap + REQ snapshot under **`.planning/milestones/v1.0-*`**, **`v1.0`** git tag; **`v1.0`** phase workspaces moved wholesale to [.planning/milestones/v1.0-phases/](.planning/milestones/v1.0-phases/) when **v1.1** numbering reset (**2026-05-03**).
 
-**Phase 02 retrospective closure (**2026-05-03**):** **`planVideoStreamCopyFeasibility`** feasibility matrix (**MULTI-03–MULTI-05**) is verified and traced; prelude **Opus** selection for VP9/WebM documented in **`output-plan.ts`**.
+**Boundary — v1.1 shipped & archived (**2026-05-04**):** roadmap + requirements + audit under **`.planning/milestones/v1.1-*`**; **`v1.1`** git tag; live **[.planning/REQUIREMENTS.md](REQUIREMENTS.md)** removed until the next **`/gsd-new-milestone`**.
 
 ---
 
-*Last updated: 2026-05-03 — **v1.1** feasibility matrix (**Phase 02**) closed in GSD; optional milestone archive next.*
+*Last updated: 2026-05-04 after **v1.1** milestone completion (`/gsd-complete-milestone`).*

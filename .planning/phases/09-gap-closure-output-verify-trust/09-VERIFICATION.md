@@ -18,7 +18,7 @@ Automated verification: **`bun run verify`** — **226** pass, **0** fail (**202
 |-----------|----------|
 | **04-VERIFICATION.md** + **05-VERIFICATION.md** with requirement ↔ evidence tables (**MULTI-08**–**MULTI-13**) | [04-VERIFICATION.md](../04-ux-verification-fixtures-regression/04-VERIFICATION.md); [05-VERIFICATION.md](../05-x265-preferred-video-reencode/05-VERIFICATION.md) |
 | **`verifyCleanOutput`** asserts **HEVC** on output for **`fallback-required`** + **`!claimedVideoCopied`** | **`src/domain/clean-output-verify.ts`**; **`test/domain/clean-output-verify.test.ts`** (**fallback-required re-encode** tests); [09-01-SUMMARY.md](09-01-SUMMARY.md) |
-| **REQUIREMENTS.md** **MULTI-08**–**MULTI-13** marked complete with traceability links | [REQUIREMENTS.md](../../REQUIREMENTS.md) |
+| **REQUIREMENTS** **MULTI-08**–**MULTI-13** marked complete with traceability links | [v1.1-REQUIREMENTS archive](../../milestones/v1.1-REQUIREMENTS.md) |
 
 ## Plans executed
 

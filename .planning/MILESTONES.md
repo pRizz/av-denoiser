@@ -1,18 +1,25 @@
 # Milestones
 
-## v1.1 Multi-container stream copy (In progress — started: 2026-05-03)
+## v1.1 — Multi-container stream copy (Shipped: 2026-05-04)
 
-**Objective:** Probe-driven **WebM/Matroska** outputs with **VP9** + **Theora** (and scoped extras) on the **video-copy-safe** matrix when provable; truthful fallbacks elsewhere.
+**Phases completed:** 9 phases, 16 plans.
 
-**Tracking:** [.planning/REQUIREMENTS.md](REQUIREMENTS.md) (**MULTI-\*** IDs) · [.planning/ROADMAP.md](ROADMAP.md) (Phases **01–04**) · [.planning/PROJECT.md](PROJECT.md)
+**Key accomplishments:**
 
-**Archived v1 workspaces:** [.planning/milestones/v1.0-phases/](milestones/v1.0-phases/) (frozen move **2026-05-03**)
+- Typed **PlannedContainer** (MP4 / Matroska / WebM) and collision-safe output path derivation (**MULTI-01**, **MULTI-02**).
+- **planVideoStreamCopyFeasibility** integrated into prelude: VP9→WebM copy-safe, Theora→Matroska, explicit VP8 fallback tokens (**MULTI-03**–**MULTI-05**); requirements narrowed so VP9+Matroska stays explicitly deferred.
+- FFmpeg remux argv honors mux format (**`-f webm` / `-f matroska`**) and per-container audio policy; intermediate pipeline basenames aligned with encode matrix (**MULTI-06**, **MULTI-07**).
+- Inspect / JSON surfaces, **`verifyCleanOutput`** canonical codec checks, ffprobe fixtures, and MULTI-12 MP4 regression literals (**MULTI-08**–**MULTI-12**).
+- Video fallback re-encode uses **libx265** with truthful inspect/run-report/verify paths, including HEVC assertion after re-encode (**MULTI-13**).
+- Gap phases **06–09** closed milestone audit items (verification artifacts, traceability, **`bun run verify`** **226** tests green at ship).
+
+**Archives:** [v1.1-ROADMAP](milestones/v1.1-ROADMAP.md) · [v1.1-REQUIREMENTS](milestones/v1.1-REQUIREMENTS.md) · [v1.1-MILESTONE-AUDIT](milestones/v1.1-MILESTONE-AUDIT.md)
 
 ---
 
-## v1.0 CLI & v1 requirements (Shipped: 2026-05-03)
+## v1.0 — CLI & v1 requirements (Shipped: 2026-05-03)
 
-**Phases completed:** 17 phases, 37 plans (task counts unevenly recorded in summaries)
+**Phases completed:** 17 phases, 37 plans (task counts unevenly recorded in summaries).
 
 **Key accomplishments:**
 

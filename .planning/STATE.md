@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: — Multi-container stream copy
+milestone: between-milestones
+milestone_name: (next — use /gsd-new-milestone)
 status: idle
-stopped_at: Phase 09 execute complete — v1.1 milestone delivered
-last_updated: "2026-05-04T11:28:00.000Z"
+stopped_at: v1.1 archived — awaiting next milestone bootstrap
+last_updated: "2026-05-04T23:59:59.000Z"
 last_activity: 2026-05-04
 progress:
-  total_phases: 9
-  completed_phases: 9
-  total_plans: 16
-  completed_plans: 16
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,20 +21,20 @@ progress:
 See: [.planning/PROJECT.md](PROJECT.md)
 
 **Core value:** Users can pass audio or video through a guided denoise pipeline and get cleaned output while minimizing unnecessary video recompression.
-**Current focus:** **v1.1** milestone complete — optional **`/gsd-complete-milestone`** / **`/gsd-new-milestone`**.
+
+**Current focus:** **v1.1** shipped and archived (**2026-05-04**). Use **`/gsd-new-milestone`** to define **v1.2** (fresh **REQUIREMENTS.md**).
 
 ## Current Position
 
-Phase: **09** (complete)  
-Plan: **09-01**, **09-02** executed  
-Status: Idle — **`bun run verify`** green (**226** tests).  
-Last activity: **2026-05-04** — Phase **09** verification docs + **`verifyCleanOutput`** fallback **HEVC**
+Milestone **v1.1** complete — planning workspace reset for the next milestone.  
+Live roadmap: [.planning/ROADMAP.md](ROADMAP.md) (collapsed).  
+Archived **v1.1** reqs: [.planning/milestones/v1.1-REQUIREMENTS.md](milestones/v1.1-REQUIREMENTS.md).
 
-Progress: [.planning/ROADMAP.md](ROADMAP.md); [.planning/REQUIREMENTS.md](REQUIREMENTS.md) (**MULTI-01**–**MULTI-13** Complete).
+**Verification:** **`bun run verify`** green (**226** tests) at last **v1.1** closure.
 
 ## Performance Metrics
 
-**(Carried from v1.0 for history)**
+**(Carried from prior milestones for history)**
 
 ## Accumulated Context
 
@@ -44,27 +44,18 @@ Decisions are logged in PROJECT.md Key Decisions table.
 
 ### Pending Todos
 
-None yet.
+None — start next milestone to populate.
 
 ### Roadmap Evolution
 
-- **2026-05-04**: Phase **09** executed — **04-VERIFICATION.md**, **05-VERIFICATION.md**, **`verifyCleanOutput`** fallback **HEVC**, REQ **MULTI-08**–**MULTI-13**, **09-VERIFICATION.md** ([09-01-SUMMARY.md](phases/09-gap-closure-output-verify-trust/09-01-SUMMARY.md), [09-02-SUMMARY.md](phases/09-gap-closure-output-verify-trust/09-02-SUMMARY.md)).
-- **2026-05-04**: Phase **08** executed — **03-VERIFICATION.md**, **`pipelineAudioOutIntermediateBasename`**, REQ **MULTI-06**/ **MULTI-07**, milestone audit sweep ([08-01-SUMMARY.md](phases/08-gap-closure-phase-03-remux-pipeline-trust/08-01-SUMMARY.md), [08-02-SUMMARY.md](phases/08-gap-closure-phase-03-remux-pipeline-trust/08-02-SUMMARY.md)).
-- **2026-05-03**: Phase **07** executed — **MULTI-03** **REQUIREMENTS** + **`02-VERIFICATION`** addendum + audit ([07-01-SUMMARY.md](.planning/phases/07-gap-closure-multi-03-feasibility-alignment/07-01-SUMMARY.md)).
-- **2026-05-03**: Phase **06** executed — **01-VERIFICATION.md**, **MULTI-01** / **MULTI-02** **REQUIREMENTS** closure ([06-01-SUMMARY.md](.planning/phases/06-gap-closure-phase-01-verification-multi-01-02/06-01-SUMMARY.md)).
-- **2026-05-03**: Phase **02** executed (retro) — **`planVideoStreamCopyFeasibility`** + prelude/Opus-WebM artifacts verified; [.planning/phases/02-feasibility-matrix-vp9-theora-extras/02-VERIFICATION.md](.planning/phases/02-feasibility-matrix-vp9-theora-extras/02-VERIFICATION.md).
-- **2026-05-03**: Phase **05** executed — **MULTI-13** **`libx265`** fallback remux (**`reencode-hevc`**), inspect/run-report/help/README, **`hev1`** verify alias. Summaries: [.planning/phases/05-x265-preferred-video-reencode/](.planning/phases/05-x265-preferred-video-reencode/)
-- **2026-05-03**: Phase **04** executed — MULTI-08–12 (inspect/clean trust surfaces, **`verifyCleanOutput`** canonical codec synonyms, fixtures, MP4 regression literals). Summaries: [.planning/phases/04-ux-verification-fixtures-regression/](.planning/phases/04-ux-verification-fixtures-regression/)
-- **2026-05-03**: Phase **05** added — x265-preferred video re‑encode (depends on Phase **04**); workspace [.planning/phases/05-x265-preferred-video-reencode/](.planning/phases/05-x265-preferred-video-reencode/)
-- **2026-05-03**: Ad-hoc Phase 1 roadmap line (duplicate **`01-*`** folder) superseded by **`/gsd-new-milestone --reset-phase-numbers`**: historical **`.planning/phases/*`** moved to [.planning/milestones/v1.0-phases/](.planning/milestones/v1.0-phases/); live **`ROADMAP.md`** recreated for **v1.1** phases **01–05**.
+- **2026-05-04**: **`/gsd-complete-milestone`** — **v1.1** archived to **`.planning/milestones/v1.1-*`**, **`REQUIREMENTS.md`** removed pending next milestone; **ROADMAP.md** collapsed; git tag **`v1.1`**.
 
 ### Blockers/Concerns
 
-- **Real mux coverage:** WebM/Matroska copy can still fail on hostile samples — policy must stay honest about **ffmpeg execution** risk.
-- Carry-over: SoX/Audacity/Demucs validation debt from v1 remains **non-blocking** for MULTI scope.
+- Next milestone scope undefined until **`/gsd-new-milestone`**.
 
 ## Session Continuity
 
-Last session: 2026-05-04T11:28:00.000Z  
-Stopped at: Phase **09** execute complete — **v1.1** milestone delivered  
-Resume tip: **`/gsd-progress`** / **`/gsd-complete-milestone`**
+Last session: 2026-05-04  
+Stopped at: **v1.1** milestone archival complete  
+Resume tip: **`/gsd-new-milestone`** · **`/gsd-progress`**

@@ -36,6 +36,37 @@
 
 ---
 
+## Milestone: v1.1 — Multi-container stream copy
+
+**Shipped:** 2026-05-04  
+**Scale:** **9** phase directories · **16** executed plans (**01–05** delivery + **06–09** gap closure)
+
+### What shipped
+
+- Typed **planned output containers** (**MP4** / **Matroska** / **WebM**) with aligned default output paths (**MULTI-01**, **MULTI-02**).
+- **Feasibility matrix** in prelude: VP9/WebM copy-safe pairing, Theora/Matroska, explicit fallback tokens (**MULTI-03**–**MULTI-05**); requirements reconciled so **VP9+Matroska** stays explicitly deferred.
+- Remux argv builders with mux **`‑f`**, AAC/Opus policy, consistent intermediate audio basenames (**MULTI-06**, **MULTI-07**).
+- Inspect / JSON honesty, **`verifyCleanOutput`** (including **HEVC** check after **`libx265`** fallback), fixtures, MULTI-12 regressions (**MULTI-08**–**MULTI-13**).
+
+### What worked
+
+- **Dedicated gap phases 06–09** mirrored audit findings into verification markdown and traceability without renumbering shipped feature phases.
+- **Pure domain tests** (`argv` snapshots, ffprobe fixtures) kept WebM/Matroska coverage offline.
+
+### What was inefficient
+
+- First **milestone audit** surfaced missing **VERIFICATION** artifacts for phases **04/05** and a verifier gap on fallback video — corrected in Phase **09**, but earlier co-location of verification with feature phases would reduce audit churn.
+
+### Patterns to keep
+
+- **Stable reason tokens** on every feasibility branch — prevents silent optimism when matrix and docs disagree.
+
+### Key lessons
+
+1. When requirements allow **either** widening code **or** narrowing text, prefer **narrowing + tests** unless the wider behavior is explicitly product-critical.
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -43,9 +74,11 @@
 | Milestone | Approx. phases | Note |
 |-----------|----------------|------|
 | v1.0 | 17 | First archive under `.planning/milestones/` |
+| v1.1 | 9 | Numbering reset **01–05** + closure **06–09** |
 
 ### Cumulative quality
 
 | Milestone | Verification gate |
 |-----------|-------------------|
 | v1.0 | `bun run verify` (Biome + `tsc --noEmit` + `bun test`) green at archive |
+| v1.1 | Same — **226** tests green at archive; formal **`*-VERIFICATION.md`** per primary phase + Phase **09** rollup |
