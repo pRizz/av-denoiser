@@ -10,7 +10,7 @@ describe("argvTokensForEquivalentClean", () => {
       dryRun: false,
       presetId: "speech-light",
       noiseStrength: 0.35,
-      allowVideoFallback: false,
+      allowVideoReencode: false,
       acceptAudacityPipeRisk: false,
     };
 
@@ -33,7 +33,7 @@ describe("argvTokensForEquivalentClean", () => {
       dryRun: false,
       presetId: "speech-soft-sox",
       noiseStrength: 0.35,
-      allowVideoFallback: true,
+      allowVideoReencode: true,
       acceptAudacityPipeRisk: false,
     };
 
@@ -44,7 +44,7 @@ describe("argvTokensForEquivalentClean", () => {
       "-o",
       "out.mkv",
       "--force",
-      "--allow-video-fallback",
+      "--allow-video-reencode",
       "--preset",
       "speech-soft-sox",
       "--noise-strength",
@@ -59,7 +59,7 @@ describe("argvTokensForEquivalentClean", () => {
       dryRun: false,
       presetId: "speech-light",
       noiseStrength: 0.35,
-      allowVideoFallback: false,
+      allowVideoReencode: false,
       acceptAudacityPipeRisk: false,
     };
 
@@ -81,7 +81,7 @@ describe("argvTokensForEquivalentClean", () => {
       dryRun: true,
       presetId: "speech-light",
       noiseStrength: 0.35,
-      allowVideoFallback: false,
+      allowVideoReencode: false,
       acceptAudacityPipeRisk: false,
     };
 
@@ -95,7 +95,7 @@ describe("argvTokensForEquivalentClean", () => {
       dryRun: false,
       presetId: "speech-vocals-demucs",
       noiseStrength: 0.35,
-      allowVideoFallback: false,
+      allowVideoReencode: false,
       acceptAudacityPipeRisk: true,
       maybeAudacityMacro: "noise-reduction",
       maybeLadspa: {

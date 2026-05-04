@@ -11,7 +11,7 @@ export const MAX_PRESERVATION_NOTES = 5;
 /**
  * User-facing video policy (inspect bullets / docs should stay aligned):
  * We try to keep the video track as-is (stream copy) when the feasibility matrix allows.
- * `--allow-video-fallback` means the user accepts re-encoding video (HEVC/libx265 to MP4 here)
+ * `--allow-video-reencode` means the user accepts re-encoding video (HEVC/libx265 to MP4 here)
  * when stream-copy-only is not possible for that input.
  */
 
@@ -89,7 +89,7 @@ export function buildPreservationNotesFromPlan(
       }
 
       notes.push(
-        "Pass --allow-video-fallback to allow re-encoding the video to HEVC (libx265) in MP4 (CRF 28, preset slow)—slower than stream-copy.",
+        "Pass --allow-video-reencode to allow re-encoding the video to HEVC (libx265) in MP4 (CRF 28, preset slow)—slower than stream-copy.",
       );
 
       break;

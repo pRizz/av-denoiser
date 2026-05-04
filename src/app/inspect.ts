@@ -125,13 +125,13 @@ export async function runInspectRequest(
     pathOutcome: pathResult,
   });
 
-  if (plan.modality === "fallback-required" && !request.allowVideoFallback) {
+  if (plan.modality === "fallback-required" && !request.allowVideoReencode) {
     return {
       kind: "failure",
       reason: {
         kind: "fallback-required",
         message:
-          "This plan needs video re-encoding; keeping the video as-is (stream copy) is not available. Pass --allow-video-fallback to acknowledge.",
+          "This plan needs video re-encoding; keeping the video as-is (stream copy) is not available. Pass --allow-video-reencode to acknowledge.",
       },
     };
   }

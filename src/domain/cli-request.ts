@@ -35,7 +35,7 @@ export type CliRequest =
       readonly maybeOutputPath?: string;
       readonly force: boolean;
       readonly json: boolean;
-      readonly allowVideoFallback: boolean;
+      readonly allowVideoReencode: boolean;
     }
   | {
       readonly kind: "clean";
@@ -46,7 +46,7 @@ export type CliRequest =
       readonly json: boolean;
       readonly presetId: PresetId;
       readonly knobs: CleanPresetKnobs;
-      readonly allowVideoFallback: boolean;
+      readonly allowVideoReencode: boolean;
       readonly acceptAudacityPipeRisk: boolean;
       readonly maybeAudacityMacro?: string;
       readonly maybeLadspa?: LadspaIntegration;
@@ -66,7 +66,7 @@ export type CliRequest =
       readonly json: boolean;
       readonly presetId: PresetId;
       readonly knobs: CleanPresetKnobs;
-      readonly allowVideoFallback: boolean;
+      readonly allowVideoReencode: boolean;
       readonly acceptAudacityPipeRisk: boolean;
       readonly maybeAudacityMacro?: string;
       readonly maybeLadspa?: LadspaIntegration;

@@ -77,7 +77,7 @@ test("parses clean dry-run with default preset speech-light", () => {
     force: false,
     dryRun: true,
     json: false,
-    allowVideoFallback: false,
+    allowVideoReencode: false,
     presetId: "speech-light",
     knobs: { noiseStrength: 0.35 },
     acceptAudacityPipeRisk: false,
@@ -99,7 +99,7 @@ test("parses clean with speech-soft-sox preset", () => {
     force: false,
     dryRun: true,
     json: false,
-    allowVideoFallback: false,
+    allowVideoReencode: false,
     presetId: "speech-soft-sox",
     knobs: { noiseStrength: 0.35 },
     acceptAudacityPipeRisk: false,
@@ -125,7 +125,7 @@ test("parses inspect command into a typed request", () => {
     inputPath: "clip.m4a",
     force: true,
     json: true,
-    allowVideoFallback: false,
+    allowVideoReencode: false,
   });
 });
 

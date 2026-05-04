@@ -8,7 +8,7 @@ export type GuidedCleanSelections = {
   readonly dryRun: boolean;
   readonly presetId: PresetId;
   readonly noiseStrength: number;
-  readonly allowVideoFallback: boolean;
+  readonly allowVideoReencode: boolean;
   readonly acceptAudacityPipeRisk: boolean;
   readonly maybeAudacityMacro?: string;
   readonly maybeLadspa?: LadspaIntegration;

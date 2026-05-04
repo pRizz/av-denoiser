@@ -90,7 +90,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
     .option("--force", "Allow overwriting an existing output file", false)
     .option("--json", "Print machine-readable JSON instead of text", false)
     .option(
-      "--allow-video-fallback",
+      "--allow-video-reencode",
       "When video cannot stay as-is (stream copy), allow inspect to print the plan instead of exiting fallback-required (inspect does not transcode).",
       false,
     )
@@ -101,7 +101,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
           output?: string;
           force?: boolean;
           json?: boolean;
-          allowVideoFallback?: boolean;
+          allowVideoReencode?: boolean;
         },
       ) => {
         handleRequest({
@@ -110,7 +110,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
           maybeOutputPath: options.output,
           force: Boolean(options.force),
           json: Boolean(options.json),
-          allowVideoFallback: Boolean(options.allowVideoFallback),
+          allowVideoReencode: Boolean(options.allowVideoReencode),
         });
       },
     );
@@ -118,7 +118,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
   program
     .command("clean")
     .description(
-      "Run preset cleanup on audio, or on video when inspect says the video can stay as-is (stream copy) or you allow re-encoding via --allow-video-fallback",
+      "Run preset cleanup on audio, or on video when inspect says the video can stay as-is (stream copy) or you allow re-encoding via --allow-video-reencode",
     )
     .argument("<input>", "Path to the input audio or video file")
     .option("-o, --output <path>", "Explicit output path (optional)")
@@ -130,7 +130,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
     )
     .option("--json", "Print machine-readable JSON instead of text", false)
     .option(
-      "--allow-video-fallback",
+      "--allow-video-reencode",
       "When stream-copy is not possible for video: allow cleaning by re-encoding video to HEVC (libx265) to MP4—slower than keeping video as-is.",
       false,
     )
@@ -168,7 +168,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
           force?: boolean;
           dryRun?: boolean;
           json?: boolean;
-          allowVideoFallback?: boolean;
+          allowVideoReencode?: boolean;
           preset?: string;
           noiseStrength?: number;
           acceptAudacityPipeRisk?: boolean;
@@ -196,7 +196,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
           force: Boolean(options.force),
           dryRun: Boolean(options.dryRun),
           json: Boolean(options.json),
-          allowVideoFallback: Boolean(options.allowVideoFallback),
+          allowVideoReencode: Boolean(options.allowVideoReencode),
           presetId,
           knobs: { noiseStrength: options.noiseStrength ?? 0.35 },
           ...integrations,
@@ -241,7 +241,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
     .option("--dry-run", "Plan every file without invoking ffmpeg/sox", false)
     .option("--json", "Machine-readable batch summary on stdout", false)
     .option(
-      "--allow-video-fallback",
+      "--allow-video-reencode",
       "When stream-copy is not possible for video: allow batch cleans that re-encode video to HEVC (libx265); slower than stream-copy.",
       false,
     )
@@ -284,7 +284,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
         force?: boolean;
         dryRun?: boolean;
         json?: boolean;
-        allowVideoFallback?: boolean;
+        allowVideoReencode?: boolean;
         preset?: string;
         noiseStrength?: number;
         acceptAudacityPipeRisk?: boolean;
@@ -325,7 +325,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
           force: Boolean(options.force),
           dryRun: Boolean(options.dryRun),
           json: Boolean(options.json),
-          allowVideoFallback: Boolean(options.allowVideoFallback),
+          allowVideoReencode: Boolean(options.allowVideoReencode),
           presetId,
           knobs: { noiseStrength: options.noiseStrength ?? 0.35 },
           ...integrations,

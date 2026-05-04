@@ -33,7 +33,7 @@ describe("runCliRequest batch discoverTools wiring", () => {
       json: false,
       presetId: "speech-light",
       knobs: { noiseStrength: 0.35 },
-      allowVideoFallback: false,
+      allowVideoReencode: false,
       acceptAudacityPipeRisk: false,
     };
 
@@ -105,7 +105,7 @@ describe("runCliRequest batch discoverTools wiring", () => {
       json: false,
       presetId: "speech-light",
       knobs: { noiseStrength: 0.35 },
-      allowVideoFallback: false,
+      allowVideoReencode: false,
       acceptAudacityPipeRisk: false,
     };
 

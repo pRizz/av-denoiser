@@ -22,7 +22,7 @@ const DEFAULT_GUIDANCE_LINES = [
   'Run "av-denoiser inspect <path>" to probe media and preview planned outputs.',
   'Use "av-denoiser clean <path>" for preset FFmpeg/SoX cleanup when tools are ready.',
   'Use "av-denoiser batch --input <path>..." for multi-file cleanup with a manifest.',
-  'Use "av-denoiser clean <path>" after inspect for video when the plan keeps video as-is, or add --allow-video-fallback when the file needs video re-encoding.',
+  'Use "av-denoiser clean <path>" after inspect for video when the plan keeps video as-is, or add --allow-video-reencode when the file needs video re-encoding.',
   'Run "av-denoiser guided" for a prompted clean workflow that prints equivalent CLI flags.',
 ];
 
@@ -352,7 +352,7 @@ export function renderCliRequest(
       return [
         "av-denoiser clean <path>",
         "",
-        "Runs preset FFmpeg/SoX cleanup on audio or supported video (inspect first; use --allow-video-fallback only when the plan cannot keep video as-is).",
+        "Runs preset FFmpeg/SoX cleanup on audio or supported video (inspect first; use --allow-video-reencode only when the plan cannot keep video as-is).",
       ].join("\n");
     case "batch":
       return [

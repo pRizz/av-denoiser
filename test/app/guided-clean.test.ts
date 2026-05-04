@@ -26,7 +26,7 @@ describe("runGuidedCleanRequest", () => {
       dryRun: false,
       presetId: "speech-light",
       noiseStrength: 0.35,
-      allowVideoFallback: false,
+      allowVideoReencode: false,
       acceptAudacityPipeRisk: false,
     };
 

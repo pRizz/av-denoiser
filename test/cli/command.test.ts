@@ -12,7 +12,7 @@ test("argvTokensForEquivalentClean round-trips through parseCliRequest", () => {
     dryRun: false,
     presetId: "speech-soft-sox",
     noiseStrength: 0.25,
-    allowVideoFallback: true,
+    allowVideoReencode: true,
     acceptAudacityPipeRisk: false,
   };
 
@@ -28,7 +28,7 @@ test("argvTokensForEquivalentClean round-trips through parseCliRequest", () => {
     json: false,
     presetId: "speech-soft-sox",
     knobs: { noiseStrength: 0.25 },
-    allowVideoFallback: true,
+    allowVideoReencode: true,
     acceptAudacityPipeRisk: false,
   });
 });
@@ -40,7 +40,7 @@ test("argvTokensForEquivalentClean round-trip with optional integrations", () =>
     dryRun: false,
     presetId: "speech-vocals-demucs",
     noiseStrength: 0.25,
-    allowVideoFallback: false,
+    allowVideoReencode: false,
     acceptAudacityPipeRisk: true,
     maybeAudacityMacro: "noise-reduction",
     maybeLadspa: {
@@ -62,7 +62,7 @@ test("argvTokensForEquivalentClean round-trip with optional integrations", () =>
     json: false,
     presetId: "speech-vocals-demucs",
     knobs: { noiseStrength: 0.25 },
-    allowVideoFallback: false,
+    allowVideoReencode: false,
     acceptAudacityPipeRisk: true,
     maybeAudacityMacro: "noise-reduction",
     maybeLadspa: {
@@ -101,12 +101,12 @@ test("invalid clean --noise-strength exits invalidInput via runCli", async () =>
   expect(code).toBe(ExitCode.invalidInput);
 });
 
-test("parses clean --allow-video-fallback", () => {
+test("parses clean --allow-video-reencode", () => {
   expect(
-    parseCliRequest(["clean", "--dry-run", "--allow-video-fallback", "in.mp4"]),
+    parseCliRequest(["clean", "--dry-run", "--allow-video-reencode", "in.mp4"]),
   ).toMatchObject({
     kind: "clean",
-    allowVideoFallback: true,
+    allowVideoReencode: true,
   });
 });
 
@@ -136,7 +136,7 @@ test("parses inspect argv into typed inspect request", () => {
     inputPath: "clip.m4a",
     force: false,
     json: false,
-    allowVideoFallback: false,
+    allowVideoReencode: false,
   });
 });
 
@@ -156,7 +156,7 @@ test("parses inspect with --output --force and --json together", () => {
     maybeOutputPath: "out.mp4",
     force: true,
     json: true,
-    allowVideoFallback: false,
+    allowVideoReencode: false,
   });
 });
 

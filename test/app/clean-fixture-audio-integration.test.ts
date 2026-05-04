@@ -28,7 +28,7 @@ function baseFixtureInput(overrides: Partial<CleanRunInput>): CleanRunInput {
     json: false,
     presetId: "speech-light",
     knobs: { noiseStrength: 0.35 },
-    allowVideoFallback: false,
+    allowVideoReencode: false,
     acceptAudacityPipeRisk: false,
     ...overrides,
   };

@@ -37,8 +37,8 @@ export function argvTokensForEquivalentClean(
     tokens.push("--dry-run");
   }
 
-  if (selections.allowVideoFallback) {
-    tokens.push("--allow-video-fallback");
+  if (selections.allowVideoReencode) {
+    tokens.push("--allow-video-reencode");
   }
 
   tokens.push("--preset", selections.presetId);

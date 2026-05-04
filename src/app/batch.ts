@@ -309,7 +309,7 @@ export async function runBatchRequest(
         json: false,
         presetId: request.presetId,
         knobs: request.knobs,
-        allowVideoFallback: request.allowVideoFallback,
+        allowVideoReencode: request.allowVideoReencode,
         acceptAudacityPipeRisk: request.acceptAudacityPipeRisk,
         maybeAudacityMacro: request.maybeAudacityMacro,
         maybeLadspa: request.maybeLadspa,

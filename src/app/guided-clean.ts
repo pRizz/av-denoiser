@@ -48,7 +48,7 @@ function selectionsToCleanRunInput(s: GuidedCleanSelections): CleanRunInput {
     json: false,
     presetId: s.presetId,
     knobs: { noiseStrength: s.noiseStrength },
-    allowVideoFallback: s.allowVideoFallback,
+    allowVideoReencode: s.allowVideoReencode,
     acceptAudacityPipeRisk: s.acceptAudacityPipeRisk,
     ...(maybeAudacityMacro !== undefined ? { maybeAudacityMacro } : {}),
     ...(s.maybeLadspa !== undefined ? { maybeLadspa: s.maybeLadspa } : {}),
@@ -132,7 +132,7 @@ async function defaultCollectSelections(): Promise<GuidedCleanSelections | null>
 
   const fallbackPick = await confirm({
     message:
-      "Try to keep the video track as-is (no re-encode) when possible. If a file needs it, allow re-encoding the video when stream-copy is not possible? Adds --allow-video-fallback (HEVC to MP4, slower).",
+      "Allow video to be re-encoded if necessary? (Adds --allow-video-reencode: HEVC to MP4; slower than keeping video as-is.)",
     initialValue: false,
   });
 
@@ -269,7 +269,7 @@ async function defaultCollectSelections(): Promise<GuidedCleanSelections | null>
     dryRun: false,
     presetId: presetPick,
     noiseStrength,
-    allowVideoFallback: fallbackPick,
+    allowVideoReencode: fallbackPick,
     acceptAudacityPipeRisk: audacityAcknowledged,
     ...(maybeAudacityMacro !== undefined ? { maybeAudacityMacro } : {}),
     ...(maybeLadspa !== undefined ? { maybeLadspa } : {}),

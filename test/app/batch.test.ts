@@ -51,7 +51,7 @@ describe("runBatchRequest", () => {
       json: false,
       presetId: "speech-light",
       knobs: { noiseStrength: 0.35 },
-      allowVideoFallback: false,
+      allowVideoReencode: false,
       acceptAudacityPipeRisk: false,
     };
 
@@ -114,7 +114,7 @@ describe("runBatchRequest", () => {
       json: false,
       presetId: "speech-light",
       knobs: { noiseStrength: 0.35 },
-      allowVideoFallback: false,
+      allowVideoReencode: false,
       acceptAudacityPipeRisk: false,
     };
 

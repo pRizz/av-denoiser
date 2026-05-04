@@ -72,7 +72,7 @@ export type CleanRunInput = {
   readonly json: boolean;
   readonly presetId: PresetId;
   readonly knobs: CleanPresetKnobs;
-  readonly allowVideoFallback: boolean;
+  readonly allowVideoReencode: boolean;
   /** Opt-in Audacity mod-script-pipe macro (`--audacity-macro`); requires `acceptAudacityPipeRisk`. */
   readonly maybeAudacityMacro?: string;
   readonly acceptAudacityPipeRisk: boolean;
@@ -679,13 +679,13 @@ export async function runCleanRequest(
     };
   }
 
-  if (plan.modality === "fallback-required" && !request.allowVideoFallback) {
+  if (plan.modality === "fallback-required" && !request.allowVideoReencode) {
     return {
       kind: "failure",
       reason: {
         kind: "fallback-required",
         message:
-          "This plan needs video re-encoding; keeping the video as-is (stream copy) is not available. Run av-denoiser clean with --allow-video-fallback (or av-denoiser inspect with --allow-video-fallback to preview).",
+          "This plan needs video re-encoding; keeping the video as-is (stream copy) is not available. Run av-denoiser clean with --allow-video-reencode (or av-denoiser inspect with --allow-video-reencode to preview).",
       },
     };
   }

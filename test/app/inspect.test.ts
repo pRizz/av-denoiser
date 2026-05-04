@@ -25,7 +25,7 @@ test("runInspectRequest fails when ffprobe is missing from PATH", async () => {
       inputPath: "clip.wav",
       force: false,
       json: false,
-      allowVideoFallback: false,
+      allowVideoReencode: false,
     },
     { maybeWhich: () => null },
   );
@@ -53,7 +53,7 @@ test("runInspectRequest fails before ffprobe when input path does not exist", as
       inputPath: "/no/such/my movie.mp4",
       force: false,
       json: false,
-      allowVideoFallback: false,
+      allowVideoReencode: false,
     },
     {
       cwd: "/project",
@@ -99,7 +99,7 @@ test("runInspectRequest returns inspect summary when probe succeeds", async () =
       inputPath: "clip.m4a",
       force: false,
       json: false,
-      allowVideoFallback: false,
+      allowVideoReencode: false,
     },
     {
       cwd: "/project",
@@ -137,7 +137,7 @@ test("runInspectRequest json flag preserves planned codec and container in seria
       inputPath: "clip.m4a",
       force: false,
       json: true,
-      allowVideoFallback: false,
+      allowVideoReencode: false,
     },
     {
       cwd: "/project",
@@ -178,7 +178,7 @@ test("runInspectRequest surfaces planning-failure when output collides", async (
       inputPath: "clip.m4a",
       force: false,
       json: false,
-      allowVideoFallback: false,
+      allowVideoReencode: false,
     },
     {
       cwd: "/project",
@@ -202,7 +202,7 @@ test("runInspectRequest surfaces planning-failure when output collides", async (
   expect(outcome.reason.kind).toBe("planning-failure");
 });
 
-test("runInspectRequest denies fallback-required without allowVideoFallback flag", async () => {
+test("runInspectRequest denies fallback-required without allowVideoReencode flag", async () => {
   const stdout = JSON.stringify({
     streams: [
       { index: 0, codec_name: "vp8", codec_type: "video" },
@@ -222,7 +222,7 @@ test("runInspectRequest denies fallback-required without allowVideoFallback flag
       inputPath: "/in/webm/source.webm",
       force: false,
       json: false,
-      allowVideoFallback: false,
+      allowVideoReencode: false,
     },
     {
       cwd: "/project",
@@ -250,7 +250,7 @@ test("runInspectRequest denies fallback-required without allowVideoFallback flag
     return;
   }
 
-  expect(outcome.reason.message).toContain("--allow-video-fallback");
+  expect(outcome.reason.message).toContain("--allow-video-reencode");
 });
 
 test("runInspectRequest allows fallback-required when acknowledged", async () => {
@@ -273,7 +273,7 @@ test("runInspectRequest allows fallback-required when acknowledged", async () =>
       inputPath: "/in/webm/source.webm",
       force: false,
       json: false,
-      allowVideoFallback: true,
+      allowVideoReencode: true,
     },
     {
       cwd: "/project",
@@ -307,7 +307,7 @@ test("runInspectRequest allows fallback-required when acknowledged", async () =>
     inputPath: "/in/webm/source.webm",
     force: false,
     json: false,
-    allowVideoFallback: true,
+    allowVideoReencode: true,
   };
   const cliText = renderCommandOutcome(request, outcome, "help-placeholder");
   expect(cliText).toContain("Preservation notes");

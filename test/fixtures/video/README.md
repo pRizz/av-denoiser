@@ -2,7 +2,7 @@
 
 Short clips sourced from **[Wikimedia Commons](https://commons.wikimedia.org/)** (preferred open formats there are **Theora**/Ogg or **VP9**/WebM, not patent-avoiding **H.264** uploads). Sizes are kept small for repo tests.
 
-**CLI alignment:** tests assume the product default of keeping video as-is (**stream copy**) when the matrix allows. **`--allow-video-fallback`** is for inputs where stream-copy-only video is not possible and re-encoding is required.
+**CLI alignment:** tests assume the product default of keeping video as-is (**stream copy**) when the matrix allows. **`--allow-video-reencode`** is for inputs where stream-copy-only video is not possible and re-encoding is required.
 
 ## Feasibility matrix vs fixtures
 
@@ -16,7 +16,7 @@ Stream-copy behavior for mixed audio+video is decided in [`planVideoStreamCopyFe
 
 Success reason-code examples: `video-copy-h264-mp4-v1`, `video-copy-hevc-mp4-v1`, `video-copy-av1-mp4-v1`, `video-copy-theora-matroska-v1`, `video-copy-vp9-webm-v1`.
 
-**`fallback-required`** (where **`inspect`** / **`clean`** still need **`--allow-video-fallback`** when policy denies fallback) includes illustrative cases such as **multiple video streams**, **missing `format_name`**, **VP8** (`video-fallback-vp8-matrix-explicit-v1`), codecs **outside** the matrix (e.g. **ProRes** → `video-fallback-non-h264-video`), and missing video codec metadata—not an exhaustive list; use the source file above for the authoritative gate sequence.
+**`fallback-required`** (where **`inspect`** / **`clean`** still need **`--allow-video-reencode`** when policy denies fallback) includes illustrative cases such as **multiple video streams**, **missing `format_name`**, **VP8** (`video-fallback-vp8-matrix-explicit-v1`), codecs **outside** the matrix (e.g. **ProRes** → `video-fallback-non-h264-video`), and missing video codec metadata—not an exhaustive list; use the source file above for the authoritative gate sequence.
 
 The **Fanfare MP4** (`fanfare…mp4`) remains a committed **H.264 + AAC** sample so tests can exercise the **MP4** copy-safe row without relying on Wikimedia-hosted MP4 (Commons discourages patent-encumbered uploads).
 
@@ -24,7 +24,7 @@ The **Fanfare MP4** (`fanfare…mp4`) remains a committed **H.264 + AAC** sample
 
 | File | Role | License |
 |------|------|---------|
-| `water-slow-motion-wikimedia-cc-by-sa-2p8s.ogv` | ~2.8 s, **Theora + Vorbis** in Ogg (~74 KB). **Audio + video**; under the current matrix this probe is **`video-copy-safe`** with **planned Matroska** output, **AAC** for the processed audio track, and **video stream copy** at remux—so **default `inspect` / `clean` do not require `--allow-video-fallback`** for this fixture. | **CC BY-SA 4.0** — [File:Water_slow_motion_edited_0.ogv](https://commons.wikimedia.org/wiki/File:Water_slow_motion_edited_0.ogv) (Symode09). Direct download resolves via [Special:Redirect](https://commons.wikimedia.org/wiki/Special:Redirect/file/Water_slow_motion_edited_0.ogv). Derivatives must remain **share-alike** and credit the author. |
+| `water-slow-motion-wikimedia-cc-by-sa-2p8s.ogv` | ~2.8 s, **Theora + Vorbis** in Ogg (~74 KB). **Audio + video**; under the current matrix this probe is **`video-copy-safe`** with **planned Matroska** output, **AAC** for the processed audio track, and **video stream copy** at remux—so **default `inspect` / `clean` do not require `--allow-video-reencode`** for this fixture. | **CC BY-SA 4.0** — [File:Water_slow_motion_edited_0.ogv](https://commons.wikimedia.org/wiki/File:Water_slow_motion_edited_0.ogv) (Symode09). Direct download resolves via [Special:Redirect](https://commons.wikimedia.org/wiki/Special:Redirect/file/Water_slow_motion_edited_0.ogv). Derivatives must remain **share-alike** and credit the author. |
 | `fanfare-wikimedia-cc0-h264-aac-4s.mp4` | ~4 s, **H.264 + AAC** in MP4 (~250 KB). **Transcoded derivative** from the Commons **CC0** “Fanfare for common film” clip (trim + scale/crf locally). Matches **video-copy-safe** modality for defaults (MP4 row). | **CC0** for the upstream work — [File:Fanfare_for_common_film.ogv](https://commons.wikimedia.org/wiki/File:Fanfare_for_common_film.ogv) (Tradimus). This MP4 is a format conversion; cite the original file when redistributing. |
 
 ## Refresh upstream OGV from Commons

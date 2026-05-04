@@ -130,7 +130,7 @@ function baseCleanInput(overrides: Partial<CleanRunInput>): CleanRunInput {
     json: false,
     presetId: "speech-light" as const,
     knobs: { noiseStrength: 0.3 },
-    allowVideoFallback: false,
+    allowVideoReencode: false,
     acceptAudacityPipeRisk: false,
     ...overrides,
   };
@@ -287,7 +287,7 @@ test("runCleanRequest fallback-required without allow flag returns fallback-requ
     baseCleanInput({
       inputPath: "multi.mp4",
       dryRun: true,
-      allowVideoFallback: false,
+      allowVideoReencode: false,
     }),
     {
       cwd: "/project",
@@ -310,12 +310,12 @@ test("runCleanRequest fallback-required without allow flag returns fallback-requ
   expect(outcome.reason.kind).toBe("fallback-required");
 });
 
-test("runCleanRequest fallback-required with allowVideoFallback dry-run succeeds", async () => {
+test("runCleanRequest fallback-required with allowVideoReencode dry-run succeeds", async () => {
   const outcome = await runCleanRequest(
     baseCleanInput({
       inputPath: "multi.mp4",
       dryRun: true,
-      allowVideoFallback: true,
+      allowVideoReencode: true,
     }),
     {
       cwd: "/project",
@@ -557,7 +557,7 @@ test("runCleanRequest video-copy-safe execute runs extract remux and output prob
   expect(ffmpegArgsJoined).toContain("copy");
 });
 
-test("runCleanRequest fallback-required execute remuxes video with libx265 when allowVideoFallback", async () => {
+test("runCleanRequest fallback-required execute remuxes video with libx265 when allowVideoReencode", async () => {
   let ffprobeCalls = 0;
   let ffmpegArgsJoined = "";
   const ffmpegArgvs: string[][] = [];
@@ -568,7 +568,7 @@ test("runCleanRequest fallback-required execute remuxes video with libx265 when 
       dryRun: false,
       knobs: { noiseStrength: 0.2 },
       force: true,
-      allowVideoFallback: true,
+      allowVideoReencode: true,
     }),
     {
       cwd: "/project",
