@@ -306,7 +306,7 @@ export async function runBatchRequest(
         maybeOutputPath: pair.resolvedOutputPath,
         force: request.force,
         dryRun: request.dryRun,
-        json: false,
+        json: request.json,
         presetId: request.presetId,
         knobs: request.knobs,
         allowVideoReencode: request.allowVideoReencode,
@@ -314,7 +314,10 @@ export async function runBatchRequest(
         maybeAudacityMacro: request.maybeAudacityMacro,
         maybeLadspa: request.maybeLadspa,
       },
-      deps.clean,
+      {
+        ...deps.clean,
+        maybeBatchJob: { index: index + 1, total: n },
+      },
     );
 
     codes[index] = mapOutcomeToExitCode(outcome);

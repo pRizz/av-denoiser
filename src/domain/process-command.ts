@@ -5,6 +5,11 @@ export type ProcessCommand = {
   readonly env?: Readonly<Record<string, string>>;
   readonly timeoutMs?: number;
   readonly stdin?: "ignore";
+  /**
+   * When set, stderr is read incrementally and each complete line (split on `\n`) is forwarded.
+   * Used for FFmpeg progress parsing; full stderr is still captured on the returned result.
+   */
+  readonly onStderrLine?: (line: string) => void;
 };
 
 export type ProcessCommandInput = {
@@ -14,6 +19,7 @@ export type ProcessCommandInput = {
   readonly env?: Readonly<Record<string, string>>;
   readonly timeoutMs?: number;
   readonly stdin?: "ignore";
+  readonly onStderrLine?: (line: string) => void;
 };
 
 export type ProcessCommandInvalidReason = {
@@ -43,6 +49,9 @@ export function createProcessCommand(
       ...(input.env === undefined ? {} : { env: { ...input.env } }),
       ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }),
       ...(input.stdin === undefined ? {} : { stdin: input.stdin }),
+      ...(input.onStderrLine === undefined
+        ? {}
+        : { onStderrLine: input.onStderrLine }),
     },
   };
 }

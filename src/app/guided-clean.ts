@@ -13,6 +13,7 @@ import {
   type PresetId,
   parseLadspaCliTriple,
 } from "../domain/audio-pipeline-plan";
+import { formatProgressForSpinner } from "../domain/clean-progress";
 import { argvTokensForEquivalentClean } from "../domain/guided-clean-equivalent";
 import { parseGuidedNoiseStrength } from "../domain/guided-clean-parse";
 import type { GuidedCleanSelections } from "../domain/guided-clean-selection";
@@ -360,15 +361,25 @@ export async function runGuidedCleanRequest(
 
   let executeOutcome: CleanCliOutcome;
   let okForSpinner = false;
+  let lastSpinnerFfmpegAt = 0;
+  const ffmpegSpinThrottleMs = 220;
 
   try {
     executeOutcome = await runClean(
       selectionsToCleanRunInput({ ...collected, dryRun: false }),
       {
-        reportProgress: (phase) => {
-          const label = phase.length > 48 ? `${phase.slice(0, 45)}…` : phase;
+        reportProgress: (event) => {
+          if (event.kind === "ffmpeg") {
+            const now = Date.now();
 
-          spin.message(label);
+            if (now - lastSpinnerFfmpegAt < ffmpegSpinThrottleMs) {
+              return;
+            }
+
+            lastSpinnerFfmpegAt = now;
+          }
+
+          spin.message(formatProgressForSpinner(event));
         },
       },
     );

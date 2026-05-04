@@ -17,6 +17,77 @@ export type ProcessResult =
 
 export type ProcessRunner = (command: ProcessCommand) => Promise<ProcessResult>;
 
+async function readStream(
+  stream: ReadableStream<Uint8Array> | null,
+): Promise<string> {
+  if (stream === null) {
+    return "";
+  }
+
+  return await new Response(stream).text();
+}
+
+/** FFmpeg and some tools emit `\r` to rewrite the same terminal line; keep the latest segment. */
+function afterLastCarriageReturn(line: string): string {
+  const idx = line.lastIndexOf("\r");
+
+  if (idx === -1) {
+    return line;
+  }
+
+  return line.slice(idx + 1);
+}
+
+async function readStreamLines(
+  stream: ReadableStream<Uint8Array> | null,
+  onLine?: (line: string) => void,
+): Promise<string> {
+  if (stream === null) {
+    return "";
+  }
+
+  const reader = stream.getReader();
+  const dec = new TextDecoder();
+  let carry = "";
+  let full = "";
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      const chunk = dec.decode(value, { stream: true });
+      full += chunk;
+      carry += chunk;
+      const lines = carry.split("\n");
+      carry = lines.pop() ?? "";
+
+      for (const raw of lines) {
+        const logical = afterLastCarriageReturn(raw);
+
+        if (onLine !== undefined && logical.length > 0) {
+          onLine(logical);
+        }
+      }
+    }
+
+    if (carry.length > 0) {
+      const logical = afterLastCarriageReturn(carry);
+
+      if (onLine !== undefined && logical.length > 0) {
+        onLine(logical);
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  return full;
+}
+
 /** Runs external tools through Bun argv arrays only; shell command strings are not accepted. */
 export async function runProcessCommand(
   command: ProcessCommand,
@@ -31,10 +102,15 @@ export async function runProcessCommand(
       stdin: command.stdin ?? "ignore",
     });
 
+    const stderrPromise =
+      command.onStderrLine !== undefined
+        ? readStreamLines(process.stderr, command.onStderrLine)
+        : readStream(process.stderr);
+
     const [exitCode, stdout, stderr] = await Promise.all([
       process.exited,
       readStream(process.stdout),
-      readStream(process.stderr),
+      stderrPromise,
     ]);
 
     if (process.signalCode !== null) {
@@ -50,16 +126,6 @@ export async function runProcessCommand(
   } catch (error) {
     return { kind: "spawn-failed", error: toError(error) };
   }
-}
-
-async function readStream(
-  stream: ReadableStream<Uint8Array> | null,
-): Promise<string> {
-  if (stream === null) {
-    return "";
-  }
-
-  return await new Response(stream).text();
 }
 
 function toError(error: unknown): Error {

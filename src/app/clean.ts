@@ -33,6 +33,16 @@ import {
 } from "../domain/audio-pipeline-plan";
 import { verifyCleanOutput } from "../domain/clean-output-verify";
 import {
+  type CleanProgressBatch,
+  type CleanProgressEvent,
+  cleanProgressEventToJson,
+  labelForLogicalStep,
+  parseFfmpegStatusLine,
+  probeDurationSeconds,
+  videoExtractStepLabel,
+  videoRemuxStepLabel,
+} from "../domain/clean-progress";
+import {
   type CleanRunReport,
   labelsForDroppedStreams,
   renderCleanRunReportText,
@@ -117,8 +127,12 @@ export type CleanDeps = {
   readonly rmSync?: (path: string, options?: { recursive?: boolean }) => void;
   /** Test injection for post-run verification without real output files. */
   readonly outputFileSize?: (absolutePath: string) => number;
-  /** Coarse milestones during non–dry-run execution (`probe`, `step:N`, `verify`). */
-  readonly reportProgress?: (phase: string) => void;
+  /**
+   * When running inside `batch`, included on every progress event and in NDJSON lines.
+   */
+  readonly maybeBatchJob?: CleanProgressBatch;
+  /** Milestones, per-step labels, and FFmpeg stderr ticks during non–dry-run execution. */
+  readonly reportProgress?: (event: CleanProgressEvent) => void;
   readonly audacityPipes?: AudacityPipePaths;
 };
 
@@ -188,6 +202,101 @@ function mapProcessFailure(
 
   return `${label}: exited with code ${result.exitCode}: ${snippet}`;
 }
+
+const NDJSON_THROTTLE_MS = 280;
+
+function enrichProgressEvent(
+  event: CleanProgressEvent,
+  batch?: CleanProgressBatch,
+): CleanProgressEvent {
+  if (batch === undefined) {
+    return event;
+  }
+
+  return { ...event, batch } as CleanProgressEvent;
+}
+
+function buildProgressEmitter(
+  request: CleanRunInput,
+  deps: Partial<CleanDeps>,
+): ((event: CleanProgressEvent) => void) | undefined {
+  const wantsNdjson = request.json === true && request.dryRun === false;
+  const hasConsumer = deps.reportProgress !== undefined || wantsNdjson;
+
+  if (!hasConsumer) {
+    return undefined;
+  }
+
+  const batchCtx = deps.maybeBatchJob;
+  let lastFfmpegJsonAt = 0;
+
+  return (event: CleanProgressEvent) => {
+    const e = enrichProgressEvent(event, batchCtx);
+    deps.reportProgress?.(e);
+
+    if (wantsNdjson) {
+      if (e.kind === "ffmpeg") {
+        const now = Date.now();
+
+        if (now - lastFfmpegJsonAt < NDJSON_THROTTLE_MS) {
+          return;
+        }
+
+        lastFfmpegJsonAt = now;
+      }
+
+      console.error(
+        JSON.stringify({
+          type: "av-denoiser-progress",
+          ...cleanProgressEventToJson(e),
+        }),
+      );
+    }
+  };
+}
+
+function createFfmpegStderrHandler(
+  emitProgress: (event: CleanProgressEvent) => void,
+  durationSec: number | undefined,
+): (line: string) => void {
+  return (line: string) => {
+    const parsed = parseFfmpegStatusLine(line);
+
+    if (parsed === null) {
+      return;
+    }
+
+    const percent =
+      durationSec !== undefined &&
+      parsed.timeSec !== undefined &&
+      durationSec > 0
+        ? Math.min(100, (parsed.timeSec / durationSec) * 100)
+        : undefined;
+
+    emitProgress({
+      kind: "ffmpeg",
+      ...(parsed.timeSec !== undefined ? { timeSec: parsed.timeSec } : {}),
+      ...(parsed.speed !== undefined ? { speed: parsed.speed } : {}),
+      ...(durationSec !== undefined ? { durationSec } : {}),
+      ...(percent !== undefined ? { percent } : {}),
+    });
+  };
+}
+
+async function runTrackedProcess(params: {
+  readonly command: import("../domain/process-command").ProcessCommand;
+  readonly runProcess: ProcessRunner;
+  readonly maybeFfmpegOnLine?: (line: string) => void;
+}): Promise<ProcessResult> {
+  const cmd =
+    params.maybeFfmpegOnLine !== undefined
+      ? { ...params.command, onStderrLine: params.maybeFfmpegOnLine }
+      : params.command;
+
+  return params.runProcess(cmd);
+}
+
+type StepElapsedRef = { ms?: number };
 
 function isVideoCleanModality(
   plan: ExecutableOutputPlan,
@@ -337,11 +446,14 @@ async function runSequentialPipeline(params: {
   readonly demucsExecutable: string;
   readonly demucsModulePrefix: readonly string[];
   readonly audacityPipes?: AudacityPipePaths;
-  readonly reportProgress?: (phase: string) => void;
-  readonly stepIndexOffset?: number;
+  readonly emitProgress?: (event: CleanProgressEvent) => void;
+  readonly stepTotal: number;
+  readonly stepIndexOffset: number;
+  readonly maybeMediaDurationSec?: number;
+  readonly previousStepElapsedRef: StepElapsedRef;
 }): Promise<CleanCliOutcome | null> {
   let inputPathForStep = params.bootstrapIntermediatePath;
-  const offset = params.stepIndexOffset ?? 0;
+  const offset = params.stepIndexOffset;
 
   for (let i = 0; i < params.logicalSteps.length; i++) {
     const logical = params.logicalSteps[i];
@@ -350,7 +462,19 @@ async function runSequentialPipeline(params: {
       break;
     }
 
-    params.reportProgress?.(`step:${offset + i}`);
+    const stepIndex = offset + i;
+
+    params.emitProgress?.({
+      kind: "step",
+      stepIndex,
+      stepTotal: params.stepTotal,
+      label: labelForLogicalStep(logical),
+      ...(params.previousStepElapsedRef.ms !== undefined
+        ? { previousStepElapsedMs: params.previousStepElapsedRef.ms }
+        : {}),
+    });
+
+    const stepStartedAt = performance.now();
     const isEncode =
       logical.tool === "ffmpeg" && logical.step.kind === "encode-deliverable";
     const isDemucs = logical.tool === "demucs";
@@ -395,6 +519,7 @@ async function runSequentialPipeline(params: {
       }
 
       inputPathForStep = outPath;
+      params.previousStepElapsedRef.ms = performance.now() - stepStartedAt;
 
       continue;
     }
@@ -439,7 +564,21 @@ async function runSequentialPipeline(params: {
         : logical.tool === "demucs"
           ? "demucs"
           : "ffmpeg";
-    const processResult = await params.runProcess(built.command);
+    const onFfmpegLine =
+      params.emitProgress !== undefined && label === "ffmpeg"
+        ? createFfmpegStderrHandler(
+            params.emitProgress,
+            params.maybeMediaDurationSec,
+          )
+        : undefined;
+
+    const processResult = await runTrackedProcess({
+      command: built.command,
+      runProcess: params.runProcess,
+      maybeFfmpegOnLine: onFfmpegLine,
+    });
+
+    params.previousStepElapsedRef.ms = performance.now() - stepStartedAt;
 
     if (processResult.kind === "exited" && processResult.exitCode === 0) {
       const stepInputPath = inputPathForStep;
@@ -483,7 +622,7 @@ async function finalizeCleanSuccess(params: {
   readonly claimedVideoCopied: boolean;
   readonly baseSuccess: CleanCliSuccess;
   readonly report: Omit<CleanRunReport, "verificationOk">;
-  readonly reportProgress?: (phase: string) => void;
+  readonly emitProgress?: (event: CleanProgressEvent) => void;
 }): Promise<CleanCliOutcome> {
   const outProbe = await runFfprobeProbe({
     ffprobePath: params.ffprobePath,
@@ -518,7 +657,7 @@ async function finalizeCleanSuccess(params: {
     };
   }
 
-  params.reportProgress?.("verify");
+  params.emitProgress?.({ kind: "verify" });
 
   const verify = verifyCleanOutput({
     outputPath: params.outputPath,
@@ -907,7 +1046,10 @@ export async function runCleanRequest(
   let executionOk = false;
 
   try {
-    deps.reportProgress?.("probe");
+    const emitProgress = buildProgressEmitter(request, deps);
+    const mediaDurationSec = probeDurationSeconds(probeResult.value);
+
+    emitProgress?.({ kind: "probe" });
 
     if (isVideoCleanModality(executablePlan)) {
       const audioMeta = audioLayoutForStream(
@@ -943,9 +1085,29 @@ export async function runCleanRequest(
         };
       }
 
-      deps.reportProgress?.("step:0");
+      const totalVideoSteps = logicalSteps.length + 1;
+      const previousStepElapsedRef: StepElapsedRef = {};
 
-      const extractRun = await runProcess(extractCmd.command);
+      emitProgress?.({
+        kind: "step",
+        stepIndex: 0,
+        stepTotal: totalVideoSteps,
+        label: videoExtractStepLabel(),
+      });
+
+      const extractStartedAt = performance.now();
+      const extractOnLine =
+        emitProgress !== undefined
+          ? createFfmpegStderrHandler(emitProgress, mediaDurationSec)
+          : undefined;
+
+      const extractRun = await runTrackedProcess({
+        command: extractCmd.command,
+        runProcess,
+        maybeFfmpegOnLine: extractOnLine,
+      });
+
+      previousStepElapsedRef.ms = performance.now() - extractStartedAt;
 
       if (extractRun.kind !== "exited" || extractRun.exitCode !== 0) {
         return {
@@ -973,8 +1135,11 @@ export async function runCleanRequest(
         demucsExecutable,
         demucsModulePrefix,
         audacityPipes: deps.audacityPipes,
-        reportProgress: deps.reportProgress,
+        emitProgress,
+        stepTotal: totalVideoSteps,
         stepIndexOffset: 1,
+        maybeMediaDurationSec: mediaDurationSec,
+        previousStepElapsedRef,
       });
 
       if (pipeFail !== null) {
@@ -1006,9 +1171,33 @@ export async function runCleanRequest(
         };
       }
 
-      deps.reportProgress?.(`step:${1 + sliced.length}`);
+      emitProgress?.({
+        kind: "step",
+        stepIndex: logicalSteps.length,
+        stepTotal: totalVideoSteps,
+        label: videoRemuxStepLabel(
+          executablePlan.modality === "fallback-required"
+            ? "reencode-hevc"
+            : "copy",
+        ),
+        ...(previousStepElapsedRef.ms !== undefined
+          ? { previousStepElapsedMs: previousStepElapsedRef.ms }
+          : {}),
+      });
 
-      const remuxRun = await runProcess(remuxCmd.command);
+      const remuxStartedAt = performance.now();
+      const remuxOnLine =
+        emitProgress !== undefined
+          ? createFfmpegStderrHandler(emitProgress, mediaDurationSec)
+          : undefined;
+
+      const remuxRun = await runTrackedProcess({
+        command: remuxCmd.command,
+        runProcess,
+        maybeFfmpegOnLine: remuxOnLine,
+      });
+
+      previousStepElapsedRef.ms = performance.now() - remuxStartedAt;
 
       if (remuxRun.kind !== "exited" || remuxRun.exitCode !== 0) {
         return {
@@ -1053,11 +1242,13 @@ export async function runCleanRequest(
               ? [...executablePlan.reasonCodes]
               : undefined,
         },
-        reportProgress: deps.reportProgress,
+        emitProgress,
       });
     }
 
     const audioOnlyPlan = executablePlan as AudioOnlyOutputPlan;
+
+    const previousStepElapsedAudio: StepElapsedRef = {};
 
     const pipeFailAudio = await runSequentialPipeline({
       logicalSteps,
@@ -1073,8 +1264,11 @@ export async function runCleanRequest(
       demucsExecutable,
       demucsModulePrefix,
       audacityPipes: deps.audacityPipes,
-      reportProgress: deps.reportProgress,
+      emitProgress,
+      stepTotal: logicalSteps.length,
       stepIndexOffset: 0,
+      maybeMediaDurationSec: mediaDurationSec,
+      previousStepElapsedRef: previousStepElapsedAudio,
     });
 
     if (pipeFailAudio !== null) {
@@ -1102,7 +1296,7 @@ export async function runCleanRequest(
         audioCodecSummary: audioOnlyPlan.plannedAudioCodec,
         droppedStreamsLabels: [],
       },
-      reportProgress: deps.reportProgress,
+      emitProgress,
     });
   } finally {
     if (executionOk) {
