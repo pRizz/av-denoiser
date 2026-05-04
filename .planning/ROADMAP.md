@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **[v1.0 — CLI & v1 requirements](milestones/v1.0-ROADMAP.md)** — shipped **2026-05-03** — frozen checklist + reqs + audit artifacts. Phase execution workspace snapshot: [.planning/milestones/v1.0-phases/](.planning/milestones/v1.0-phases/)
-- 🚧 **v1.1 — Multi-container stream copy** — **active** ([REQUIREMENTS.md](REQUIREMENTS.md)); core delivery **01–05**; **06–09** [gap closure](v1.1-MILESTONE-AUDIT.md) after `/gsd-audit-milestone`.
+- ✅ **v1.1 — Multi-container stream copy** — shipped **2026-05-04** ([REQUIREMENTS.md](REQUIREMENTS.md) § Traceability complete **MULTI-01**–**MULTI-13**); gap phases **06–09** closed per [.planning/v1.1-MILESTONE-AUDIT.md](v1.1-MILESTONE-AUDIT.md).
 
 ---
 
@@ -154,6 +154,8 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 **Goal:** Add **04-VERIFICATION.md** and **05-VERIFICATION.md**; extend **`verifyCleanOutput`** (or successor) so **fallback / re-encode** paths assert **canonical video codec** on output where **MULTI-10** / **MULTI-13** promise truthfulness — not only copy-safe **`claimedVideoCopied`** branch.
 
+**Status:** Closed **2026-05-04** — [**04-VERIFICATION.md**](phases/04-ux-verification-fixtures-regression/04-VERIFICATION.md), [**05-VERIFICATION.md**](phases/05-x265-preferred-video-reencode/05-VERIFICATION.md), **`verifyCleanOutput`** fallback **HEVC** branch; summaries [**09-01**](phases/09-gap-closure-output-verify-trust/09-01-SUMMARY.md), [**09-02**](phases/09-gap-closure-output-verify-trust/09-02-SUMMARY.md); [**09-VERIFICATION.md**](phases/09-gap-closure-output-verify-trust/09-VERIFICATION.md).
+
 **Gap closure:** Orphan/partial **MULTI-08**–**MULTI-13** relative to phase **VERIFICATION** artifacts; E2E verify gap on fallback video.
 
 **Success criteria**
@@ -170,6 +172,6 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 ## Next action
 
-Phase **08** is complete: **03-VERIFICATION.md** documents **MULTI-06**/**MULTI-07**; **`clean`** uses **`pipelineAudioOutIntermediateBasename`** for execute + dry-run preview paths; **`bun run verify`** green (**222** tests). Continue with **`/gsd-plan-phase 09`** (output verify / **MULTI-08**–**MULTI-13** closure) then **`/gsd-execute-phase 09`**.
+**v1.1** milestone **complete** (**2026-05-04**): all **MULTI-\*** requirements verified; **`bun run verify`** green (**226** tests). Next: **`/gsd-audit-milestone`** / **`/gsd-complete-milestone`** for archival, or **`/gsd-new-milestone`** for **v1.2**.
 
 **Audit:** [.planning/v1.1-MILESTONE-AUDIT.md](v1.1-MILESTONE-AUDIT.md)

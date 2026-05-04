@@ -25,18 +25,18 @@ Each item maps one-to-one into the live roadmap phases.
 
 ### Surfaces & trust
 
-- [ ] **MULTI-08**: **`inspect`** preservation bullets and **`--json`** payloads describe **planned container**, **success/fallback tokens**, and **HDR / side‑data caveats** where copy applies.
-- [ ] **MULTI-09**: **`fallback-required`** + **`allowVideoFallback`** semantics remain truthful when the matrix demands **video re‑encode** (unchanged acknowledgment story).
-- [ ] **MULTI-10**: **`verifyCleanOutput`** (or successor) validates **canonical codec equality** compatible with mux output probes for new containers.
+- [x] **MULTI-08**: **`inspect`** preservation bullets and **`--json`** payloads describe **planned container**, **success/fallback tokens**, and **HDR / side‑data caveats** where copy applies.
+- [x] **MULTI-09**: **`fallback-required`** + **`allowVideoFallback`** semantics remain truthful when the matrix demands **video re‑encode** (unchanged acknowledgment story).
+- [x] **MULTI-10**: **`verifyCleanOutput`** (or successor) validates **canonical codec equality** compatible with mux output probes for new containers.
 
 ### Tests & fixtures
 
-- [ ] **MULTI-11**: **Ffprobe-style fixtures** (VP9/WebM‑ish, **Theora**/Ogg‑ish minimally) unlock planning + argv tests without mandating heavyweight binaries beyond existing harness.
-- [ ] **MULTI-12**: **Regression locks** preserve **MP4** **H.264/HEVC/AV1** **video-copy-safe** behaviors from shipped v1.1 codebase.
+- [x] **MULTI-11**: **Ffprobe-style fixtures** (VP9/WebM‑ish, **Theora**/Ogg‑ish minimally) unlock planning + argv tests without mandating heavyweight binaries beyond existing harness.
+- [x] **MULTI-12**: **Regression locks** preserve **MP4** **H.264/HEVC/AV1** **video-copy-safe** behaviors from shipped v1.1 codebase.
 
 ### Video fallback re-encode
 
-- [ ] **MULTI-13**: When **`clean`** runs **`fallback-required`** with **`--allow-video-fallback`**, FFmpeg **video** re-encode uses **`libx265`** with **MP4-appropriate defaults** (**`-pix_fmt yuv420p`**, **`-crf 28`**, **`-preset slow`**, **`-tag:v hvc1`** per **Phase 05** context), replacing **`libx264`**; **inspect** / **JSON** / **`verifyCleanOutput`** / tests remain truthful.
+- [x] **MULTI-13**: When **`clean`** runs **`fallback-required`** with **`--allow-video-fallback`**, FFmpeg **video** re-encode uses **`libx265`** with **MP4-appropriate defaults** (**`-pix_fmt yuv420p`**, **`-crf 28`**, **`-preset slow`**, **`-tag:v hvc1`** per **Phase 05** context), replacing **`libx264`**; **inspect** / **JSON** / **`verifyCleanOutput`** / tests remain truthful.
 
 ## Future (post‑v1.1)
 
@@ -67,14 +67,14 @@ Defer unless explicitly scheduled:
 | MULTI-05 | Phase 2 | Complete |
 | MULTI-06 | Phase 3 (verified Phase 8 gap closure) | Complete |
 | MULTI-07 | Phase 3 (verified Phase 8 gap closure) | Complete |
-| MULTI-08 | Phase 9 (gap closure) | Pending |
-| MULTI-09 | Phase 9 (gap closure) | Pending |
-| MULTI-10 | Phase 9 (gap closure) | Pending |
-| MULTI-11 | Phase 9 (gap closure) | Pending |
-| MULTI-12 | Phase 9 (gap closure) | Pending |
-| MULTI-13 | Phase 9 (gap closure) | Pending |
+| MULTI-08 | Phase 4 (verified Phase 9 closure) | Complete — [04-VERIFICATION.md](phases/04-ux-verification-fixtures-regression/04-VERIFICATION.md) |
+| MULTI-09 | Phase 4 (verified Phase 9 closure) | Complete — [04-VERIFICATION.md](phases/04-ux-verification-fixtures-regression/04-VERIFICATION.md) |
+| MULTI-10 | Phase 4 (verified Phase 9 closure) | Complete — [04-VERIFICATION.md](phases/04-ux-verification-fixtures-regression/04-VERIFICATION.md) |
+| MULTI-11 | Phase 4 (verified Phase 9 closure) | Complete — [04-VERIFICATION.md](phases/04-ux-verification-fixtures-regression/04-VERIFICATION.md) |
+| MULTI-12 | Phase 4 (verified Phase 9 closure) | Complete — [04-VERIFICATION.md](phases/04-ux-verification-fixtures-regression/04-VERIFICATION.md) |
+| MULTI-13 | Phase 5 (verified Phase 9 closure) | Complete — [05-VERIFICATION.md](phases/05-x265-preferred-video-reencode/05-VERIFICATION.md) |
 
-**Coverage:** **13**/13 v1.1 IDs mapped — **7** **Complete** (**MULTI-01**, **MULTI-02**, **MULTI-03**, **MULTI-04**, **MULTI-05** as previously; **MULTI-06**, **MULTI-07** verified in [03-VERIFICATION.md](phases/03-ffmpeg-remux-muxers-audio-policy/03-VERIFICATION.md) via **Phase 8** closure); **6** **Pending** in **Phase 9** gap closure (**MULTI-08**–**MULTI-13**) (see [v1.1-MILESTONE-AUDIT.md](v1.1-MILESTONE-AUDIT.md)).
+**Coverage:** **13**/13 v1.1 IDs mapped — **Complete** with verification artifacts: **MULTI-01**–**MULTI-07** as previously; **MULTI-06**/ **MULTI-07** in [03-VERIFICATION.md](phases/03-ffmpeg-remux-muxers-audio-policy/03-VERIFICATION.md); **MULTI-08**–**MULTI-12** in [04-VERIFICATION.md](phases/04-ux-verification-fixtures-regression/04-VERIFICATION.md); **MULTI-13** in [05-VERIFICATION.md](phases/05-x265-preferred-video-reencode/05-VERIFICATION.md) (**Phase 9** gap closure **2026-05-04**).
 
 ---
 
