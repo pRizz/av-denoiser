@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import {
   durationVerificationToleranceSeconds,
-  verifyCleanOutput,
-} from "../../src/domain/clean-output-verify";
+  verifyDenoiseOutput,
+} from "../../src/domain/denoise-output-verify";
 import type { MediaProbe } from "../../src/domain/media-probe";
 
 function probeVideoAudio(duration: string, videoCodec: string): MediaProbe {
@@ -33,7 +33,7 @@ describe("durationVerificationToleranceSeconds", () => {
   });
 });
 
-describe("verifyCleanOutput", () => {
+describe("verifyDenoiseOutput", () => {
   const existsTrue = () => true;
   const sizeNonEmpty = () => 100;
 
@@ -41,7 +41,7 @@ describe("verifyCleanOutput", () => {
     const input = probeVideoAudio("100.0", "h264");
     const output = probeVideoAudio("100.2", "h264");
 
-    const result = verifyCleanOutput({
+    const result = verifyDenoiseOutput({
       outputPath: "/out.mp4",
       outputExists: existsTrue,
       outputFileSize: sizeNonEmpty,
@@ -58,7 +58,7 @@ describe("verifyCleanOutput", () => {
     const input = probeVideoAudio("100.0", "h264");
     const output = probeVideoAudio("102.0", "h264");
 
-    const result = verifyCleanOutput({
+    const result = verifyDenoiseOutput({
       outputPath: "/out.mp4",
       outputExists: existsTrue,
       outputFileSize: sizeNonEmpty,
@@ -79,7 +79,7 @@ describe("verifyCleanOutput", () => {
     const input = probeVideoAudio("10.0", "h264");
     const output = probeVideoAudio("10.0", "h264");
 
-    const result = verifyCleanOutput({
+    const result = verifyDenoiseOutput({
       outputPath: "/out.mp4",
       outputExists: existsTrue,
       outputFileSize: sizeNonEmpty,
@@ -108,7 +108,7 @@ describe("verifyCleanOutput", () => {
       format: { duration: "10.0" },
     };
 
-    const result = verifyCleanOutput({
+    const result = verifyDenoiseOutput({
       outputPath: "/out.mp4",
       outputExists: existsTrue,
       outputFileSize: sizeNonEmpty,
@@ -137,7 +137,7 @@ describe("verifyCleanOutput", () => {
       format: { duration: "10.0" },
     };
 
-    const result = verifyCleanOutput({
+    const result = verifyDenoiseOutput({
       outputPath: "/out.mp4",
       outputExists: existsTrue,
       outputFileSize: sizeNonEmpty,
@@ -154,7 +154,7 @@ describe("verifyCleanOutput", () => {
     const input = probeVideoAudio("10.0", "h264");
     const output = probeVideoAudio("10.0", "hevc");
 
-    const result = verifyCleanOutput({
+    const result = verifyDenoiseOutput({
       outputPath: "/out.mp4",
       outputExists: existsTrue,
       outputFileSize: sizeNonEmpty,
@@ -180,7 +180,7 @@ describe("verifyCleanOutput", () => {
     };
     const output = probeVideoAudio("10.0", "h264");
 
-    const result = verifyCleanOutput({
+    const result = verifyDenoiseOutput({
       outputPath: "/out.mp4",
       outputExists: existsTrue,
       outputFileSize: sizeNonEmpty,
@@ -213,7 +213,7 @@ describe("verifyCleanOutput", () => {
       format: { duration: "10.0" },
     };
 
-    const result = verifyCleanOutput({
+    const result = verifyDenoiseOutput({
       outputPath: "/out.webm",
       outputExists: existsTrue,
       outputFileSize: sizeNonEmpty,
@@ -242,7 +242,7 @@ describe("verifyCleanOutput", () => {
       format: { duration: "10.0" },
     };
 
-    const result = verifyCleanOutput({
+    const result = verifyDenoiseOutput({
       outputPath: "/out.mp4",
       outputExists: existsTrue,
       outputFileSize: sizeNonEmpty,
@@ -259,7 +259,7 @@ describe("verifyCleanOutput", () => {
     const input = probeVideoAudio("10.0", "vp09");
     const output = probeVideoAudio("10.0", "h264");
 
-    const result = verifyCleanOutput({
+    const result = verifyDenoiseOutput({
       outputPath: "/out.mp4",
       outputExists: existsTrue,
       outputFileSize: sizeNonEmpty,
@@ -279,7 +279,7 @@ describe("verifyCleanOutput", () => {
     const input = probeVideoAudio("10.0", "theora");
     const output = probeVideoAudio("10.0", "vp9");
 
-    const result = verifyCleanOutput({
+    const result = verifyDenoiseOutput({
       outputPath: "/out.webm",
       outputExists: existsTrue,
       outputFileSize: sizeNonEmpty,
@@ -299,7 +299,7 @@ describe("verifyCleanOutput", () => {
     const input = probeVideoAudio("10.0", "h264");
     const output = probeVideoAudio("10.0", "h264");
 
-    const result = verifyCleanOutput({
+    const result = verifyDenoiseOutput({
       outputPath: "/out.mp4",
       outputExists: existsTrue,
       outputFileSize: () => 0,
@@ -320,7 +320,7 @@ describe("verifyCleanOutput", () => {
     const input = probeVideoAudio("10.0", "h264");
     const output = probeVideoAudio("10.0", "hevc");
 
-    const result = verifyCleanOutput({
+    const result = verifyDenoiseOutput({
       outputPath: "/out.mp4",
       outputExists: existsTrue,
       outputFileSize: sizeNonEmpty,
@@ -337,7 +337,7 @@ describe("verifyCleanOutput", () => {
     const input = probeVideoAudio("10.0", "h264");
     const output = probeVideoAudio("10.0", "h264");
 
-    const result = verifyCleanOutput({
+    const result = verifyDenoiseOutput({
       outputPath: "/out.mp4",
       outputExists: existsTrue,
       outputFileSize: sizeNonEmpty,
@@ -357,7 +357,7 @@ describe("verifyCleanOutput", () => {
     const input = probeVideoAudio("10.0", "h264");
     const output = probeVideoAudio("10.0", "hev1");
 
-    const result = verifyCleanOutput({
+    const result = verifyDenoiseOutput({
       outputPath: "/out.mp4",
       outputExists: existsTrue,
       outputFileSize: sizeNonEmpty,
@@ -377,7 +377,7 @@ describe("verifyCleanOutput", () => {
       format: { duration: "10.0" },
     };
 
-    const result = verifyCleanOutput({
+    const result = verifyDenoiseOutput({
       outputPath: "/out.m4a",
       outputExists: existsTrue,
       outputFileSize: sizeNonEmpty,

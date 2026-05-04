@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { argvTokensForEquivalentClean } from "../../src/domain/guided-clean-equivalent";
-import type { GuidedCleanSelections } from "../../src/domain/guided-clean-selection";
+import { argvTokensForEquivalentDenoise } from "../../src/domain/guided-denoise-equivalent";
+import type { GuidedDenoiseSelections } from "../../src/domain/guided-denoise-selection";
 
-describe("argvTokensForEquivalentClean", () => {
+describe("argvTokensForEquivalentDenoise", () => {
   test("minimal speech-light preset with defaults", () => {
-    const s: GuidedCleanSelections = {
+    const s: GuidedDenoiseSelections = {
       inputPath: "./in.wav",
       force: false,
       dryRun: false,
@@ -14,9 +14,9 @@ describe("argvTokensForEquivalentClean", () => {
       acceptAudacityPipeRisk: false,
     };
 
-    expect(argvTokensForEquivalentClean(s)).toEqual([
+    expect(argvTokensForEquivalentDenoise(s)).toEqual([
       "av-denoiser",
-      "clean",
+      "denoise",
       "./in.wav",
       "--preset",
       "speech-light",
@@ -26,7 +26,7 @@ describe("argvTokensForEquivalentClean", () => {
   });
 
   test("speech-soft-sox with force, fallback, explicit output", () => {
-    const s: GuidedCleanSelections = {
+    const s: GuidedDenoiseSelections = {
       inputPath: "vid.mp4",
       maybeOutputPath: "out.mkv",
       force: true,
@@ -37,9 +37,9 @@ describe("argvTokensForEquivalentClean", () => {
       acceptAudacityPipeRisk: false,
     };
 
-    expect(argvTokensForEquivalentClean(s)).toEqual([
+    expect(argvTokensForEquivalentDenoise(s)).toEqual([
       "av-denoiser",
-      "clean",
+      "denoise",
       "vid.mp4",
       "-o",
       "out.mkv",
@@ -53,7 +53,7 @@ describe("argvTokensForEquivalentClean", () => {
   });
 
   test("quotes paths containing whitespace", () => {
-    const s: GuidedCleanSelections = {
+    const s: GuidedDenoiseSelections = {
       inputPath: "./my in.wav",
       force: false,
       dryRun: false,
@@ -63,9 +63,9 @@ describe("argvTokensForEquivalentClean", () => {
       acceptAudacityPipeRisk: false,
     };
 
-    expect(argvTokensForEquivalentClean(s)).toEqual([
+    expect(argvTokensForEquivalentDenoise(s)).toEqual([
       "av-denoiser",
-      "clean",
+      "denoise",
       '"./my in.wav"',
       "--preset",
       "speech-light",
@@ -75,7 +75,7 @@ describe("argvTokensForEquivalentClean", () => {
   });
 
   test("dry-run flag appears when requested", () => {
-    const s: GuidedCleanSelections = {
+    const s: GuidedDenoiseSelections = {
       inputPath: "a.wav",
       force: false,
       dryRun: true,
@@ -85,11 +85,11 @@ describe("argvTokensForEquivalentClean", () => {
       acceptAudacityPipeRisk: false,
     };
 
-    expect(argvTokensForEquivalentClean(s)).toContain("--dry-run");
+    expect(argvTokensForEquivalentDenoise(s)).toContain("--dry-run");
   });
 
   test("speech-vocals-demucs with Audacity + LADSPA argv snapshot", () => {
-    const s: GuidedCleanSelections = {
+    const s: GuidedDenoiseSelections = {
       inputPath: "./in.wav",
       force: false,
       dryRun: false,
@@ -105,9 +105,9 @@ describe("argvTokensForEquivalentClean", () => {
       },
     };
 
-    expect(argvTokensForEquivalentClean(s)).toEqual([
+    expect(argvTokensForEquivalentDenoise(s)).toEqual([
       "av-denoiser",
-      "clean",
+      "denoise",
       "./in.wav",
       "--preset",
       "speech-vocals-demucs",

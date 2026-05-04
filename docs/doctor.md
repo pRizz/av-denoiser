@@ -31,7 +31,7 @@ Missing optional tools do not fail Phase 1 doctor. They are reported as warnings
 
 ## FFmpeg `ladspa` filter
 
-When `ffmpeg` is available, doctor runs `ffmpeg -hide_banner -filters` and records a separate capability row for the **`ladspa`** audio filter (TOOL-07 readiness). A **missing** row means this build cannot load LADSPA plugins through FFmpeg; headless **`clean --ladspa-*`** planning will fail with a message to run doctor.
+When `ffmpeg` is available, doctor runs `ffmpeg -hide_banner -filters` and records a separate capability row for the **`ladspa`** audio filter (TOOL-07 readiness). A **missing** row means this build cannot load LADSPA plugins through FFmpeg; headless **`denoise --ladspa-*`** planning will fail with a message to run doctor.
 
 User-supplied plugin binaries are not auto-discovered: set **`LADSPA_PATH`** (and pass an explicit plugin file path on the CLI) per your platform and FFmpeg build.
 
@@ -43,7 +43,7 @@ Optional **`melt`** is listed for future MLT/Kdenlive-style workflows and is **n
 
 Optional **Audacity** integration uses **`mod-script-pipe`** (disabled by default in Audacity; see the [Audacity scripting manual](https://manual.audacityteam.org/man/scripting.html)). You must enable the module and know the named pipe paths; override defaults with **`AUDACITY_PIPE_TO`** and **`AUDACITY_PIPE_FROM`** if needed.
 
-**Security / responsibility:** `clean` only runs an Audacity macro when you pass **`--audacity-macro`** and **`--accept-audacity-pipe-risk`**. See the same Audacity documentation for security implications of enabling the pipe.
+**Security / responsibility:** `denoise` only runs an Audacity macro when you pass **`--audacity-macro`** and **`--accept-audacity-pipe-risk`**. See the same Audacity documentation for security implications of enabling the pipe.
 
 ## Runtime Information
 

@@ -38,18 +38,18 @@ test("parses doctor command into a typed request", () => {
   expect(request).toEqual({ kind: "doctor" });
 });
 
-test("parses guided command into typed guided-clean request", () => {
-  expect(parseCliRequest(["guided"])).toEqual({ kind: "guided-clean" });
+test("parses guided command into typed guided-denoise request", () => {
+  expect(parseCliRequest(["guided"])).toEqual({ kind: "guided-denoise" });
 });
 
 test("parses --help into show-help request", () => {
   expect(parseCliRequest(["--help"])).toEqual({ kind: "show-help" });
 });
 
-test("parses clean --help into scoped show-help for clean", () => {
-  expect(parseCliRequest(["clean", "--help"])).toEqual({
+test("parses denoise --help into scoped show-help for denoise", () => {
+  expect(parseCliRequest(["denoise", "--help"])).toEqual({
     kind: "show-help",
-    topic: "clean",
+    topic: "denoise",
   });
 });
 
@@ -70,9 +70,9 @@ test("rejects excess root arguments (unknown command surface)", () => {
   );
 });
 
-test("parses clean dry-run with default preset speech-light", () => {
-  expect(parseCliRequest(["clean", "--dry-run", "x.m4a"])).toEqual({
-    kind: "clean",
+test("parses denoise dry-run with default preset speech-light", () => {
+  expect(parseCliRequest(["denoise", "--dry-run", "x.m4a"])).toEqual({
+    kind: "denoise",
     inputPath: "x.m4a",
     force: false,
     dryRun: true,
@@ -84,17 +84,17 @@ test("parses clean dry-run with default preset speech-light", () => {
   });
 });
 
-test("parses clean with speech-soft-sox preset", () => {
+test("parses denoise with speech-soft-sox preset", () => {
   expect(
     parseCliRequest([
-      "clean",
+      "denoise",
       "--preset",
       "speech-soft-sox",
       "--dry-run",
       "x.m4a",
     ]),
   ).toEqual({
-    kind: "clean",
+    kind: "denoise",
     inputPath: "x.m4a",
     force: false,
     dryRun: true,
@@ -106,9 +106,9 @@ test("parses clean with speech-soft-sox preset", () => {
   });
 });
 
-test("clean rejects noise-strength outside 0..1", () => {
+test("denoise rejects noise-strength outside 0..1", () => {
   expect(() =>
-    parseCliRequest(["clean", "x.m4a", "--noise-strength", "2"]),
+    parseCliRequest(["denoise", "x.m4a", "--noise-strength", "2"]),
   ).toThrow();
 });
 
@@ -142,7 +142,7 @@ test("renders default guidance without stale phase promises", () => {
   // Assert
   expect(output).toContain(expectedDoctorHint);
   expect(output).toContain(expectedInspectHint);
-  expect(output).toContain("clean");
+  expect(output).toContain("denoise");
   expect(output).toContain('Run "av-denoiser guided"');
   expect(output).not.toContain("Phase 5 will add");
 });

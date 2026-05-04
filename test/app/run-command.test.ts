@@ -3,7 +3,7 @@ import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import type { CleanCliOutcome } from "../../src/app/clean";
+import type { DenoiseCliOutcome } from "../../src/app/denoise";
 import { runCliRequest } from "../../src/app/run-command";
 import type { CliRequest } from "../../src/domain/cli-request";
 
@@ -37,10 +37,10 @@ describe("runCliRequest batch discoverTools wiring", () => {
       acceptAudacityPipeRisk: false,
     };
 
-    const runClean = mock(
-      async (): Promise<CleanCliOutcome> => ({
+    const runDenoise = mock(
+      async (): Promise<DenoiseCliOutcome> => ({
         kind: "success",
-        clean: {
+        denoise: {
           json: false,
           dryRun: true,
           summary: {
@@ -60,8 +60,8 @@ describe("runCliRequest batch discoverTools wiring", () => {
 
     const outcome = await runCliRequest(request, {
       discoverTools: async () => stubReport,
-      batch: { runClean },
-      clean: {
+      batch: { runDenoise },
+      denoise: {
         cwd: dir,
         outputExists: (p: string) => existsSync(p),
         maybeWhich: (name: string) =>
@@ -81,7 +81,7 @@ describe("runCliRequest batch discoverTools wiring", () => {
     }
 
     expect(outcome.batch?.document.maybeDoctorFacts).toEqual(stubReport);
-    expect(runClean.mock.calls.length).toBe(1);
+    expect(runDenoise.mock.calls.length).toBe(1);
 
     rmSync(dir, { recursive: true });
   });
@@ -114,10 +114,10 @@ describe("runCliRequest batch discoverTools wiring", () => {
         throw new Error("discovery boom");
       },
       batch: {
-        runClean: mock(
-          async (): Promise<CleanCliOutcome> => ({
+        runDenoise: mock(
+          async (): Promise<DenoiseCliOutcome> => ({
             kind: "success",
-            clean: {
+            denoise: {
               json: false,
               dryRun: true,
               summary: {
@@ -135,7 +135,7 @@ describe("runCliRequest batch discoverTools wiring", () => {
           }),
         ),
       },
-      clean: { cwd: dir, outputExists: () => false },
+      denoise: { cwd: dir, outputExists: () => false },
     });
 
     expect(outcome.kind).toBe("failure");

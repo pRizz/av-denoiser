@@ -13,7 +13,7 @@ export function durationVerificationToleranceSeconds(
   );
 }
 
-export type CleanVerifyFailureReason =
+export type DenoiseVerifyFailureReason =
   | "missing-file"
   | "empty-output"
   | "probe-parse"
@@ -22,7 +22,7 @@ export type CleanVerifyFailureReason =
   | "missing-video-stream"
   | "video-reencode-codec-mismatch";
 
-export type CleanVerifyParams = {
+export type DenoiseVerifyParams = {
   readonly outputPath: string;
   readonly outputExists: (p: string) => boolean;
   readonly outputFileSize: (p: string) => number;
@@ -35,11 +35,11 @@ export type CleanVerifyParams = {
   readonly claimedVideoCopied: boolean;
 };
 
-export type CleanVerifyResult =
+export type DenoiseVerifyResult =
   | { readonly kind: "ok" }
   | {
       readonly kind: "failure";
-      readonly reason: CleanVerifyFailureReason;
+      readonly reason: DenoiseVerifyFailureReason;
       readonly detail: string;
     };
 
@@ -63,9 +63,9 @@ function firstVideoStream(
   return video ?? null;
 }
 
-export function verifyCleanOutput(
-  params: CleanVerifyParams,
-): CleanVerifyResult {
+export function verifyDenoiseOutput(
+  params: DenoiseVerifyParams,
+): DenoiseVerifyResult {
   const { outputPath, outputExists, outputFileSize } = params;
 
   if (!outputExists(outputPath)) {

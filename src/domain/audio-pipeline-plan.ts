@@ -5,9 +5,9 @@ export type PresetId =
   | "speech-soft-sox"
   | "speech-vocals-demucs";
 
-export const DEFAULT_CLEAN_PRESET_ID: PresetId = "speech-light";
+export const DEFAULT_DENOISE_PRESET_ID: PresetId = "speech-light";
 
-export type CleanPresetKnobs = { readonly noiseStrength: number };
+export type DenoisePresetKnobs = { readonly noiseStrength: number };
 
 export type PipelineWarning = {
   readonly id: string;
@@ -57,7 +57,7 @@ export type ExpandedLogicalPipeline = {
 
 export type ExpandPresetInput = {
   readonly presetId: PresetId;
-  readonly knobs: CleanPresetKnobs;
+  readonly knobs: DenoisePresetKnobs;
   readonly plannedAudioCodec: PlannedAudioCodec;
   readonly plannedContainer: PlannedContainer;
 };
@@ -105,7 +105,7 @@ function clampNoiseStrength(value: number): number {
 
 function orderedSteps(
   presetId: PresetId,
-  knobs: CleanPresetKnobs,
+  knobs: DenoisePresetKnobs,
   plannedAudioCodec: PlannedAudioCodec,
   plannedContainer: PlannedContainer,
 ): readonly LogicalPipelineStep[] {

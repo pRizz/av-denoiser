@@ -17,7 +17,7 @@ const minimalAudioFixture = await Bun.file(
   `${import.meta.dir}/../fixtures/ffprobe/minimal-audio.json`,
 ).text();
 
-function batchCleanDepsForAudioWav(dir: string) {
+function batchDenoiseDepsForAudioWav(dir: string) {
   return {
     cwd: dir,
     outputExists: (p: string) => existsSync(p),
@@ -32,7 +32,7 @@ function batchCleanDepsForAudioWav(dir: string) {
 }
 
 describe("runBatchRequest", () => {
-  test("writes manifest with mocked clean success", async () => {
+  test("writes manifest with mocked denoise success", async () => {
     const dir = mkdtempSync(join(tmpdir(), "avdn-batch-"));
     const manifestPath = join(dir, "manifest.json");
     const inputPath = join(dir, "in.wav");
@@ -55,10 +55,10 @@ describe("runBatchRequest", () => {
       acceptAudacityPipeRisk: false,
     };
 
-    const runClean = mock(
-      async (): Promise<import("../../src/app/clean").CleanCliOutcome> => ({
+    const runDenoise = mock(
+      async (): Promise<import("../../src/app/denoise").DenoiseCliOutcome> => ({
         kind: "success",
-        clean: {
+        denoise: {
           json: false,
           dryRun: true,
           summary: {
@@ -77,8 +77,8 @@ describe("runBatchRequest", () => {
     );
 
     const outcome = await runBatchRequest(request, {
-      clean: batchCleanDepsForAudioWav(dir),
-      batch: { runClean },
+      denoise: batchDenoiseDepsForAudioWav(dir),
+      batch: { runDenoise },
     });
 
     expect(outcome.kind).toBe("success");
@@ -93,7 +93,7 @@ describe("runBatchRequest", () => {
     rmSync(dir, { recursive: true });
   });
 
-  test("fail-fast stops before third runClean call", async () => {
+  test("fail-fast stops before third runDenoise call", async () => {
     const dir = mkdtempSync(join(tmpdir(), "avdn-batch-ff-"));
     const manifestPath = join(dir, "manifest.json");
 
@@ -120,8 +120,8 @@ describe("runBatchRequest", () => {
 
     let call = 0;
 
-    const runClean = mock(
-      async (): Promise<import("../../src/app/clean").CleanCliOutcome> => {
+    const runDenoise = mock(
+      async (): Promise<import("../../src/app/denoise").DenoiseCliOutcome> => {
         call += 1;
 
         if (call === 2) {
@@ -136,7 +136,7 @@ describe("runBatchRequest", () => {
 
         return {
           kind: "success",
-          clean: {
+          denoise: {
             json: false,
             dryRun: true,
             summary: {
@@ -156,8 +156,8 @@ describe("runBatchRequest", () => {
     );
 
     const outcome = await runBatchRequest(request, {
-      clean: batchCleanDepsForAudioWav(dir),
-      batch: { runClean },
+      denoise: batchDenoiseDepsForAudioWav(dir),
+      batch: { runDenoise },
     });
 
     expect(outcome.kind).toBe("success");
@@ -165,7 +165,7 @@ describe("runBatchRequest", () => {
       throw new Error("expected success");
     }
 
-    expect(runClean.mock.calls.length).toBe(2);
+    expect(runDenoise.mock.calls.length).toBe(2);
     expect(outcome.batch?.worstExitCode).toBe(ExitCode.processingFailure);
     expect(outcome.batch?.document.items[2]?.outcome).toBe("skipped");
 

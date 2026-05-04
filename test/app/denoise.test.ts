@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { type CleanRunInput, runCleanRequest } from "../../src/app/clean";
+import { type DenoiseRunInput, runDenoiseRequest } from "../../src/app/denoise";
 import { canonicalInputPath } from "../../src/domain/output-path";
 
 const minimalAudioFixture = await Bun.file(
@@ -122,7 +122,7 @@ function fakeWhichVideoScenario() {
   };
 }
 
-function baseCleanInput(overrides: Partial<CleanRunInput>): CleanRunInput {
+function baseCleanInput(overrides: Partial<DenoiseRunInput>): DenoiseRunInput {
   return {
     inputPath: "clip.m4a",
     force: false,
@@ -145,10 +145,10 @@ function outputExistsForCleanProbeOnly(
   return (p) => p === resolvedInput;
 }
 
-test("runCleanRequest dry-run speech-light does not invoke ffmpeg (probe still runs)", async () => {
+test("runDenoiseRequest dry-run speech-light does not invoke ffmpeg (probe still runs)", async () => {
   let ffmpegInvocations = 0;
 
-  const outcome = await runCleanRequest(baseCleanInput({ dryRun: true }), {
+  const outcome = await runDenoiseRequest(baseCleanInput({ dryRun: true }), {
     cwd: "/project",
     maybeWhich: fakeWhichVideoScenario(),
     runProcess: async (cmd) => {
@@ -168,16 +168,16 @@ test("runCleanRequest dry-run speech-light does not invoke ffmpeg (probe still r
 
   expect(ffmpegInvocations).toBe(0);
   expect(outcome.kind).toBe("success");
-  if (outcome.kind !== "success" || outcome.clean === undefined) {
+  if (outcome.kind !== "success" || outcome.denoise === undefined) {
     return;
   }
 
-  expect(outcome.clean.dryRun).toBe(true);
-  expect(outcome.clean.summary.steps.length).toBe(3);
+  expect(outcome.denoise.dryRun).toBe(true);
+  expect(outcome.denoise.summary.steps.length).toBe(3);
 });
 
-test("runCleanRequest video-copy-safe dry-run succeeds with extract and remux steps", async () => {
-  const outcome = await runCleanRequest(
+test("runDenoiseRequest video-copy-safe dry-run succeeds with extract and remux steps", async () => {
+  const outcome = await runDenoiseRequest(
     baseCleanInput({
       inputPath: "clip.mp4",
       dryRun: true,
@@ -197,16 +197,18 @@ test("runCleanRequest video-copy-safe dry-run succeeds with extract and remux st
   );
 
   expect(outcome.kind).toBe("success");
-  if (outcome.kind !== "success" || outcome.clean === undefined) {
+  if (outcome.kind !== "success" || outcome.denoise === undefined) {
     return;
   }
 
-  expect(outcome.clean.summary.modality).toBe("video-copy-safe");
-  expect(outcome.clean.summary.plannedContainer).toBe("mp4");
-  expect(outcome.clean.summary.plannedAudioCodec).toBe("aac");
-  expect(outcome.clean.summary.reasonCodes).toContain("video-copy-h264-mp4-v1");
-  expect(outcome.clean.summary.steps.length).toBe(4);
-  const joined = outcome.clean.summary.steps
+  expect(outcome.denoise.summary.modality).toBe("video-copy-safe");
+  expect(outcome.denoise.summary.plannedContainer).toBe("mp4");
+  expect(outcome.denoise.summary.plannedAudioCodec).toBe("aac");
+  expect(outcome.denoise.summary.reasonCodes).toContain(
+    "video-copy-h264-mp4-v1",
+  );
+  expect(outcome.denoise.summary.steps.length).toBe(4);
+  const joined = outcome.denoise.summary.steps
     .map((s) => s.displayCommand)
     .join("\n");
   expect(joined).toContain("-vn");
@@ -214,8 +216,8 @@ test("runCleanRequest video-copy-safe dry-run succeeds with extract and remux st
   expect(joined).toContain("copy");
 });
 
-test("runCleanRequest video-copy-safe dry-run VP9 includes -f webm and libopus in remux step", async () => {
-  const outcome = await runCleanRequest(
+test("runDenoiseRequest video-copy-safe dry-run VP9 includes -f webm and libopus in remux step", async () => {
+  const outcome = await runDenoiseRequest(
     baseCleanInput({
       inputPath: "clip.webm",
       dryRun: true,
@@ -235,12 +237,12 @@ test("runCleanRequest video-copy-safe dry-run VP9 includes -f webm and libopus i
   );
 
   expect(outcome.kind).toBe("success");
-  if (outcome.kind !== "success" || outcome.clean === undefined) {
+  if (outcome.kind !== "success" || outcome.denoise === undefined) {
     return;
   }
 
-  expect(outcome.clean.summary.modality).toBe("video-copy-safe");
-  const joined = outcome.clean.summary.steps
+  expect(outcome.denoise.summary.modality).toBe("video-copy-safe");
+  const joined = outcome.denoise.summary.steps
     .map((s) => s.displayCommand)
     .join("\n");
   expect(joined).toContain("-f webm");
@@ -248,8 +250,8 @@ test("runCleanRequest video-copy-safe dry-run VP9 includes -f webm and libopus i
   expect(joined).toContain("128k");
 });
 
-test("runCleanRequest video-copy-safe dry-run succeeds for lone hevc probe with stream copy remux step", async () => {
-  const outcome = await runCleanRequest(
+test("runDenoiseRequest video-copy-safe dry-run succeeds for lone hevc probe with stream copy remux step", async () => {
+  const outcome = await runDenoiseRequest(
     baseCleanInput({
       inputPath: "clip.mov",
       dryRun: true,
@@ -269,12 +271,12 @@ test("runCleanRequest video-copy-safe dry-run succeeds for lone hevc probe with 
   );
 
   expect(outcome.kind).toBe("success");
-  if (outcome.kind !== "success" || outcome.clean === undefined) {
+  if (outcome.kind !== "success" || outcome.denoise === undefined) {
     return;
   }
 
-  expect(outcome.clean.summary.modality).toBe("video-copy-safe");
-  const joined = outcome.clean.summary.steps
+  expect(outcome.denoise.summary.modality).toBe("video-copy-safe");
+  const joined = outcome.denoise.summary.steps
     .map((s) => s.displayCommand)
     .join("\n");
   expect(joined).toContain("-c:v");
@@ -282,8 +284,8 @@ test("runCleanRequest video-copy-safe dry-run succeeds for lone hevc probe with 
   expect(joined).not.toContain("libx264");
 });
 
-test("runCleanRequest fallback-required without allow flag returns fallback-required", async () => {
-  const outcome = await runCleanRequest(
+test("runDenoiseRequest fallback-required without allow flag returns fallback-required", async () => {
+  const outcome = await runDenoiseRequest(
     baseCleanInput({
       inputPath: "multi.mp4",
       dryRun: true,
@@ -310,8 +312,8 @@ test("runCleanRequest fallback-required without allow flag returns fallback-requ
   expect(outcome.reason.kind).toBe("fallback-required");
 });
 
-test("runCleanRequest fallback-required with allowVideoReencode dry-run succeeds", async () => {
-  const outcome = await runCleanRequest(
+test("runDenoiseRequest fallback-required with allowVideoReencode dry-run succeeds", async () => {
+  const outcome = await runDenoiseRequest(
     baseCleanInput({
       inputPath: "multi.mp4",
       dryRun: true,
@@ -333,13 +335,13 @@ test("runCleanRequest fallback-required with allowVideoReencode dry-run succeeds
   expect(outcome.kind).toBe("success");
 });
 
-test("runCleanRequest unsupported modality mentions inspect", async () => {
+test("runDenoiseRequest unsupported modality mentions inspect", async () => {
   const noAudioProbe = JSON.stringify({
     streams: [{ index: 0, codec_name: "h264", codec_type: "video" }],
     format: {},
   });
 
-  const outcome = await runCleanRequest(
+  const outcome = await runDenoiseRequest(
     baseCleanInput({
       inputPath: "vonly.mp4",
       dryRun: true,
@@ -371,8 +373,8 @@ test("runCleanRequest unsupported modality mentions inspect", async () => {
   expect(outcome.reason.message).toContain("inspect");
 });
 
-test("runCleanRequest speech-soft-sox missing SoX reports missing-tools sorted", async () => {
-  const outcome = await runCleanRequest(
+test("runDenoiseRequest speech-soft-sox missing SoX reports missing-tools sorted", async () => {
+  const outcome = await runDenoiseRequest(
     baseCleanInput({
       dryRun: false,
       presetId: "speech-soft-sox",
@@ -404,10 +406,10 @@ test("runCleanRequest speech-soft-sox missing SoX reports missing-tools sorted",
   expect(outcome.reason.tools).toEqual(["sox", "sox_ng"]);
 });
 
-test("runCleanRequest speech-light executes ffmpeg pipeline plus output probe", async () => {
+test("runDenoiseRequest speech-light executes ffmpeg pipeline plus output probe", async () => {
   let count = 0;
 
-  const outcome = await runCleanRequest(
+  const outcome = await runDenoiseRequest(
     baseCleanInput({
       dryRun: false,
       knobs: { noiseStrength: 0.2 },
@@ -435,12 +437,12 @@ test("runCleanRequest speech-light executes ffmpeg pipeline plus output probe", 
 
   expect(outcome.kind).toBe("success");
   expect(count).toBe(5);
-  if (outcome.kind === "success" && outcome.clean !== undefined) {
-    expect(outcome.clean.maybeReportText).toContain("Verified:");
+  if (outcome.kind === "success" && outcome.denoise !== undefined) {
+    expect(outcome.denoise.maybeReportText).toContain("Verified:");
   }
 });
 
-test("runCleanRequest speech-vocals-demucs executes demucs between extract and encode", async () => {
+test("runDenoiseRequest speech-vocals-demucs executes demucs between extract and encode", async () => {
   let demucsInvoked = false;
   let ffmpegIndex = 0;
   let encodeInputPath: string | undefined;
@@ -457,7 +459,7 @@ test("runCleanRequest speech-vocals-demucs executes demucs between extract and e
     return map[name] ?? null;
   };
 
-  const outcome = await runCleanRequest(
+  const outcome = await runDenoiseRequest(
     baseCleanInput({
       dryRun: false,
       presetId: "speech-vocals-demucs",
@@ -504,16 +506,16 @@ test("runCleanRequest speech-vocals-demucs executes demucs between extract and e
   expect(encodeInputPath).toBeDefined();
   expect(encodeInputPath ?? "").toContain("step-1-demucs-out");
   expect(encodeInputPath ?? "").toContain("vocals.wav");
-  if (outcome.kind === "success" && outcome.clean !== undefined) {
-    expect(outcome.clean.maybeReportText).toContain("Verified:");
+  if (outcome.kind === "success" && outcome.denoise !== undefined) {
+    expect(outcome.denoise.maybeReportText).toContain("Verified:");
   }
 });
 
-test("runCleanRequest video-copy-safe execute runs extract remux and output probe", async () => {
+test("runDenoiseRequest video-copy-safe execute runs extract remux and output probe", async () => {
   let ffprobeCalls = 0;
   let ffmpegArgsJoined = "";
 
-  const outcome = await runCleanRequest(
+  const outcome = await runDenoiseRequest(
     baseCleanInput({
       inputPath: "clip.mp4",
       dryRun: false,
@@ -557,12 +559,12 @@ test("runCleanRequest video-copy-safe execute runs extract remux and output prob
   expect(ffmpegArgsJoined).toContain("copy");
 });
 
-test("runCleanRequest fallback-required execute remuxes video with libx265 when allowVideoReencode", async () => {
+test("runDenoiseRequest fallback-required execute remuxes video with libx265 when allowVideoReencode", async () => {
   let ffprobeCalls = 0;
   let ffmpegArgsJoined = "";
   const ffmpegArgvs: string[][] = [];
 
-  const outcome = await runCleanRequest(
+  const outcome = await runDenoiseRequest(
     baseCleanInput({
       inputPath: "clip.webm",
       dryRun: false,
@@ -613,9 +615,9 @@ test("runCleanRequest fallback-required execute remuxes video with libx265 when 
   const libx265Argv = ffmpegArgvs.find((a) => a.includes("libx265"));
   expect(libx265Argv).toBeDefined();
   expect(libx265Argv?.join(" ")).not.toContain("-f webm");
-  if (outcome.kind === "success" && outcome.clean !== undefined) {
-    expect(outcome.clean.maybeReportText).toContain("re-encoded");
-    expect(outcome.clean.maybeReportText).toContain(
+  if (outcome.kind === "success" && outcome.denoise !== undefined) {
+    expect(outcome.denoise.maybeReportText).toContain("re-encoded");
+    expect(outcome.denoise.maybeReportText).toContain(
       "Video: re-encoded (HEVC, libx265)",
     );
   }

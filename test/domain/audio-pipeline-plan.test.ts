@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 
 import {
   applyIntegrationsToLogicalSteps,
-  DEFAULT_CLEAN_PRESET_ID,
+  DEFAULT_DENOISE_PRESET_ID,
   expandPreset,
   parseLadspaCliTriple,
   parsePresetId,
@@ -10,8 +10,8 @@ import {
   presetRequiresSox,
 } from "../../src/domain/audio-pipeline-plan";
 
-test("DEFAULT_CLEAN_PRESET_ID is speech-light", () => {
-  expect(DEFAULT_CLEAN_PRESET_ID).toBe("speech-light");
+test("DEFAULT_DENOISE_PRESET_ID is speech-light", () => {
+  expect(DEFAULT_DENOISE_PRESET_ID).toBe("speech-light");
 });
 
 test("presetRequiresSox matches preset ids", () => {

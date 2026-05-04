@@ -30,12 +30,12 @@ The CLI maps outcomes to stable integers (see `src/domain/exit-codes.ts`):
 
 By default, **`av-denoiser` tries to keep the video track as-is** (stream copy—no video re-encode) when the feasibility matrix allows it, while cleaning the audio.
 
-For inputs marked **`fallback-required`**, **stream-copy-only video is not possible**. Passing **`--allow-video-reencode`** on **`inspect`** or **`clean`** means you accept **re-encoding video to HEVC (`libx265`)** into **MP4** in those cases—**slower** than keeping video as-is, matching the current default fallback recipe.
+For inputs marked **`fallback-required`**, **stream-copy-only video is not possible**. Passing **`--allow-video-reencode`** on **`inspect`** or **`denoise`** means you accept **re-encoding video to HEVC (`libx265`)** into **MP4** in those cases—**slower** than keeping video as-is, matching the current default fallback recipe.
 
 ## Test fixtures
 
 Short **audio** WAVs live under [`test/fixtures/audio/`](./test/fixtures/audio/). Short **video** samples (Commons sourced Theora/Vorbis **OGV** plus an **H.264** MP4 derivative) live under [`test/fixtures/video/`](./test/fixtures/video/); under the current stream-copy matrix the OGV probes as **video-copy-safe** **Matroska** output (AAC audio, copied video)—see [`test/fixtures/video/README.md`](./test/fixtures/video/README.md). Each folder has a README with licenses and regeneration commands.
 
-When **`ffmpeg`** and **`ffprobe`** are on `PATH`, the suite runs [`test/app/clean-fixture-audio-integration.test.ts`](./test/app/clean-fixture-audio-integration.test.ts), which drives **`speech-hush-with-brown-noise-cc0.wav`** through a `speech-light` dry-run and a full encode; those tests **`skip`** if the binaries are absent.
+When **`ffmpeg`** and **`ffprobe`** are on `PATH`, the suite runs [`test/app/denoise-fixture-audio-integration.test.ts`](./test/app/denoise-fixture-audio-integration.test.ts), which drives **`speech-hush-with-brown-noise-cc0.wav`** through a `speech-light` dry-run and a full encode; those tests **`skip`** if the binaries are absent.
 
 Run **`bun run verify`** locally or in CI as the aggregate gate: Biome checks, TypeScript `tsc --noEmit`, and the full `bun test` suite (including parser, domain, CLI, adapter, and optional integration tests above).

@@ -1,15 +1,15 @@
 import type { LogicalPipelineStep } from "./audio-pipeline-plan";
 import type { MediaProbe } from "./media-probe";
 
-/** Batch job position included on progress events when `runCleanRequest` is invoked from batch. */
-export type CleanProgressBatch = {
+/** Batch job position included on progress events when `runDenoiseRequest` is invoked from batch. */
+export type DenoiseProgressBatch = {
   readonly index: number;
   readonly total: number;
 };
 
-export type CleanProgressEvent =
-  | { readonly kind: "probe"; readonly batch?: CleanProgressBatch }
-  | { readonly kind: "verify"; readonly batch?: CleanProgressBatch }
+export type DenoiseProgressEvent =
+  | { readonly kind: "probe"; readonly batch?: DenoiseProgressBatch }
+  | { readonly kind: "verify"; readonly batch?: DenoiseProgressBatch }
   | {
       readonly kind: "step";
       readonly stepIndex: number;
@@ -17,7 +17,7 @@ export type CleanProgressEvent =
       readonly label: string;
       /** Wall time for the immediately prior step, when known (ms). */
       readonly previousStepElapsedMs?: number;
-      readonly batch?: CleanProgressBatch;
+      readonly batch?: DenoiseProgressBatch;
     }
   | {
       readonly kind: "ffmpeg";
@@ -25,7 +25,7 @@ export type CleanProgressEvent =
       readonly durationSec?: number;
       readonly speed?: string;
       readonly percent?: number;
-      readonly batch?: CleanProgressBatch;
+      readonly batch?: DenoiseProgressBatch;
     };
 
 /** Parses `time=HH:MM:SS.xx` and `speed=Nx` from a typical FFmpeg status line. */
@@ -126,7 +126,7 @@ function formatElapsed(ms: number): string {
 }
 
 /** One-line message for @clack spinner / constrained terminals. */
-export function formatProgressForSpinner(event: CleanProgressEvent): string {
+export function formatProgressForSpinner(event: DenoiseProgressEvent): string {
   const batchPrefix =
     event.batch !== undefined
       ? `[${event.batch.index}/${event.batch.total}] `
@@ -176,8 +176,8 @@ function truncateSpinner(s: string): string {
 }
 
 /** Stable JSON-serializable snapshot for NDJSON progress lines. */
-export function cleanProgressEventToJson(
-  event: CleanProgressEvent,
+export function denoiseProgressEventToJson(
+  event: DenoiseProgressEvent,
 ): Record<string, unknown> {
   const base: Record<string, unknown> = { kind: event.kind };
 

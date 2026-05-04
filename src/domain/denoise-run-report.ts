@@ -2,7 +2,7 @@ import type { MediaProbe } from "./media-probe";
 
 export type VideoPolicyLabel = "copied" | "re-encoded" | "n/a-audio-only";
 
-export type CleanRunReport = {
+export type DenoiseRunReport = {
   readonly videoPolicy: VideoPolicyLabel;
   readonly audioCodecSummary: string;
   readonly droppedStreamsLabels: readonly string[];
@@ -33,7 +33,7 @@ export function labelsForDroppedStreams(
   return labels;
 }
 
-export function renderCleanRunReportText(report: CleanRunReport): string {
+export function renderDenoiseRunReportText(report: DenoiseRunReport): string {
   const lines: string[] = [];
 
   const videoLine =

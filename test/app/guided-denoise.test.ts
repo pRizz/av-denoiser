@@ -1,12 +1,12 @@
 import { describe, expect, mock, test } from "bun:test";
-import { runGuidedCleanRequest } from "../../src/app/guided-clean";
+import { runGuidedDenoiseRequest } from "../../src/app/guided-denoise";
 import { renderCommandOutcome } from "../../src/cli/render";
 import type { CliRequest } from "../../src/domain/cli-request";
-import type { GuidedCleanSelections } from "../../src/domain/guided-clean-selection";
+import type { GuidedDenoiseSelections } from "../../src/domain/guided-denoise-selection";
 
-describe("runGuidedCleanRequest", () => {
+describe("runGuidedDenoiseRequest", () => {
   test("fails fast when stdin is not a TTY", async () => {
-    const outcome = await runGuidedCleanRequest({ isTTY: false });
+    const outcome = await runGuidedDenoiseRequest({ isTTY: false });
 
     expect(outcome.kind).toBe("failure");
 
@@ -20,7 +20,7 @@ describe("runGuidedCleanRequest", () => {
   });
 
   test("runs dry-run preview then execute when confirmed", async () => {
-    const canned: GuidedCleanSelections = {
+    const canned: GuidedDenoiseSelections = {
       inputPath: "in.wav",
       force: false,
       dryRun: false,
@@ -32,15 +32,15 @@ describe("runGuidedCleanRequest", () => {
 
     const calls: { dryRun: boolean }[] = [];
 
-    const runClean = mock(
+    const runDenoise = mock(
       async (
-        input: import("../../src/app/clean").CleanRunInput,
-      ): Promise<import("../../src/app/clean").CleanCliOutcome> => {
+        input: import("../../src/app/denoise").DenoiseRunInput,
+      ): Promise<import("../../src/app/denoise").DenoiseCliOutcome> => {
         calls.push({ dryRun: input.dryRun });
 
         return {
           kind: "success",
-          clean: {
+          denoise: {
             json: false,
             dryRun: input.dryRun,
             summary: {
@@ -61,11 +61,11 @@ describe("runGuidedCleanRequest", () => {
       },
     );
 
-    const outcome = await runGuidedCleanRequest({
+    const outcome = await runGuidedDenoiseRequest({
       isTTY: true,
       collectSelections: async () => canned,
-      askRunClean: async () => true,
-      runClean,
+      askRunDenoise: async () => true,
+      runDenoise,
     });
 
     expect(calls.length).toBe(2);
@@ -77,7 +77,7 @@ describe("runGuidedCleanRequest", () => {
       expect(outcome.guidedHumanSummary).toContain("Equivalent command:");
     }
 
-    const guidedRequest: CliRequest = { kind: "guided-clean" };
+    const guidedRequest: CliRequest = { kind: "guided-denoise" };
 
     const rendered = renderCommandOutcome(guidedRequest, outcome, "");
 

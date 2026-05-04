@@ -1,5 +1,5 @@
 import type { BatchCliPayload } from "../app/batch";
-import type { CleanCliSuccess } from "../app/clean";
+import type { DenoiseCliSuccess } from "../app/denoise";
 import type { InspectCliSuccess } from "../app/inspect";
 import type { CliRequest } from "../domain/cli-request";
 import {
@@ -20,10 +20,10 @@ const DEFAULT_GUIDANCE_LINES = [
   "av-denoiser CLI foundation is installed.",
   'Run "av-denoiser doctor" to inspect local tool readiness.',
   'Run "av-denoiser inspect <path>" to probe media and preview planned outputs.',
-  'Use "av-denoiser clean <path>" for preset FFmpeg/SoX cleanup when tools are ready.',
+  'Use "av-denoiser denoise <path>" for preset FFmpeg/SoX cleanup when tools are ready.',
   'Use "av-denoiser batch --input <path>..." for multi-file cleanup with a manifest.',
-  'Use "av-denoiser clean <path>" after inspect for video when the plan keeps video as-is, or add --allow-video-reencode when the file needs video re-encoding.',
-  'Run "av-denoiser guided" for a prompted clean workflow that prints equivalent CLI flags.',
+  'Use "av-denoiser denoise <path>" after inspect for video when the plan keeps video as-is, or add --allow-video-reencode when the file needs video re-encoding.',
+  'Run "av-denoiser guided" for a prompted denoise workflow that prints equivalent CLI flags.',
 ];
 
 const DOCTOR_GUIDANCE_LINES = [
@@ -44,7 +44,7 @@ export type RuntimeInfo = {
 export type RenderableOutcome = CommandOutcome & {
   readonly doctorReport?: DoctorReport;
   readonly inspect?: InspectCliSuccess;
-  readonly clean?: CleanCliSuccess;
+  readonly denoise?: DenoiseCliSuccess;
   readonly guidedHumanSummary?: string;
   readonly batch?: BatchCliPayload;
 };
@@ -133,10 +133,10 @@ export function renderBatchSummary(payload: BatchCliPayload): string {
   return lines.join("\n");
 }
 
-export function renderCleanPlanText(success: CleanCliSuccess): string {
+export function renderDenoisePlanText(success: DenoiseCliSuccess): string {
   const { summary } = success;
   const lines = [
-    "av-denoiser clean",
+    "av-denoiser denoise",
     "",
     "Preset",
     `- ${summary.presetId}`,
@@ -248,17 +248,17 @@ export function renderCommandOutcome(
     return appendFailureDetails("av-denoiser inspect failed.", outcome);
   }
 
-  if (request.kind === "clean") {
-    if (outcome.kind === "success" && outcome.clean !== undefined) {
-      return outcome.clean.json
-        ? `${JSON.stringify(cleanSummaryForJson(outcome.clean), null, 2)}\n`
-        : renderCleanPlanText(outcome.clean);
+  if (request.kind === "denoise") {
+    if (outcome.kind === "success" && outcome.denoise !== undefined) {
+      return outcome.denoise.json
+        ? `${JSON.stringify(denoiseSummaryForJson(outcome.denoise), null, 2)}\n`
+        : renderDenoisePlanText(outcome.denoise);
     }
 
-    return appendFailureDetails("av-denoiser clean failed.", outcome);
+    return appendFailureDetails("av-denoiser denoise failed.", outcome);
   }
 
-  if (request.kind === "guided-clean") {
+  if (request.kind === "guided-denoise") {
     if (outcome.kind === "success") {
       return outcome.guidedHumanSummary ?? "av-denoiser guided finished.\n";
     }
@@ -336,11 +336,11 @@ export function renderCliRequest(
         "",
         "macOS only: runs Homebrew to install FFmpeg, SoX_ng, Audacity, and uv by default; pass --no-optional for FFmpeg + uv only. Full tier offers Demucs via `uv tool install demucs` after brew (interactive) or --yes when non-interactive. Use --dry-run to preview commands.",
       ].join("\n");
-    case "guided-clean":
+    case "guided-denoise":
       return [
         "av-denoiser guided",
         "",
-        "Runs an interactive preset clean workflow with prompts, dry-run preview, and equivalent CLI flags.",
+        "Runs an interactive preset denoise workflow with prompts, dry-run preview, and equivalent CLI flags.",
       ].join("\n");
     case "inspect":
       return [
@@ -348,9 +348,9 @@ export function renderCliRequest(
         "",
         "Runs ffprobe and prints planned output modality and paths.",
       ].join("\n");
-    case "clean":
+    case "denoise":
       return [
-        "av-denoiser clean <path>",
+        "av-denoiser denoise <path>",
         "",
         "Runs preset FFmpeg/SoX cleanup on audio or supported video (inspect first; use --allow-video-reencode only when the plan cannot keep video as-is).",
       ].join("\n");
@@ -358,14 +358,14 @@ export function renderCliRequest(
       return [
         "av-denoiser batch [--input <path> ...] [--from-dir <dir>] [--glob <pattern> ...]",
         "",
-        "Runs clean on many inputs; writes batch-manifest.json unless --manifest is set.",
+        "Runs denoise on many inputs; writes batch-manifest.json unless --manifest is set.",
         "Globs require --accept-glob-risk. Default concurrency is 1; failures aggregate into the process exit code.",
       ].join("\n");
   }
 }
 
-function cleanSummaryForJson(
-  success: CleanCliSuccess,
+function denoiseSummaryForJson(
+  success: DenoiseCliSuccess,
 ): Record<string, unknown> {
   const summary = success.summary;
   const base: Record<string, unknown> = {

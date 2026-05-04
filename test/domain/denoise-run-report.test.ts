@@ -1,9 +1,9 @@
 import { expect, test } from "bun:test";
 
-import { renderCleanRunReportText } from "../../src/domain/clean-run-report";
+import { renderDenoiseRunReportText } from "../../src/domain/denoise-run-report";
 
-test("renderCleanRunReportText labels re-encoded video as HEVC libx265", () => {
-  const text = renderCleanRunReportText({
+test("renderDenoiseRunReportText labels re-encoded video as HEVC libx265", () => {
+  const text = renderDenoiseRunReportText({
     videoPolicy: "re-encoded",
     audioCodecSummary: "aac",
     droppedStreamsLabels: [],

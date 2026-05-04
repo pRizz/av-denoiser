@@ -263,7 +263,7 @@ export function buildLogicalStepCommand(
 const PIPELINE_AUDIO_OUT_STEM = "pipeline-audio-out";
 
 /**
- * Basename for processed-audio artifact before final video remux (`clean` temp dir).
+ * Basename for processed-audio artifact before final video remux (`denoise` temp dir).
  * Keep in sync with `encodeDeliverableArgs` — Phase 08-01.
  */
 export function pipelineAudioOutIntermediateBasename(

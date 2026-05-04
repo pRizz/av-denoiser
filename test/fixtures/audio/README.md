@@ -2,7 +2,7 @@
 
 Small files for manual UAT, CI, and pipeline smoke tests. Prefer these over ad-hoc `/tmp` samples.
 
-**Automated:** `test/app/clean-fixture-audio-integration.test.ts` uses `speech-hush-with-brown-noise-cc0.wav` for a `speech-light` dry-run and full run when `ffmpeg` / `ffprobe` are on `PATH` (skipped otherwise).
+**Automated:** `test/app/denoise-fixture-audio-integration.test.ts` uses `speech-hush-with-brown-noise-cc0.wav` for a `speech-light` dry-run and full run when `ffmpeg` / `ffprobe` are on `PATH` (skipped otherwise).
 
 ## Bundled files
 

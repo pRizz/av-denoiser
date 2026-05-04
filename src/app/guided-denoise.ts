@@ -7,31 +7,37 @@ import {
   spinner,
   text,
 } from "@clack/prompts";
-import { renderCleanPlanText } from "../cli/render";
+import { renderDenoisePlanText } from "../cli/render";
 import {
   type LadspaIntegration,
   type PresetId,
   parseLadspaCliTriple,
 } from "../domain/audio-pipeline-plan";
-import { formatProgressForSpinner } from "../domain/clean-progress";
-import { argvTokensForEquivalentClean } from "../domain/guided-clean-equivalent";
-import { parseGuidedNoiseStrength } from "../domain/guided-clean-parse";
-import type { GuidedCleanSelections } from "../domain/guided-clean-selection";
-import type { CleanCliOutcome, CleanDeps, CleanRunInput } from "./clean";
-import { runCleanRequest } from "./clean";
+import { formatProgressForSpinner } from "../domain/denoise-progress";
+import { argvTokensForEquivalentDenoise } from "../domain/guided-denoise-equivalent";
+import { parseGuidedNoiseStrength } from "../domain/guided-denoise-parse";
+import type { GuidedDenoiseSelections } from "../domain/guided-denoise-selection";
+import type {
+  DenoiseCliOutcome,
+  DenoiseDeps,
+  DenoiseRunInput,
+} from "./denoise";
+import { runDenoiseRequest } from "./denoise";
 import type { CliCommandOutcome } from "./run-command";
 
-export type GuidedCleanDeps = {
+export type GuidedDenoiseDeps = {
   readonly isTTY?: boolean;
-  readonly runClean?: (
-    input: CleanRunInput,
-    cleanDeps?: Partial<CleanDeps>,
-  ) => Promise<CleanCliOutcome>;
-  readonly collectSelections?: () => Promise<GuidedCleanSelections | null>;
-  readonly askRunClean?: () => Promise<boolean | null>;
+  readonly runDenoise?: (
+    input: DenoiseRunInput,
+    denoiseDeps?: Partial<DenoiseDeps>,
+  ) => Promise<DenoiseCliOutcome>;
+  readonly collectSelections?: () => Promise<GuidedDenoiseSelections | null>;
+  readonly askRunDenoise?: () => Promise<boolean | null>;
 };
 
-function selectionsToCleanRunInput(s: GuidedCleanSelections): CleanRunInput {
+function selectionsToDenoiseRunInput(
+  s: GuidedDenoiseSelections,
+): DenoiseRunInput {
   const trimmedMacro =
     s.maybeAudacityMacro === undefined
       ? undefined
@@ -56,8 +62,8 @@ function selectionsToCleanRunInput(s: GuidedCleanSelections): CleanRunInput {
   };
 }
 
-async function defaultCollectSelections(): Promise<GuidedCleanSelections | null> {
-  intro("av-denoiser guided clean");
+async function defaultCollectSelections(): Promise<GuidedDenoiseSelections | null> {
+  intro("av-denoiser guided denoise");
 
   const inputRaw = await text({
     message: "Input media path",
@@ -277,9 +283,9 @@ async function defaultCollectSelections(): Promise<GuidedCleanSelections | null>
   };
 }
 
-async function defaultAskRunClean(): Promise<boolean | null> {
+async function defaultAskRunDenoise(): Promise<boolean | null> {
   const answer = await confirm({
-    message: "Run clean now (writes output)?",
+    message: "Run denoise now (writes output)?",
     initialValue: true,
   });
 
@@ -290,10 +296,10 @@ async function defaultAskRunClean(): Promise<boolean | null> {
   return answer;
 }
 
-export async function runGuidedCleanRequest(
-  deps: Partial<GuidedCleanDeps> = {},
+export async function runGuidedDenoiseRequest(
+  deps: Partial<GuidedDenoiseDeps> = {},
 ): Promise<CliCommandOutcome> {
-  const runClean = deps.runClean ?? runCleanRequest;
+  const runDenoise = deps.runDenoise ?? runDenoiseRequest;
   const tty =
     deps.isTTY ??
     (typeof process !== "undefined" && process.stdin.isTTY === true);
@@ -304,7 +310,7 @@ export async function runGuidedCleanRequest(
       reason: {
         kind: "planning-failure",
         message:
-          "Guided workflow requires an interactive TTY (stdin is not a TTY). Use av-denoiser clean with explicit flags instead.",
+          "Guided workflow requires an interactive TTY (stdin is not a TTY). Use av-denoiser denoise with explicit flags instead.",
       },
     };
   }
@@ -321,24 +327,27 @@ export async function runGuidedCleanRequest(
     };
   }
 
-  const previewOutcome = await runClean(
-    selectionsToCleanRunInput({ ...collected, dryRun: true }),
+  const previewOutcome = await runDenoise(
+    selectionsToDenoiseRunInput({ ...collected, dryRun: true }),
   );
 
-  if (previewOutcome.kind !== "success" || previewOutcome.clean === undefined) {
+  if (
+    previewOutcome.kind !== "success" ||
+    previewOutcome.denoise === undefined
+  ) {
     return previewOutcome;
   }
 
-  let transcript = renderCleanPlanText(previewOutcome.clean);
+  let transcript = renderDenoisePlanText(previewOutcome.denoise);
 
-  const replaySelections: GuidedCleanSelections = {
+  const replaySelections: GuidedDenoiseSelections = {
     ...collected,
     dryRun: false,
   };
 
-  transcript += `\n\nEquivalent command:\n${argvTokensForEquivalentClean(replaySelections).join(" ")}\n`;
+  transcript += `\n\nEquivalent command:\n${argvTokensForEquivalentDenoise(replaySelections).join(" ")}\n`;
 
-  const ask = deps.askRunClean ?? defaultAskRunClean;
+  const ask = deps.askRunDenoise ?? defaultAskRunDenoise;
   const decision = await ask();
 
   if (decision === null) {
@@ -357,16 +366,16 @@ export async function runGuidedCleanRequest(
 
   const spin = spinner();
 
-  spin.start("Cleaning…");
+  spin.start("Denoising…");
 
-  let executeOutcome: CleanCliOutcome;
+  let executeOutcome: DenoiseCliOutcome;
   let okForSpinner = false;
   let lastSpinnerFfmpegAt = 0;
   const ffmpegSpinThrottleMs = 220;
 
   try {
-    executeOutcome = await runClean(
-      selectionsToCleanRunInput({ ...collected, dryRun: false }),
+    executeOutcome = await runDenoise(
+      selectionsToDenoiseRunInput({ ...collected, dryRun: false }),
       {
         reportProgress: (event) => {
           if (event.kind === "ffmpeg") {
@@ -385,22 +394,25 @@ export async function runGuidedCleanRequest(
     );
     okForSpinner = executeOutcome.kind === "success";
   } finally {
-    spin.stop(okForSpinner ? "Finished clean." : "Stopped.");
+    spin.stop(okForSpinner ? "Finished denoise pass." : "Stopped.");
   }
 
-  if (executeOutcome.kind !== "success" || executeOutcome.clean === undefined) {
+  if (
+    executeOutcome.kind !== "success" ||
+    executeOutcome.denoise === undefined
+  ) {
     return executeOutcome;
   }
 
-  transcript += `\n---\n\n${renderCleanPlanText(executeOutcome.clean)}`;
+  transcript += `\n---\n\n${renderDenoisePlanText(executeOutcome.denoise)}`;
 
-  if (executeOutcome.clean.maybeReportText !== undefined) {
-    transcript += `\n${executeOutcome.clean.maybeReportText}`;
+  if (executeOutcome.denoise.maybeReportText !== undefined) {
+    transcript += `\n${executeOutcome.denoise.maybeReportText}`;
   }
 
   return {
     kind: "success",
-    clean: executeOutcome.clean,
+    denoise: executeOutcome.denoise,
     guidedHumanSummary: transcript,
   };
 }

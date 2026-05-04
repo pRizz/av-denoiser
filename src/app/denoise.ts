@@ -22,7 +22,7 @@ import {
 } from "../domain/audio-pipeline-argv";
 import {
   applyIntegrationsToLogicalSteps,
-  type CleanPresetKnobs,
+  type DenoisePresetKnobs,
   expandPreset,
   type LadspaIntegration,
   type LogicalPipelineStep,
@@ -31,23 +31,23 @@ import {
   presetRequiresDemucs,
   presetRequiresSox,
 } from "../domain/audio-pipeline-plan";
-import { verifyCleanOutput } from "../domain/clean-output-verify";
+import type { CommandOutcome } from "../domain/command-outcome";
+import { verifyDenoiseOutput } from "../domain/denoise-output-verify";
 import {
-  type CleanProgressBatch,
-  type CleanProgressEvent,
-  cleanProgressEventToJson,
+  type DenoiseProgressBatch,
+  type DenoiseProgressEvent,
+  denoiseProgressEventToJson,
   labelForLogicalStep,
   parseFfmpegStatusLine,
   probeDurationSeconds,
   videoExtractStepLabel,
   videoRemuxStepLabel,
-} from "../domain/clean-progress";
+} from "../domain/denoise-progress";
 import {
-  type CleanRunReport,
+  type DenoiseRunReport,
   labelsForDroppedStreams,
-  renderCleanRunReportText,
-} from "../domain/clean-run-report";
-import type { CommandOutcome } from "../domain/command-outcome";
+  renderDenoiseRunReportText,
+} from "../domain/denoise-run-report";
 import { resolveDidYouMeanMediaPath } from "../domain/input-path-hint";
 import type { MediaProbe } from "../domain/media-probe";
 import {
@@ -68,20 +68,20 @@ import {
   buildExtractPrimaryAudioWavCommand,
   buildRemuxVideoWithProcessedAudioCommand,
   plannedContainerForVideoRemux,
-} from "../domain/video-clean-argv";
+} from "../domain/video-denoise-argv";
 
 import { describeFfprobeFailure, describePathFailure } from "./inspect";
 
-export const MAX_CLEAN_STDERR_SNIPPET = 500;
+export const MAX_DENOISE_STDERR_SNIPPET = 500;
 
-export type CleanRunInput = {
+export type DenoiseRunInput = {
   readonly inputPath: string;
   readonly maybeOutputPath?: string;
   readonly force: boolean;
   readonly dryRun: boolean;
   readonly json: boolean;
   readonly presetId: PresetId;
-  readonly knobs: CleanPresetKnobs;
+  readonly knobs: DenoisePresetKnobs;
   readonly allowVideoReencode: boolean;
   /** Opt-in Audacity mod-script-pipe macro (`--audacity-macro`); requires `acceptAudacityPipeRisk`. */
   readonly maybeAudacityMacro?: string;
@@ -90,12 +90,12 @@ export type CleanRunInput = {
   readonly maybeLadspa?: LadspaIntegration;
 };
 
-export type CleanStepSummary = {
+export type DenoiseStepSummary = {
   readonly tool: string;
   readonly displayCommand: string;
 };
 
-export type CleanPlanSummary = {
+export type DenoisePlanSummary = {
   readonly presetId: PresetId;
   readonly inputPath: string;
   readonly outputPath: string;
@@ -104,21 +104,21 @@ export type CleanPlanSummary = {
   readonly plannedAudioCodec: PlannedAudioCodec | null;
   readonly reasonCodes: readonly string[];
   readonly pipelineWarnings: readonly PipelineWarning[];
-  readonly steps: readonly CleanStepSummary[];
+  readonly steps: readonly DenoiseStepSummary[];
 };
 
-export type CleanCliSuccess = {
+export type DenoiseCliSuccess = {
   readonly json: boolean;
   readonly dryRun: boolean;
-  readonly summary: CleanPlanSummary;
+  readonly summary: DenoisePlanSummary;
   readonly maybeReportText?: string;
 };
 
-export type CleanCliOutcome = CommandOutcome & {
-  readonly clean?: CleanCliSuccess;
+export type DenoiseCliOutcome = CommandOutcome & {
+  readonly denoise?: DenoiseCliSuccess;
 };
 
-export type CleanDeps = {
+export type DenoiseDeps = {
   readonly cwd: string;
   readonly maybeWhich: (name: string) => string | null;
   readonly runProcess: ProcessRunner;
@@ -130,9 +130,9 @@ export type CleanDeps = {
   /**
    * When running inside `batch`, included on every progress event and in NDJSON lines.
    */
-  readonly maybeBatchJob?: CleanProgressBatch;
+  readonly maybeBatchJob?: DenoiseProgressBatch;
   /** Milestones, per-step labels, and FFmpeg stderr ticks during non–dry-run execution. */
-  readonly reportProgress?: (event: CleanProgressEvent) => void;
+  readonly reportProgress?: (event: DenoiseProgressEvent) => void;
   readonly audacityPipes?: AudacityPipePaths;
 };
 
@@ -197,7 +197,7 @@ function mapProcessFailure(
   }
 
   const stderr = result.stderr.trim();
-  const cap = MAX_CLEAN_STDERR_SNIPPET;
+  const cap = MAX_DENOISE_STDERR_SNIPPET;
   const snippet = stderr.length <= cap ? stderr : `${stderr.slice(0, cap)}…`;
 
   return `${label}: exited with code ${result.exitCode}: ${snippet}`;
@@ -206,20 +206,20 @@ function mapProcessFailure(
 const NDJSON_THROTTLE_MS = 280;
 
 function enrichProgressEvent(
-  event: CleanProgressEvent,
-  batch?: CleanProgressBatch,
-): CleanProgressEvent {
+  event: DenoiseProgressEvent,
+  batch?: DenoiseProgressBatch,
+): DenoiseProgressEvent {
   if (batch === undefined) {
     return event;
   }
 
-  return { ...event, batch } as CleanProgressEvent;
+  return { ...event, batch } as DenoiseProgressEvent;
 }
 
 function buildProgressEmitter(
-  request: CleanRunInput,
-  deps: Partial<CleanDeps>,
-): ((event: CleanProgressEvent) => void) | undefined {
+  request: DenoiseRunInput,
+  deps: Partial<DenoiseDeps>,
+): ((event: DenoiseProgressEvent) => void) | undefined {
   const wantsNdjson = request.json === true && request.dryRun === false;
   const hasConsumer = deps.reportProgress !== undefined || wantsNdjson;
 
@@ -230,7 +230,7 @@ function buildProgressEmitter(
   const batchCtx = deps.maybeBatchJob;
   let lastFfmpegJsonAt = 0;
 
-  return (event: CleanProgressEvent) => {
+  return (event: DenoiseProgressEvent) => {
     const e = enrichProgressEvent(event, batchCtx);
     deps.reportProgress?.(e);
 
@@ -248,7 +248,7 @@ function buildProgressEmitter(
       console.error(
         JSON.stringify({
           type: "av-denoiser-progress",
-          ...cleanProgressEventToJson(e),
+          ...denoiseProgressEventToJson(e),
         }),
       );
     }
@@ -256,7 +256,7 @@ function buildProgressEmitter(
 }
 
 function createFfmpegStderrHandler(
-  emitProgress: (event: CleanProgressEvent) => void,
+  emitProgress: (event: DenoiseProgressEvent) => void,
   durationSec: number | undefined,
 ): (line: string) => void {
   return (line: string) => {
@@ -298,7 +298,7 @@ async function runTrackedProcess(params: {
 
 type StepElapsedRef = { ms?: number };
 
-function isVideoCleanModality(
+function isVideoDenoiseModality(
   plan: ExecutableOutputPlan,
 ): plan is ExecutableOutputPlan & {
   readonly modality: "video-copy-safe" | "fallback-required";
@@ -320,8 +320,8 @@ function buildStepSummariesFromLogicalSteps(params: {
   readonly finalDeliverablePath: string;
   readonly demucsExecutable: string;
   readonly demucsModulePrefix: readonly string[];
-}): { readonly steps: readonly CleanStepSummary[] } {
-  const summaries: CleanStepSummary[] = [];
+}): { readonly steps: readonly DenoiseStepSummary[] } {
+  const summaries: DenoiseStepSummary[] = [];
   let inputPathForStep = params.bootstrapIntermediatePath;
 
   for (let i = 0; i < params.logicalSteps.length; i++) {
@@ -416,7 +416,7 @@ function buildAudioOnlyStepSummaries(params: {
   readonly tempDirForPreview: string;
   readonly demucsExecutable: string;
   readonly demucsModulePrefix: readonly string[];
-}): { readonly steps: readonly CleanStepSummary[] } {
+}): { readonly steps: readonly DenoiseStepSummary[] } {
   return buildStepSummariesFromLogicalSteps({
     logicalSteps: params.logicalSteps,
     probe: params.probe,
@@ -446,12 +446,12 @@ async function runSequentialPipeline(params: {
   readonly demucsExecutable: string;
   readonly demucsModulePrefix: readonly string[];
   readonly audacityPipes?: AudacityPipePaths;
-  readonly emitProgress?: (event: CleanProgressEvent) => void;
+  readonly emitProgress?: (event: DenoiseProgressEvent) => void;
   readonly stepTotal: number;
   readonly stepIndexOffset: number;
   readonly maybeMediaDurationSec?: number;
   readonly previousStepElapsedRef: StepElapsedRef;
-}): Promise<CleanCliOutcome | null> {
+}): Promise<DenoiseCliOutcome | null> {
   let inputPathForStep = params.bootstrapIntermediatePath;
   const offset = params.stepIndexOffset;
 
@@ -611,7 +611,7 @@ async function runSequentialPipeline(params: {
   return null;
 }
 
-async function finalizeCleanSuccess(params: {
+async function finalizeDenoiseSuccess(params: {
   readonly outputPath: string;
   readonly inputProbe: MediaProbe;
   readonly ffprobePath: string;
@@ -620,10 +620,10 @@ async function finalizeCleanSuccess(params: {
   readonly outputFileSize: (p: string) => number;
   readonly plannedModality: ExecutableOutputPlan["modality"];
   readonly claimedVideoCopied: boolean;
-  readonly baseSuccess: CleanCliSuccess;
-  readonly report: Omit<CleanRunReport, "verificationOk">;
-  readonly emitProgress?: (event: CleanProgressEvent) => void;
-}): Promise<CleanCliOutcome> {
+  readonly baseSuccess: DenoiseCliSuccess;
+  readonly report: Omit<DenoiseRunReport, "verificationOk">;
+  readonly emitProgress?: (event: DenoiseProgressEvent) => void;
+}): Promise<DenoiseCliOutcome> {
   const outProbe = await runFfprobeProbe({
     ffprobePath: params.ffprobePath,
     inputPath: params.outputPath,
@@ -659,7 +659,7 @@ async function finalizeCleanSuccess(params: {
 
   params.emitProgress?.({ kind: "verify" });
 
-  const verify = verifyCleanOutput({
+  const verify = verifyDenoiseOutput({
     outputPath: params.outputPath,
     outputExists: params.outputExists,
     outputFileSize: () => measuredSize,
@@ -676,29 +676,29 @@ async function finalizeCleanSuccess(params: {
 
   const verificationOk = verify.kind === "ok";
 
-  const fullReport: CleanRunReport = {
+  const fullReport: DenoiseRunReport = {
     ...params.report,
     verificationOk,
   };
 
   const reportText =
     verify.kind === "failure"
-      ? `${renderCleanRunReportText(fullReport).trimEnd()}\nVerify: ${verify.detail}\n`
-      : renderCleanRunReportText(fullReport);
+      ? `${renderDenoiseRunReportText(fullReport).trimEnd()}\nVerify: ${verify.detail}\n`
+      : renderDenoiseRunReportText(fullReport);
 
   return {
     kind: "success",
-    clean: {
+    denoise: {
       ...params.baseSuccess,
       maybeReportText: reportText,
     },
   };
 }
 
-export async function runCleanRequest(
-  request: CleanRunInput,
-  deps: Partial<CleanDeps> = {},
-): Promise<CleanCliOutcome> {
+export async function runDenoiseRequest(
+  request: DenoiseRunInput,
+  deps: Partial<DenoiseDeps> = {},
+): Promise<DenoiseCliOutcome> {
   const cwd = deps.cwd ?? process.cwd();
   const maybeWhich = deps.maybeWhich ?? ((name: string) => Bun.which(name));
   const runProcess = deps.runProcess ?? runProcessCommand;
@@ -813,7 +813,7 @@ export async function runCleanRequest(
       reason: {
         kind: "invalid-input",
         message:
-          "Unsupported input for clean. Run av-denoiser inspect to review this file and confirm modality before processing.",
+          "Unsupported input for denoising. Run av-denoiser inspect to review this file and confirm modality before processing.",
       },
     };
   }
@@ -824,7 +824,7 @@ export async function runCleanRequest(
       reason: {
         kind: "fallback-required",
         message:
-          "This plan needs video re-encoding; keeping the video as-is (stream copy) is not available. Run av-denoiser clean with --allow-video-reencode (or av-denoiser inspect with --allow-video-reencode to preview).",
+          "This plan needs video re-encoding; keeping the video as-is (stream copy) is not available. Run av-denoiser denoise with --allow-video-reencode (or av-denoiser inspect with --allow-video-reencode to preview).",
       },
     };
   }
@@ -904,11 +904,11 @@ export async function runCleanRequest(
   const logicalSteps = mergedSteps.steps;
   const { warnings: pipelineWarnings } = expanded;
 
-  const previewDir = join(cwd, "av-denoiser-clean-preview");
+  const previewDir = join(cwd, "av-denoiser-denoise-preview");
 
-  let stepSummaries: readonly CleanStepSummary[];
+  let stepSummaries: readonly DenoiseStepSummary[];
 
-  if (isVideoCleanModality(executablePlan)) {
+  if (isVideoDenoiseModality(executablePlan)) {
     const audioMeta = audioLayoutForStream(
       probeResult.value,
       executablePlan.selectedAudioStreamIndex,
@@ -932,7 +932,7 @@ export async function runCleanRequest(
       outputWavPath: extractPathPreview,
     });
 
-    const extractSummary: CleanStepSummary =
+    const extractSummary: DenoiseStepSummary =
       extractBuilt.kind === "created"
         ? {
             tool: "ffmpeg",
@@ -977,7 +977,7 @@ export async function runCleanRequest(
           : "copy",
     });
 
-    const remuxSummary: CleanStepSummary =
+    const remuxSummary: DenoiseStepSummary =
       remuxBuilt.kind === "created"
         ? {
             tool: "ffmpeg",
@@ -1002,7 +1002,7 @@ export async function runCleanRequest(
     }).steps;
   }
 
-  const summary: CleanPlanSummary = {
+  const summary: DenoisePlanSummary = {
     presetId: request.presetId,
     inputPath: request.inputPath,
     outputPath: executablePlan.resolvedOutputPath,
@@ -1014,7 +1014,7 @@ export async function runCleanRequest(
     steps: stepSummaries,
   };
 
-  const baseDrySuccess: CleanCliSuccess = {
+  const baseDrySuccess: DenoiseCliSuccess = {
     json: request.json,
     dryRun: request.dryRun,
     summary,
@@ -1023,14 +1023,14 @@ export async function runCleanRequest(
   if (request.dryRun) {
     return {
       kind: "success",
-      clean: baseDrySuccess,
+      denoise: baseDrySuccess,
     };
   }
 
   let tempRoot: string;
 
   try {
-    tempRoot = mkdtemp("av-denoiser-clean-");
+    tempRoot = mkdtemp("av-denoiser-denoise-");
   } catch (error: unknown) {
     return {
       kind: "failure",
@@ -1051,7 +1051,7 @@ export async function runCleanRequest(
 
     emitProgress?.({ kind: "probe" });
 
-    if (isVideoCleanModality(executablePlan)) {
+    if (isVideoDenoiseModality(executablePlan)) {
       const audioMeta = audioLayoutForStream(
         probeResult.value,
         executablePlan.selectedAudioStreamIndex,
@@ -1219,7 +1219,7 @@ export async function runCleanRequest(
       const isVideoFallbackRemux =
         executablePlan.modality === "fallback-required";
 
-      return await finalizeCleanSuccess({
+      return await finalizeDenoiseSuccess({
         outputPath: executablePlan.resolvedOutputPath,
         inputProbe: probeResult.value,
         ffprobePath,
@@ -1277,7 +1277,7 @@ export async function runCleanRequest(
 
     executionOk = true;
 
-    return await finalizeCleanSuccess({
+    return await finalizeDenoiseSuccess({
       outputPath: audioOnlyPlan.resolvedOutputPath,
       inputProbe: probeResult.value,
       ffprobePath,

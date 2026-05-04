@@ -1,4 +1,4 @@
-import type { GuidedCleanSelections } from "./guided-clean-selection";
+import type { GuidedDenoiseSelections } from "./guided-denoise-selection";
 import { cliName } from "./product";
 
 /** Quote a segment for argv display — spawn-safe tokens when parsed back via Commander. */
@@ -11,14 +11,14 @@ export function quoteArgvSegment(segment: string): string {
 }
 
 /**
- * Builds argv tokens equivalent to `av-denoiser clean …` for replay (`parseCliRequest` uses `slice(1)`).
+ * Builds argv tokens equivalent to `av-denoiser denoise …` for replay (`parseCliRequest` uses `slice(1)`).
  */
-export function argvTokensForEquivalentClean(
-  selections: GuidedCleanSelections,
+export function argvTokensForEquivalentDenoise(
+  selections: GuidedDenoiseSelections,
 ): readonly string[] {
   const tokens: string[] = [
     cliName,
-    "clean",
+    "denoise",
     quoteArgvSegment(selections.inputPath),
   ];
 

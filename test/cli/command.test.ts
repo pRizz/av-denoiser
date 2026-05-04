@@ -2,11 +2,11 @@ import { expect, test } from "bun:test";
 
 import { parseCliRequest, runCli } from "../../src/cli/main";
 import { ExitCode } from "../../src/domain/exit-codes";
-import { argvTokensForEquivalentClean } from "../../src/domain/guided-clean-equivalent";
-import type { GuidedCleanSelections } from "../../src/domain/guided-clean-selection";
+import { argvTokensForEquivalentDenoise } from "../../src/domain/guided-denoise-equivalent";
+import type { GuidedDenoiseSelections } from "../../src/domain/guided-denoise-selection";
 
-test("argvTokensForEquivalentClean round-trips through parseCliRequest", () => {
-  const selections: GuidedCleanSelections = {
+test("argvTokensForEquivalentDenoise round-trips through parseCliRequest", () => {
+  const selections: GuidedDenoiseSelections = {
     inputPath: "fixture.wav",
     force: false,
     dryRun: false,
@@ -16,11 +16,11 @@ test("argvTokensForEquivalentClean round-trips through parseCliRequest", () => {
     acceptAudacityPipeRisk: false,
   };
 
-  const tokens = argvTokensForEquivalentClean(selections);
+  const tokens = argvTokensForEquivalentDenoise(selections);
   const parsed = parseCliRequest([...tokens.slice(1)]);
 
   expect(parsed).toEqual({
-    kind: "clean",
+    kind: "denoise",
     inputPath: "fixture.wav",
     maybeOutputPath: undefined,
     force: false,
@@ -33,8 +33,8 @@ test("argvTokensForEquivalentClean round-trips through parseCliRequest", () => {
   });
 });
 
-test("argvTokensForEquivalentClean round-trip with optional integrations", () => {
-  const selections: GuidedCleanSelections = {
+test("argvTokensForEquivalentDenoise round-trip with optional integrations", () => {
+  const selections: GuidedDenoiseSelections = {
     inputPath: "fixture.wav",
     force: false,
     dryRun: false,
@@ -50,11 +50,11 @@ test("argvTokensForEquivalentClean round-trip with optional integrations", () =>
     },
   };
 
-  const tokens = argvTokensForEquivalentClean(selections);
+  const tokens = argvTokensForEquivalentDenoise(selections);
   const parsed = parseCliRequest([...tokens.slice(1)]);
 
   expect(parsed).toEqual({
-    kind: "clean",
+    kind: "denoise",
     inputPath: "fixture.wav",
     maybeOutputPath: undefined,
     force: false,
@@ -73,39 +73,44 @@ test("argvTokensForEquivalentClean round-trip with optional integrations", () =>
   });
 });
 
-test("parses clean dry-run with default speech-light preset", () => {
-  expect(parseCliRequest(["clean", "--dry-run", "clip.wav"])).toMatchObject({
-    kind: "clean",
+test("parses denoise dry-run with default speech-light preset", () => {
+  expect(parseCliRequest(["denoise", "--dry-run", "clip.wav"])).toMatchObject({
+    kind: "denoise",
     presetId: "speech-light",
   });
 });
 
-test("parses clean --preset speech-soft-sox", () => {
+test("parses denoise --preset speech-soft-sox", () => {
   expect(
     parseCliRequest([
-      "clean",
+      "denoise",
       "--dry-run",
       "--preset",
       "speech-soft-sox",
       "clip.wav",
     ]),
   ).toMatchObject({
-    kind: "clean",
+    kind: "denoise",
     presetId: "speech-soft-sox",
   });
 });
 
-test("invalid clean --noise-strength exits invalidInput via runCli", async () => {
-  const code = await runCli(["clean", "clip.wav", "--noise-strength", "2"]);
+test("invalid denoise --noise-strength exits invalidInput via runCli", async () => {
+  const code = await runCli(["denoise", "clip.wav", "--noise-strength", "2"]);
 
   expect(code).toBe(ExitCode.invalidInput);
 });
 
-test("parses clean --allow-video-reencode", () => {
+test("parses denoise --allow-video-reencode", () => {
   expect(
-    parseCliRequest(["clean", "--dry-run", "--allow-video-reencode", "in.mp4"]),
+    parseCliRequest([
+      "denoise",
+      "--dry-run",
+      "--allow-video-reencode",
+      "in.mp4",
+    ]),
   ).toMatchObject({
-    kind: "clean",
+    kind: "denoise",
     allowVideoReencode: true,
   });
 });

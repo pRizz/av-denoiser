@@ -29,11 +29,11 @@ import {
   planMediaOutputPrelude,
 } from "../domain/output-plan";
 import {
-  type CleanCliOutcome,
-  type CleanDeps,
-  type CleanRunInput,
-  runCleanRequest,
-} from "./clean";
+  type DenoiseCliOutcome,
+  type DenoiseDeps,
+  type DenoiseRunInput,
+  runDenoiseRequest,
+} from "./denoise";
 import { describeFfprobeFailure } from "./inspect";
 
 export type BatchCliPayload = {
@@ -44,12 +44,12 @@ export type BatchCliPayload = {
 
 export type BatchOrchestratorDeps = {
   readonly discoverTools?: () => Promise<DoctorReport>;
-  readonly clean?: Partial<CleanDeps>;
+  readonly denoise?: Partial<DenoiseDeps>;
   readonly batch?: {
-    readonly runClean?: (
-      input: CleanRunInput,
-      deps?: Partial<CleanDeps>,
-    ) => Promise<CleanCliOutcome>;
+    readonly runDenoise?: (
+      input: DenoiseRunInput,
+      deps?: Partial<DenoiseDeps>,
+    ) => Promise<DenoiseCliOutcome>;
   };
 };
 
@@ -68,13 +68,13 @@ function manifestItemSkipped(
   };
 }
 
-function manifestItemFromCleanOutcome(
-  outcome: CleanCliOutcome,
+function manifestItemFromDenoiseOutcome(
+  outcome: DenoiseCliOutcome,
   inputPath: string,
   resolvedOutputPath: string,
 ): BatchManifestItemV1 {
-  if (outcome.kind === "success" && outcome.clean !== undefined) {
-    const summary = outcome.clean.summary;
+  if (outcome.kind === "success" && outcome.denoise !== undefined) {
+    const summary = outcome.denoise.summary;
 
     return {
       inputPath,
@@ -151,14 +151,14 @@ export async function runBatchRequest(
     readonly batch?: BatchCliPayload;
   }
 > {
-  const cwd = deps.clean?.cwd ?? process.cwd();
+  const cwd = deps.denoise?.cwd ?? process.cwd();
   const outputExists =
-    deps.clean?.outputExists ?? ((p: string) => existsSync(p));
+    deps.denoise?.outputExists ?? ((p: string) => existsSync(p));
 
-  const runClean =
-    deps.batch?.runClean ??
-    ((input: CleanRunInput, cleanDeps?: Partial<CleanDeps>) =>
-      runCleanRequest(input, cleanDeps));
+  const runDenoise =
+    deps.batch?.runDenoise ??
+    ((input: DenoiseRunInput, denoiseDeps?: Partial<DenoiseDeps>) =>
+      runDenoiseRequest(input, denoiseDeps));
 
   let expanded: readonly string[];
 
@@ -196,8 +196,8 @@ export async function runBatchRequest(
   }
 
   const maybeWhich =
-    deps.clean?.maybeWhich ?? ((name: string) => Bun.which(name));
-  const runProcess = deps.clean?.runProcess ?? runProcessCommand;
+    deps.denoise?.maybeWhich ?? ((name: string) => Bun.which(name));
+  const runProcess = deps.denoise?.runProcess ?? runProcessCommand;
   const ffprobePath = maybeWhich("ffprobe");
 
   if (ffprobePath === null) {
@@ -300,7 +300,7 @@ export async function runBatchRequest(
       return;
     }
 
-    const outcome = await runClean(
+    const outcome = await runDenoise(
       {
         inputPath: pair.inputPath,
         maybeOutputPath: pair.resolvedOutputPath,
@@ -315,13 +315,13 @@ export async function runBatchRequest(
         maybeLadspa: request.maybeLadspa,
       },
       {
-        ...deps.clean,
+        ...deps.denoise,
         maybeBatchJob: { index: index + 1, total: n },
       },
     );
 
     codes[index] = mapOutcomeToExitCode(outcome);
-    items[index] = manifestItemFromCleanOutcome(
+    items[index] = manifestItemFromDenoiseOutcome(
       outcome,
       pair.inputPath,
       pair.resolvedOutputPath,

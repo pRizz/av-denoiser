@@ -1,6 +1,6 @@
 import { Command } from "@commander-js/extra-typings";
 import {
-  DEFAULT_CLEAN_PRESET_ID,
+  DEFAULT_DENOISE_PRESET_ID,
   type LadspaIntegration,
   parseLadspaCliTriple,
   parsePresetId,
@@ -24,7 +24,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
   const program = new Command()
     .name(cliName)
     .description(
-      "Clean noisy audio in local media files through a safe typed pipeline",
+      "Denoise noisy audio in local media files through a safe typed pipeline",
     )
     .showHelpAfterError();
 
@@ -74,10 +74,10 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
   program
     .command("guided")
     .description(
-      "Interactive guided clean workflow with prompts and an equivalent flags summary",
+      "Interactive guided denoise workflow with prompts and an equivalent flags summary",
     )
     .action(() => {
-      handleRequest({ kind: "guided-clean" });
+      handleRequest({ kind: "guided-denoise" });
     });
 
   program
@@ -116,9 +116,9 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
     );
 
   program
-    .command("clean")
+    .command("denoise")
     .description(
-      "Run preset cleanup on audio, or on video when inspect says the video can stay as-is (stream copy) or you allow re-encoding via --allow-video-reencode",
+      "Run preset denoise pipeline on audio, or on video when inspect says the video can stay as-is (stream copy) or you allow re-encoding via --allow-video-reencode",
     )
     .argument("<input>", "Path to the input audio or video file")
     .option("-o, --output <path>", "Explicit output path (optional)")
@@ -131,13 +131,13 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
     .option("--json", "Print machine-readable JSON instead of text", false)
     .option(
       "--allow-video-reencode",
-      "When stream-copy is not possible for video: allow cleaning by re-encoding video to HEVC (libx265) to MP4—slower than keeping video as-is.",
+      "When stream-copy is not possible for video: allow denoising by re-encoding video to HEVC (libx265) to MP4—slower than keeping video as-is.",
       false,
     )
     .option(
       "--preset <id>",
       "Preset id (speech-light | speech-soft-sox | speech-vocals-demucs)",
-      DEFAULT_CLEAN_PRESET_ID,
+      DEFAULT_DENOISE_PRESET_ID,
     )
     .option(
       "--noise-strength <0..1>",
@@ -178,7 +178,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
           ladspaControls?: string;
         },
       ) => {
-        const rawPreset = options.preset ?? DEFAULT_CLEAN_PRESET_ID;
+        const rawPreset = options.preset ?? DEFAULT_DENOISE_PRESET_ID;
         const presetId = parsePresetId(rawPreset);
 
         if (presetId === null) {
@@ -190,7 +190,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
         const integrations = integrationFieldsFromCliOptions(options);
 
         handleRequest({
-          kind: "clean",
+          kind: "denoise",
           inputPath: input,
           maybeOutputPath: options.output,
           force: Boolean(options.force),
@@ -207,7 +207,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
   program
     .command("batch")
     .description(
-      "Run preset cleanup on multiple media files with per-file outcomes and a batch manifest",
+      "Run preset denoise pipeline on multiple media files with per-file outcomes and a batch manifest",
     )
     .option(
       "-i, --input <path>",
@@ -235,20 +235,20 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
       "--manifest <path>",
       "Batch manifest JSON path (default: ./batch-manifest.json in cwd)",
     )
-    .option("--concurrency <n>", "Parallel clean jobs", "1")
+    .option("--concurrency <n>", "Parallel denoise jobs", "1")
     .option("--fail-fast", "Stop after the first failing file", false)
     .option("--force", "Allow overwriting existing outputs", false)
     .option("--dry-run", "Plan every file without invoking ffmpeg/sox", false)
     .option("--json", "Machine-readable batch summary on stdout", false)
     .option(
       "--allow-video-reencode",
-      "When stream-copy is not possible for video: allow batch cleans that re-encode video to HEVC (libx265); slower than stream-copy.",
+      "When stream-copy is not possible for video: allow batch jobs that re-encode video to HEVC (libx265); slower than stream-copy.",
       false,
     )
     .option(
       "--preset <id>",
       "Preset id (speech-light | speech-soft-sox | speech-vocals-demucs)",
-      DEFAULT_CLEAN_PRESET_ID,
+      DEFAULT_DENOISE_PRESET_ID,
     )
     .option(
       "--noise-strength <0..1>",
@@ -301,7 +301,7 @@ export function createCommandProgram(handleRequest: CliRequestHandler) {
           throw new Error("concurrency must be an integer >= 1");
         }
 
-        const rawPreset = options.preset ?? DEFAULT_CLEAN_PRESET_ID;
+        const rawPreset = options.preset ?? DEFAULT_DENOISE_PRESET_ID;
         const presetId = parsePresetId(rawPreset);
 
         if (presetId === null) {
@@ -393,7 +393,7 @@ export function resolveCliHelpTopicFromArgvToken(
     "install-deps": "install-tools",
     guided: "guided",
     inspect: "inspect",
-    clean: "clean",
+    denoise: "denoise",
     batch: "batch",
   };
 

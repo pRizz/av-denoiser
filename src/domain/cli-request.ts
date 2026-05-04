@@ -1,5 +1,5 @@
 import type {
-  CleanPresetKnobs,
+  DenoisePresetKnobs,
   LadspaIntegration,
   PresetId,
 } from "./audio-pipeline-plan";
@@ -10,7 +10,7 @@ export type CliHelpSubcommandTopic =
   | "install-tools"
   | "guided"
   | "inspect"
-  | "clean"
+  | "denoise"
   | "batch";
 
 export type CliRequest =
@@ -28,7 +28,7 @@ export type CliRequest =
       /** When true, run optional Demucs install (`uv tool install demucs`) without prompting (non-TTY). */
       readonly assumeYes: boolean;
     }
-  | { readonly kind: "guided-clean" }
+  | { readonly kind: "guided-denoise" }
   | {
       readonly kind: "inspect";
       readonly inputPath: string;
@@ -38,14 +38,14 @@ export type CliRequest =
       readonly allowVideoReencode: boolean;
     }
   | {
-      readonly kind: "clean";
+      readonly kind: "denoise";
       readonly inputPath: string;
       readonly maybeOutputPath?: string;
       readonly force: boolean;
       readonly dryRun: boolean;
       readonly json: boolean;
       readonly presetId: PresetId;
-      readonly knobs: CleanPresetKnobs;
+      readonly knobs: DenoisePresetKnobs;
       readonly allowVideoReencode: boolean;
       readonly acceptAudacityPipeRisk: boolean;
       readonly maybeAudacityMacro?: string;
@@ -65,7 +65,7 @@ export type CliRequest =
       readonly dryRun: boolean;
       readonly json: boolean;
       readonly presetId: PresetId;
-      readonly knobs: CleanPresetKnobs;
+      readonly knobs: DenoisePresetKnobs;
       readonly allowVideoReencode: boolean;
       readonly acceptAudacityPipeRisk: boolean;
       readonly maybeAudacityMacro?: string;

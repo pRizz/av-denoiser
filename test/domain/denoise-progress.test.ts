@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test";
 import { runProcessCommand } from "../../src/adapters/process-runner";
 import {
-  cleanProgressEventToJson,
+  denoiseProgressEventToJson,
   formatProgressForSpinner,
   labelForLogicalStep,
   parseFfmpegStatusLine,
   probeDurationSeconds,
   videoExtractStepLabel,
   videoRemuxStepLabel,
-} from "../../src/domain/clean-progress";
+} from "../../src/domain/denoise-progress";
 
 describe("parseFfmpegStatusLine", () => {
   test("parses time and speed from typical ffmpeg status", () => {
@@ -83,9 +83,9 @@ describe("formatProgressForSpinner", () => {
   });
 });
 
-describe("cleanProgressEventToJson", () => {
+describe("denoiseProgressEventToJson", () => {
   test("flattens batch into batchIndex fields", () => {
-    const j = cleanProgressEventToJson({
+    const j = denoiseProgressEventToJson({
       kind: "probe",
       batch: { index: 1, total: 4 },
     });

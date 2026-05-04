@@ -3,7 +3,7 @@ import type { ProcessRunner } from "./process-runner";
 
 const probeTimeoutMs = 8_000;
 
-/** Shared by doctor (`discoverTools`) and clean-time planning when LADSPA flags are used. */
+/** Shared by doctor (`discoverTools`) and denoise-time planning when LADSPA flags are used. */
 export async function probeFfmpegLadspaFilter(input: {
   readonly ffmpegPath: string;
   readonly runProcess: ProcessRunner;

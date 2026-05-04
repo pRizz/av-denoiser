@@ -4,7 +4,7 @@ import {
   buildExtractPrimaryAudioWavCommand,
   buildRemuxVideoCopyCommand,
   buildRemuxVideoWithProcessedAudioCommand,
-} from "../../src/domain/video-clean-argv";
+} from "../../src/domain/video-denoise-argv";
 
 describe("buildExtractPrimaryAudioWavCommand", () => {
   test("argv includes pcm_s16le extract sequence", () => {
