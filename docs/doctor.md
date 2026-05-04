@@ -15,6 +15,8 @@ On macOS, `bun run src/cli/main.ts install-tools` runs Homebrew to install **FFm
 
 If **`demucs`** is not found after **`uv tool install`**, ensure uv's tool bin directory is on PATH (often **`~/.local/bin`**) and open a new shell.
 
+Recent **torchaudio** builds call **`save_with_torchcodec`**, which requires the **`torchcodec`** package in the same environment as Demucs. If separation fails with **`TorchCodec is required for save_with_torchcodec`**, install it into the uv tool venv, for example: **`uv pip install --python ~/.local/share/uv/tools/demucs/bin/python torchcodec`** (adjust if your **`UV_TOOLS_DIR`** layout differs).
+
 **MLT (`melt`)** is not part of this install: Homebrew’s **`mlt`** formula depends on classic **`sox`**, which conflicts with **`sox_ng`**. Install **`melt`** separately only if you accept classic **`sox`** (for example after **`brew unlink sox_ng`**) or another workflow you control.
 
 ## Optional Tools
