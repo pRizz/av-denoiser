@@ -1,5 +1,6 @@
-import { normalize, resolve } from "node:path";
 import fg from "fast-glob";
+
+import { canonicalInputPath } from "../domain/output-path";
 
 /** Lowercase extensions scanned when `--from-dir` is used (recursive). */
 export const BATCH_FROM_DIR_EXTENSIONS = new Set([
@@ -30,7 +31,7 @@ export async function expandBatchInputs(
   }
 
   const absoluteExplicit = params.inputPaths.map((p) =>
-    normalize(resolve(params.cwd, p)),
+    canonicalInputPath(params.cwd, p),
   );
 
   const globResults: string[] = [];
@@ -53,7 +54,7 @@ export async function expandBatchInputs(
     params.maybeFromDir !== undefined &&
     params.maybeFromDir.trim().length > 0
   ) {
-    const root = normalize(resolve(params.cwd, params.maybeFromDir.trim()));
+    const root = canonicalInputPath(params.cwd, params.maybeFromDir);
     const hits = await fg("**/*", {
       cwd: root,
       absolute: true,

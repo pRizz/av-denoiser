@@ -1,13 +1,9 @@
-import {
-  basename,
-  dirname,
-  extname,
-  join,
-  normalize,
-  resolve,
-} from "node:path";
+import { basename, dirname, extname, join, normalize } from "node:path";
 
-import { DEFAULT_OUTPUT_SUFFIX_SEGMENT } from "./output-path";
+import {
+  canonicalInputPath,
+  DEFAULT_OUTPUT_SUFFIX_SEGMENT,
+} from "./output-path";
 
 export type AllocateBatchOutputPathsInput = {
   readonly cwd: string;
@@ -28,7 +24,7 @@ export function canonicalBatchResolvedInputPath(
   cwd: string,
   maybePath: string,
 ): string {
-  return normalize(resolve(cwd, maybePath.trim()));
+  return canonicalInputPath(cwd, maybePath);
 }
 
 /** Stem + media extension from the original input basename (`clip.m4a` → stem `clip`, `.m4a`). */

@@ -55,10 +55,34 @@ export type OutputPathFailure =
 
 export type ResolveOutputPathResult = OutputPathSuccess | OutputPathFailure;
 
-function canonicalPath(cwd: string, maybePath: string): string {
-  const trimmed = maybePath.trim();
+const MAX_SHELL_QUOTE_STRIP_ITERATIONS = 4;
 
-  return normalize(resolve(cwd, trimmed));
+/** Strips matching outer `'` or `"` pairs from pasted/drag-dropped paths (terminal shell escaping). */
+export function trimUserProvidedPathForResolve(raw: string): string {
+  let t = raw.trim();
+
+  for (let i = 0; i < MAX_SHELL_QUOTE_STRIP_ITERATIONS; i += 1) {
+    if (t.length < 2) {
+      break;
+    }
+
+    const open = t[0];
+    const close = t[t.length - 1];
+
+    if ((open === "'" && close === "'") || (open === '"' && close === '"')) {
+      t = t.slice(1, -1).trim();
+    } else {
+      break;
+    }
+  }
+
+  return t;
+}
+
+function canonicalPath(cwd: string, maybePath: string): string {
+  const cleaned = trimUserProvidedPathForResolve(maybePath);
+
+  return normalize(resolve(cwd, cleaned));
 }
 
 /** Absolute normalized input path; matches planning resolution used by `resolveOutputPath`. */

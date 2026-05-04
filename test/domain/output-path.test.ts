@@ -54,6 +54,23 @@ test("canonicalInputPath trims accidental whitespace from pasted paths", () => {
   expect(canonicalInputPath("/proj", "  clip.m4a  ")).toBe("/proj/clip.m4a");
 });
 
+test("canonicalInputPath strips shell-style quotes on absolute paths (drag-drop / paste)", () => {
+  expect(canonicalInputPath("/proj", "'/media/foo bar.mov'")).toBe(
+    "/media/foo bar.mov",
+  );
+  expect(canonicalInputPath("/proj", '"/media/foo.mov"')).toBe(
+    "/media/foo.mov",
+  );
+  expect(canonicalInputPath("/proj", "  '/media/spaced.m4a'  ")).toBe(
+    "/media/spaced.m4a",
+  );
+});
+
+test("canonicalInputPath strips quotes on relative paths and resolves against cwd", () => {
+  expect(canonicalInputPath("/proj", "'./clip.m4a'")).toBe("/proj/clip.m4a");
+  expect(canonicalInputPath("/proj", `"'./clip.m4a'"`)).toBe("/proj/clip.m4a");
+});
+
 test("resolveOutputPath derives clip.avdn.m4a from clip.m4a", () => {
   // Arrange
   const cwd = "/proj";
