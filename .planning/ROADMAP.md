@@ -168,6 +168,6 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 ## Next action
 
-Phase **06** gap closure is complete (**[01-VERIFICATION.md](phases/01-multi-container-output-model-path-derivation/01-VERIFICATION.md)**). Continue with **`/gsd-yolo-discuss 07`** or **`/gsd-plan-phase 07`** for **MULTI-03** feasibility vs requirements.
+Phase **07** — **MULTI-03** docs closure is complete (**narrowed REQ** — **VP9→WebM** pairing only; **[02-VERIFICATION.md](phases/02-feasibility-matrix-vp9-theora-extras/02-VERIFICATION.md)** addendum § **MULTI-03 alignment**). Continue with **`/gsd-plan-phase 08`** (remux pipeline trust / **MULTI-06**, **MULTI-07**) then **`/gsd-execute-phase 08`**.
 
 **Audit:** [.planning/v1.1-MILESTONE-AUDIT.md](v1.1-MILESTONE-AUDIT.md)

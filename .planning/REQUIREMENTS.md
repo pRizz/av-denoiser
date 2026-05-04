@@ -14,7 +14,7 @@ Each item maps one-to-one into the live roadmap phases.
 
 ### Stream-copy feasibility (VP9 / Theora)
 
-- [ ] **MULTI-03**: Lone **VP9** video + eligible audio qualifies for **`video-copy-safe`** against **WebM** and/or **Matroska** per matrix rows (`reasonCodes`, no silent optimism when gates fail).
+- [x] **MULTI-03**: Lone **VP9** video + eligible audio qualifies for **`video-copy-safe`** with **`plannedContainer: "webm"`** and **`video-copy-vp9-webm-v1`** (**reasonCodes**) when structural gates pass; **VP9** stream-copy into **Matroska** is **explicitly deferred** out of v1.1 (**no** **`video-copy-vp9-matroska-v1`** unless a future milestone implements/tests it). Gates that fail remain **`fallback-required`** with stable tokens (**no silent optimism**).
 - [x] **MULTI-04**: Lone **theora** video + eligible audio qualifies for **`video-copy-safe`** against **Matroska** (and optionally **WebM**) per documented matrix constraints.
 - [x] **MULTI-05**: **Additional popular codecs** (e.g. **VP8**) get explicit matrix rows (**allow**, **fallback**, or **`unsupported`**) — every observation must carry a stable **reason token**; defaults remain conservative when uncertain.
 
@@ -62,7 +62,7 @@ Defer unless explicitly scheduled:
 |-------------|-------|--------|
 | MULTI-01 | Phase 1 (verified Phase 6 gap closure) | Complete |
 | MULTI-02 | Phase 1 (verified Phase 6 gap closure) | Complete |
-| MULTI-03 | Phase 7 (gap closure) | Pending |
+| MULTI-03 | Phase 2 (verified Phase 7 gap closure) | Complete |
 | MULTI-04 | Phase 2 | Complete |
 | MULTI-05 | Phase 2 | Complete |
 | MULTI-06 | Phase 8 (gap closure) | Pending |
@@ -74,7 +74,7 @@ Defer unless explicitly scheduled:
 | MULTI-12 | Phase 9 (gap closure) | Pending |
 | MULTI-13 | Phase 9 (gap closure) | Pending |
 
-**Coverage:** **13**/13 v1.1 IDs mapped — **6** **Complete** (**MULTI-01**, **MULTI-02** via [01-VERIFICATION.md](phases/01-multi-container-output-model-path-derivation/01-VERIFICATION.md); **MULTI-04**, **MULTI-05** via Phase **02**); **7** **Pending** in gap-closure Phases **07–09** (see [v1.1-MILESTONE-AUDIT.md](v1.1-MILESTONE-AUDIT.md)).
+**Coverage:** **13**/13 v1.1 IDs mapped — **5** **Complete** (**MULTI-01**, **MULTI-02** via [01-VERIFICATION.md](phases/01-multi-container-output-model-path-derivation/01-VERIFICATION.md); **MULTI-03** via Phase **07** docs closure anchored in [**02-VERIFICATION.md** — MULTI-03 alignment](phases/02-feasibility-matrix-vp9-theora-extras/02-VERIFICATION.md); **MULTI-04**, **MULTI-05** via Phase **02**); **8** **Pending** in gap-closure Phases **08–09** (**MULTI-06**–**MULTI-13**) (see [v1.1-MILESTONE-AUDIT.md](v1.1-MILESTONE-AUDIT.md)).
 
 ---
 

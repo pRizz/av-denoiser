@@ -6,7 +6,7 @@ generated_at: "2026-05-03T23:59:59.000Z"
 
 # Phase 02 verification — Feasibility matrix (VP9, Theora, extras)
 
-Automated verification: **`bun run verify`** (Biome, `tsc --noEmit`, **`bun test`**) — **221** tests passing at closure.
+Automated verification: **`bun run verify`** (Biome, `tsc --noEmit`, **`bun test`**) — **221** tests passing (**Phase 07** closure re-run confirms same count unless suite grows).
 
 ## Must-haves vs evidence
 
@@ -36,3 +36,9 @@ Plans address **MULTI-03**, **MULTI-04**, **MULTI-05** — trace rows in **`REQU
 ## Human verification
 
 None required (**`status: passed`** automated-only).
+
+## MULTI-03 alignment — Phase 07 gap closure (2026-05-03)
+
+- **MULTI-03** (**REQUIREMENTS.md**) reconciles with shipped matrix: **`planVideoStreamCopyFeasibility`** yields **`video-copy-safe`** only for lone **VP9** → **`plannedContainer: "webm"`** + **`video-copy-vp9-webm-v1`** (**`stream-copy-feasibility.ts`**, **`stream-copy-feasibility.test.ts`**).
+- **VP9 + Matroska** stream-copy is **not** part of v1.1 (**deferred backlog** — comment block in **`stream-copy-feasibility.ts`** unchanged).
+- **Automated regression at closure:** **`bun run verify`** — **221 pass** (**0 fail**) captured in Phase **07** execution.
