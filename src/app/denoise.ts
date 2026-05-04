@@ -32,6 +32,11 @@ import {
   presetRequiresSox,
 } from "../domain/audio-pipeline-plan";
 import type { CommandOutcome } from "../domain/command-outcome";
+import {
+  createExecutionTimingTracker,
+  type DenoiseExecutionTiming,
+  type ExecutionTimingTracker,
+} from "../domain/denoise-execution-timing";
 import { verifyDenoiseOutput } from "../domain/denoise-output-verify";
 import {
   type DenoiseProgressBatch,
@@ -112,6 +117,8 @@ export type DenoiseCliSuccess = {
   readonly dryRun: boolean;
   readonly summary: DenoisePlanSummary;
   readonly maybeReportText?: string;
+  /** Present after a successful non–dry-run execution (wall-clock phases + total). */
+  readonly maybeExecutionTiming?: DenoiseExecutionTiming;
 };
 
 export type DenoiseCliOutcome = CommandOutcome & {
@@ -219,9 +226,13 @@ function enrichProgressEvent(
 function buildProgressEmitter(
   request: DenoiseRunInput,
   deps: Partial<DenoiseDeps>,
+  maybeTimingTracker?: ExecutionTimingTracker,
 ): ((event: DenoiseProgressEvent) => void) | undefined {
   const wantsNdjson = request.json === true && request.dryRun === false;
-  const hasConsumer = deps.reportProgress !== undefined || wantsNdjson;
+  const hasConsumer =
+    deps.reportProgress !== undefined ||
+    wantsNdjson ||
+    maybeTimingTracker !== undefined;
 
   if (!hasConsumer) {
     return undefined;
@@ -231,6 +242,7 @@ function buildProgressEmitter(
   let lastFfmpegJsonAt = 0;
 
   return (event: DenoiseProgressEvent) => {
+    maybeTimingTracker?.onEvent(event);
     const e = enrichProgressEvent(event, batchCtx);
     deps.reportProgress?.(e);
 
@@ -623,6 +635,8 @@ async function finalizeDenoiseSuccess(params: {
   readonly baseSuccess: DenoiseCliSuccess;
   readonly report: Omit<DenoiseRunReport, "verificationOk">;
   readonly emitProgress?: (event: DenoiseProgressEvent) => void;
+  readonly timingTracker?: ExecutionTimingTracker;
+  readonly executionWallStartMs: number;
 }): Promise<DenoiseCliOutcome> {
   const outProbe = await runFfprobeProbe({
     ffprobePath: params.ffprobePath,
@@ -686,11 +700,19 @@ async function finalizeDenoiseSuccess(params: {
       ? `${renderDenoiseRunReportText(fullReport).trimEnd()}\nVerify: ${verify.detail}\n`
       : renderDenoiseRunReportText(fullReport);
 
+  const finalized = params.timingTracker?.finalize();
+  const totalMs = Math.round(performance.now() - params.executionWallStartMs);
+  const maybeExecutionTiming: DenoiseExecutionTiming | undefined =
+    finalized !== undefined && finalized.entries.length > 0
+      ? { entries: finalized.entries, totalMs }
+      : undefined;
+
   return {
     kind: "success",
     denoise: {
       ...params.baseSuccess,
       maybeReportText: reportText,
+      ...(maybeExecutionTiming !== undefined ? { maybeExecutionTiming } : {}),
     },
   };
 }
@@ -1046,10 +1068,14 @@ export async function runDenoiseRequest(
   let executionOk = false;
 
   try {
-    const emitProgress = buildProgressEmitter(request, deps);
+    const executionWallStartMs = performance.now();
+    const timingTracker = createExecutionTimingTracker();
+    const emitProgress = buildProgressEmitter(request, deps, timingTracker) as (
+      event: DenoiseProgressEvent,
+    ) => void;
     const mediaDurationSec = probeDurationSeconds(probeResult.value);
 
-    emitProgress?.({ kind: "probe" });
+    emitProgress({ kind: "probe" });
 
     if (isVideoDenoiseModality(executablePlan)) {
       const audioMeta = audioLayoutForStream(
@@ -1088,7 +1114,7 @@ export async function runDenoiseRequest(
       const totalVideoSteps = logicalSteps.length + 1;
       const previousStepElapsedRef: StepElapsedRef = {};
 
-      emitProgress?.({
+      emitProgress({
         kind: "step",
         stepIndex: 0,
         stepTotal: totalVideoSteps,
@@ -1096,10 +1122,10 @@ export async function runDenoiseRequest(
       });
 
       const extractStartedAt = performance.now();
-      const extractOnLine =
-        emitProgress !== undefined
-          ? createFfmpegStderrHandler(emitProgress, mediaDurationSec)
-          : undefined;
+      const extractOnLine = createFfmpegStderrHandler(
+        emitProgress,
+        mediaDurationSec,
+      );
 
       const extractRun = await runTrackedProcess({
         command: extractCmd.command,
@@ -1171,7 +1197,7 @@ export async function runDenoiseRequest(
         };
       }
 
-      emitProgress?.({
+      emitProgress({
         kind: "step",
         stepIndex: logicalSteps.length,
         stepTotal: totalVideoSteps,
@@ -1186,10 +1212,10 @@ export async function runDenoiseRequest(
       });
 
       const remuxStartedAt = performance.now();
-      const remuxOnLine =
-        emitProgress !== undefined
-          ? createFfmpegStderrHandler(emitProgress, mediaDurationSec)
-          : undefined;
+      const remuxOnLine = createFfmpegStderrHandler(
+        emitProgress,
+        mediaDurationSec,
+      );
 
       const remuxRun = await runTrackedProcess({
         command: remuxCmd.command,
@@ -1243,6 +1269,8 @@ export async function runDenoiseRequest(
               : undefined,
         },
         emitProgress,
+        timingTracker,
+        executionWallStartMs,
       });
     }
 
@@ -1297,6 +1325,8 @@ export async function runDenoiseRequest(
         droppedStreamsLabels: [],
       },
       emitProgress,
+      timingTracker,
+      executionWallStartMs,
     });
   } finally {
     if (executionOk) {

@@ -13,7 +13,11 @@ import {
   type PresetId,
   parseLadspaCliTriple,
 } from "../domain/audio-pipeline-plan";
-import { formatProgressForSpinner } from "../domain/denoise-progress";
+import {
+  formatExecutionTimingBlock,
+  formatProgressForSpinner,
+  formatSpinnerMessageWithElapsed,
+} from "../domain/denoise-progress";
 import { argvTokensForEquivalentDenoise } from "../domain/guided-denoise-equivalent";
 import { parseGuidedNoiseStrength } from "../domain/guided-denoise-parse";
 import type { GuidedDenoiseSelections } from "../domain/guided-denoise-selection";
@@ -365,8 +369,21 @@ export async function runGuidedDenoiseRequest(
   }
 
   const spin = spinner();
+  let phaseWallStartMs = Date.now();
+  let lastBaseMessage = "Denoising…";
+  const spinTickMs = 300;
+
+  const refreshSpinMessage = () => {
+    spin.message(
+      formatSpinnerMessageWithElapsed(
+        lastBaseMessage,
+        Date.now() - phaseWallStartMs,
+      ),
+    );
+  };
 
   spin.start("Denoising…");
+  const spinInterval = setInterval(refreshSpinMessage, spinTickMs);
 
   let executeOutcome: DenoiseCliOutcome;
   let okForSpinner = false;
@@ -378,6 +395,14 @@ export async function runGuidedDenoiseRequest(
       selectionsToDenoiseRunInput({ ...collected, dryRun: false }),
       {
         reportProgress: (event) => {
+          if (
+            event.kind === "probe" ||
+            event.kind === "step" ||
+            event.kind === "verify"
+          ) {
+            phaseWallStartMs = Date.now();
+          }
+
           if (event.kind === "ffmpeg") {
             const now = Date.now();
 
@@ -388,12 +413,14 @@ export async function runGuidedDenoiseRequest(
             lastSpinnerFfmpegAt = now;
           }
 
-          spin.message(formatProgressForSpinner(event));
+          lastBaseMessage = formatProgressForSpinner(event);
+          refreshSpinMessage();
         },
       },
     );
     okForSpinner = executeOutcome.kind === "success";
   } finally {
+    clearInterval(spinInterval);
     spin.stop(okForSpinner ? "Finished denoise pass." : "Stopped.");
   }
 
@@ -408,6 +435,10 @@ export async function runGuidedDenoiseRequest(
 
   if (executeOutcome.denoise.maybeReportText !== undefined) {
     transcript += `\n${executeOutcome.denoise.maybeReportText}`;
+  }
+
+  if (executeOutcome.denoise.maybeExecutionTiming !== undefined) {
+    transcript += `\n${formatExecutionTimingBlock(executeOutcome.denoise.maybeExecutionTiming)}`;
   }
 
   return {

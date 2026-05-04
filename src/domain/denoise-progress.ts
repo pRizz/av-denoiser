@@ -115,14 +115,60 @@ export function videoRemuxStepLabel(mode: "copy" | "reencode-hevc"): string {
   return "Remux + encode video (HEVC)";
 }
 
+/** Matches spinner / execution-timing milestone for `kind: "probe"`. */
+export const denoiseProgressMilestoneProbeLabel = "Probing…";
+
+/** Matches spinner / execution-timing milestone for `kind: "verify"`. */
+export const denoiseProgressMilestoneVerifyLabel = "Verifying output…";
+
 const SPINNER_MAX = 48;
 
-function formatElapsed(ms: number): string {
+export function formatElapsed(ms: number): string {
   if (ms < 1000) {
     return `${Math.round(ms)}ms`;
   }
 
   return `${(ms / 1000).toFixed(1)}s`;
+}
+
+/** Multi-line timing section for guided transcript or logs. */
+export function formatExecutionTimingBlock(timing: {
+  readonly entries: readonly {
+    readonly label: string;
+    readonly elapsedMs: number;
+  }[];
+  readonly totalMs: number;
+}): string {
+  const lines: string[] = ["Timing:"];
+
+  for (const e of timing.entries) {
+    lines.push(`  ${e.label} · ${formatElapsed(e.elapsedMs)}`);
+  }
+
+  lines.push(`  Total · ${formatElapsed(timing.totalMs)}`);
+
+  return `${lines.join("\n")}\n`;
+}
+
+/**
+ * Spinner line with elapsed suffix; truncates base so total length stays within {@link SPINNER_MAX}.
+ */
+export function formatSpinnerMessageWithElapsed(
+  baseMessage: string,
+  phaseElapsedMs: number,
+): string {
+  const suffix = ` · ${formatElapsed(phaseElapsedMs)}`;
+  const maxBase = SPINNER_MAX - suffix.length;
+
+  if (maxBase < 1) {
+    return suffix.trimStart();
+  }
+
+  if (baseMessage.length <= maxBase) {
+    return `${baseMessage}${suffix}`;
+  }
+
+  return `${baseMessage.slice(0, maxBase - 1)}…${suffix}`;
 }
 
 /** One-line message for @clack spinner / constrained terminals. */
@@ -133,11 +179,11 @@ export function formatProgressForSpinner(event: DenoiseProgressEvent): string {
       : "";
 
   if (event.kind === "probe") {
-    return `${batchPrefix}Probing…`;
+    return `${batchPrefix}${denoiseProgressMilestoneProbeLabel}`;
   }
 
   if (event.kind === "verify") {
-    return `${batchPrefix}Verifying output…`;
+    return `${batchPrefix}${denoiseProgressMilestoneVerifyLabel}`;
   }
 
   if (event.kind === "ffmpeg") {

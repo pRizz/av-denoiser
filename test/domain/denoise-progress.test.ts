@@ -2,7 +2,9 @@ import { describe, expect, test } from "bun:test";
 import { runProcessCommand } from "../../src/adapters/process-runner";
 import {
   denoiseProgressEventToJson,
+  formatExecutionTimingBlock,
   formatProgressForSpinner,
+  formatSpinnerMessageWithElapsed,
   labelForLogicalStep,
   parseFfmpegStatusLine,
   probeDurationSeconds,
@@ -80,6 +82,39 @@ describe("formatProgressForSpinner", () => {
 
     expect(msg).toContain("42%");
     expect(msg).toContain("1.2x");
+  });
+});
+
+describe("formatSpinnerMessageWithElapsed", () => {
+  test("appends elapsed and truncates long base to keep line within width", () => {
+    const longBase = "x".repeat(60);
+    const line = formatSpinnerMessageWithElapsed(longBase, 1500);
+    expect(line.length).toBeLessThanOrEqual(48);
+    expect(line.endsWith(" · 1.5s")).toBe(true);
+    expect(line.includes("…")).toBe(true);
+  });
+
+  test("short base stays intact", () => {
+    expect(formatSpinnerMessageWithElapsed("Probing…", 100)).toBe(
+      "Probing… · 100ms",
+    );
+  });
+});
+
+describe("formatExecutionTimingBlock", () => {
+  test("lists entries and total", () => {
+    const text = formatExecutionTimingBlock({
+      entries: [
+        { label: "Probing…", elapsedMs: 50 },
+        { label: "Done", elapsedMs: 1000 },
+      ],
+      totalMs: 1050,
+    });
+
+    expect(text).toContain("Timing:");
+    expect(text).toContain("Probing… · 50ms");
+    expect(text).toContain("Done · 1.0s");
+    expect(text).toContain("Total · 1.1s");
   });
 });
 

@@ -56,6 +56,14 @@ describe("runGuidedDenoiseRequest", () => {
                 { tool: "ffmpeg", displayCommand: "ffmpeg -version (stub)" },
               ],
             },
+            ...(input.dryRun
+              ? {}
+              : {
+                  maybeExecutionTiming: {
+                    entries: [{ label: "Probing…", elapsedMs: 10 }],
+                    totalMs: 99,
+                  },
+                }),
           },
         };
       },
@@ -75,6 +83,8 @@ describe("runGuidedDenoiseRequest", () => {
 
     if (outcome.kind === "success") {
       expect(outcome.guidedHumanSummary).toContain("Equivalent command:");
+      expect(outcome.guidedHumanSummary).toContain("Timing:");
+      expect(outcome.guidedHumanSummary).toContain("Total ·");
     }
 
     const guidedRequest: CliRequest = { kind: "guided-denoise" };

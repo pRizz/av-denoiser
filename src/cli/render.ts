@@ -384,6 +384,10 @@ function denoiseSummaryForJson(
     base.reportText = success.maybeReportText;
   }
 
+  if (success.maybeExecutionTiming !== undefined) {
+    base.executionTiming = success.maybeExecutionTiming;
+  }
+
   return base;
 }
 
