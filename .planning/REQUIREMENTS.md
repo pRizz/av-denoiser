@@ -20,8 +20,8 @@ Each item maps one-to-one into the live roadmap phases.
 
 ### Remux execution
 
-- [ ] **MULTI-06**: Typed **FFmpeg argv** builders select **mux-specific** defaults (e.g. **`-f webm`** / **`matroska`** when required) alongside **`-map`** / **`c:v`** / planned audio codec policy.
-- [ ] **MULTI-07**: **Per-container planned audio codec** documented and implemented (**AAC**, **opus**, **`pcm_*`** subsets as allowed—for example WebM‑first **Opus** where required by policy—with **AAC** continuity where FFmpeg/muxer accepts it reliably).
+- [x] **MULTI-06**: Typed **FFmpeg argv** builders select **mux-specific** defaults (e.g. **`-f webm`** / **`matroska`** when required) alongside **`-map`** / **`c:v`** / planned audio codec policy.
+- [x] **MULTI-07**: **Per-container planned audio codec** documented and implemented (**AAC**, **opus**, **`pcm_*`** subsets as allowed—for example WebM‑first **Opus** where required by policy—with **AAC** continuity where FFmpeg/muxer accepts it reliably).
 
 ### Surfaces & trust
 
@@ -65,8 +65,8 @@ Defer unless explicitly scheduled:
 | MULTI-03 | Phase 2 (verified Phase 7 gap closure) | Complete |
 | MULTI-04 | Phase 2 | Complete |
 | MULTI-05 | Phase 2 | Complete |
-| MULTI-06 | Phase 8 (gap closure) | Pending |
-| MULTI-07 | Phase 8 (gap closure) | Pending |
+| MULTI-06 | Phase 3 (verified Phase 8 gap closure) | Complete |
+| MULTI-07 | Phase 3 (verified Phase 8 gap closure) | Complete |
 | MULTI-08 | Phase 9 (gap closure) | Pending |
 | MULTI-09 | Phase 9 (gap closure) | Pending |
 | MULTI-10 | Phase 9 (gap closure) | Pending |
@@ -74,7 +74,7 @@ Defer unless explicitly scheduled:
 | MULTI-12 | Phase 9 (gap closure) | Pending |
 | MULTI-13 | Phase 9 (gap closure) | Pending |
 
-**Coverage:** **13**/13 v1.1 IDs mapped — **5** **Complete** (**MULTI-01**, **MULTI-02** via [01-VERIFICATION.md](phases/01-multi-container-output-model-path-derivation/01-VERIFICATION.md); **MULTI-03** via Phase **07** docs closure anchored in [**02-VERIFICATION.md** — MULTI-03 alignment](phases/02-feasibility-matrix-vp9-theora-extras/02-VERIFICATION.md); **MULTI-04**, **MULTI-05** via Phase **02**); **8** **Pending** in gap-closure Phases **08–09** (**MULTI-06**–**MULTI-13**) (see [v1.1-MILESTONE-AUDIT.md](v1.1-MILESTONE-AUDIT.md)).
+**Coverage:** **13**/13 v1.1 IDs mapped — **7** **Complete** (**MULTI-01**, **MULTI-02**, **MULTI-03**, **MULTI-04**, **MULTI-05** as previously; **MULTI-06**, **MULTI-07** verified in [03-VERIFICATION.md](phases/03-ffmpeg-remux-muxers-audio-policy/03-VERIFICATION.md) via **Phase 8** closure); **6** **Pending** in **Phase 9** gap closure (**MULTI-08**–**MULTI-13**) (see [v1.1-MILESTONE-AUDIT.md](v1.1-MILESTONE-AUDIT.md)).
 
 ---
 

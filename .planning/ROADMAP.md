@@ -134,6 +134,8 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 **Goal:** Add **03-VERIFICATION.md**; fix **intermediate pipeline artifact naming** where deliverable mux is **WebM/Matroska** but on-disk intermediate suggests **`.mp4`** (audit **MULTI-06** / **MULTI-07** integration).
 
+**Status:** Closed **2026-05-04** — **`pipelineAudioOutIntermediateBasename`**, [**03-VERIFICATION.md**](phases/03-ffmpeg-remux-muxers-audio-policy/03-VERIFICATION.md); summaries [**08-01**](phases/08-gap-closure-phase-03-remux-pipeline-trust/08-01-SUMMARY.md), [**08-02**](phases/08-gap-closure-phase-03-remux-pipeline-trust/08-02-SUMMARY.md).
+
 **Gap closure:** Missing Phase **03** verification; mux/filename mismatch.
 
 **Success criteria**
@@ -168,6 +170,6 @@ Requirements traceability tabulated in [.planning/REQUIREMENTS.md](REQUIREMENTS.
 
 ## Next action
 
-Phase **07** — **MULTI-03** docs closure is complete (**narrowed REQ** — **VP9→WebM** pairing only; **[02-VERIFICATION.md](phases/02-feasibility-matrix-vp9-theora-extras/02-VERIFICATION.md)** addendum § **MULTI-03 alignment**). Continue with **`/gsd-plan-phase 08`** (remux pipeline trust / **MULTI-06**, **MULTI-07**) then **`/gsd-execute-phase 08`**.
+Phase **08** is complete: **03-VERIFICATION.md** documents **MULTI-06**/**MULTI-07**; **`clean`** uses **`pipelineAudioOutIntermediateBasename`** for execute + dry-run preview paths; **`bun run verify`** green (**222** tests). Continue with **`/gsd-plan-phase 09`** (output verify / **MULTI-08**–**MULTI-13** closure) then **`/gsd-execute-phase 09`**.
 
 **Audit:** [.planning/v1.1-MILESTONE-AUDIT.md](v1.1-MILESTONE-AUDIT.md)
