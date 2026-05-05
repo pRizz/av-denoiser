@@ -192,6 +192,15 @@ test("falls back to python3 -m demucs when demucs binary is absent", async () =>
         };
       }
 
+      if (command.args[0] === "-c" && command.args[1] === "import torchcodec") {
+        return {
+          kind: "exited",
+          exitCode: 0,
+          stdout: "",
+          stderr: "",
+        };
+      }
+
       if (command.args.includes("-filters")) {
         return {
           kind: "exited",
@@ -225,6 +234,13 @@ test("falls back to python3 -m demucs when demucs binary is absent", async () =>
         c.args[1] === "demucs",
     ),
   ).toBe(true);
+
+  const demucs = availableToolFact(report, "demucs");
+  const torchcodec = demucs.capabilities.find(
+    (c) => c.id === "demucs.torchcodec",
+  );
+  expect(torchcodec !== undefined).toBe(true);
+  expect(torchcodec?.kind).toBe("available");
 });
 
 function fakeDiscoveryDeps(

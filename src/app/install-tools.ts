@@ -1,9 +1,11 @@
 import { confirm, isCancel } from "@clack/prompts";
+import { probeTorchcodecImportWithPython } from "../adapters/demucs-torchcodec-probe";
 import {
   type ProcessRunner,
   runProcessCommand,
 } from "../adapters/process-runner";
 import type { CommandOutcome } from "../domain/command-outcome";
+import { resolveDemucsPythonForTorchcodec } from "../domain/demucs-python";
 import {
   formatBrewInstallDryRunLines,
   manualPostBrewHints,
@@ -25,6 +27,8 @@ export type InstallToolsDeps = {
   readonly runProcess?: ProcessRunner;
   readonly isTTY?: boolean;
   readonly confirmDemucsPip?: () => Promise<boolean>;
+  /** Confirms `uv pip install --python … torchcodec` into Demucs' Python. */
+  readonly confirmTorchcodecPip?: (pythonPath: string) => Promise<boolean>;
   /** Runs Demucs automation (`uv tool install demucs`); default inherits stdio. */
   readonly runPythonPipInherit?: (argv: readonly string[]) => Promise<number>;
   /**
@@ -44,6 +48,14 @@ type DemucsSummaryKind =
       /** Resolved PATH after install, if any. */
       readonly path: string | null;
     };
+
+/** TorchCodec row in the post-install summary (full tier only, when Demucs is on PATH). */
+type TorchcodecSummaryKind =
+  | { readonly kind: "none" }
+  | { readonly kind: "ok" }
+  | { readonly kind: "repaired" }
+  | { readonly kind: "skipped"; readonly reason: string }
+  | { readonly kind: "missing"; readonly detail: string };
 
 function defaultRunBrewInherit(argv: readonly string[]): Promise<number> {
   const [executable, ...args] = argv;
@@ -91,6 +103,24 @@ async function defaultConfirmDemucsPip(): Promise<boolean> {
   return answer;
 }
 
+async function defaultConfirmTorchcodecPip(
+  pythonPath: string,
+): Promise<boolean> {
+  const displayPath =
+    pythonPath.length > 140 ? `${pythonPath.slice(0, 137)}…` : pythonPath;
+
+  const resolved = await confirm({
+    message: `Demucs needs the TorchCodec Python package for many current torchaudio builds. Install with uv pip into that interpreter now? (${displayPath})`,
+    initialValue: false,
+  });
+
+  if (isCancel(resolved)) {
+    return false;
+  }
+
+  return resolved;
+}
+
 function demucsAutomationFailureMessage(detail: string): string {
   return [
     detail,
@@ -127,8 +157,10 @@ export function buildInstallToolsSummaryLines(deps: {
   readonly maybeWhich: (name: string) => string | null;
   readonly useStdoutColor: boolean;
   readonly demucs: DemucsSummaryKind;
+  readonly torchcodec: TorchcodecSummaryKind;
 }): string[] {
-  const { includeOptional, maybeWhich, useStdoutColor, demucs } = deps;
+  const { includeOptional, maybeWhich, useStdoutColor, demucs, torchcodec } =
+    deps;
   const lines: string[] = ["", "Summary:"];
 
   lines.push(summaryToolLine(useStdoutColor, "FFmpeg", maybeWhich("ffmpeg")));
@@ -165,6 +197,27 @@ export function buildInstallToolsSummaryLines(deps: {
         }
         break;
       }
+    }
+
+    switch (torchcodec.kind) {
+      case "none":
+        break;
+      case "ok":
+        lines.push(
+          `${greenCheckMarkPrefix(useStdoutColor)}TorchCodec (Demucs): import OK`,
+        );
+        break;
+      case "repaired":
+        lines.push(
+          `${greenCheckMarkPrefix(useStdoutColor)}TorchCodec (Demucs): installed via uv pip`,
+        );
+        break;
+      case "skipped":
+        lines.push(`TorchCodec (Demucs): skipped — ${torchcodec.reason}`);
+        break;
+      case "missing":
+        lines.push(`TorchCodec (Demucs): gap — ${torchcodec.detail}`);
+        break;
     }
   }
 
@@ -208,6 +261,117 @@ async function runAutomatedDemucsInstall(deps: {
   };
 }
 
+type TorchcodecRepairResult = {
+  readonly detailLines: string[];
+  readonly summary: TorchcodecSummaryKind;
+};
+
+async function runTorchcodecOptionalRepairStep(deps: {
+  readonly uvPath: string;
+  readonly demucsPath: string;
+  readonly isTTY: boolean;
+  readonly assumeYes: boolean;
+  readonly confirmTorchcodecPip: (pythonPath: string) => Promise<boolean>;
+  readonly runPythonPipInherit: (argv: readonly string[]) => Promise<number>;
+  readonly runProcess: ProcessRunner;
+  readonly maybeWhich: (name: string) => string | null;
+  readonly useStdoutColor: boolean;
+}): Promise<TorchcodecRepairResult> {
+  const pythonResolve = resolveDemucsPythonForTorchcodec(
+    deps.demucsPath,
+    deps.maybeWhich,
+  );
+
+  if (pythonResolve.kind !== "ok") {
+    return {
+      detailLines: [
+        `TorchCodec: could not resolve Demucs Python (${pythonResolve.reason}). See docs/doctor.md for manual \`uv pip install --python … torchcodec\` (including \`python3 -m demucs\` layouts).`,
+      ],
+      summary: {
+        kind: "missing",
+        detail: pythonResolve.reason,
+      },
+    };
+  }
+
+  const pythonPath = pythonResolve.pythonPath;
+  let probeOutcome = await probeTorchcodecImportWithPython(
+    pythonPath,
+    deps.runProcess,
+  );
+
+  if (probeOutcome.kind === "available") {
+    return {
+      detailLines: [
+        `${greenCheckMarkPrefix(deps.useStdoutColor)}TorchCodec: import OK in Demucs Python.`,
+      ],
+      summary: { kind: "ok" },
+    };
+  }
+
+  const tryInstall =
+    deps.assumeYes ||
+    (deps.isTTY && (await deps.confirmTorchcodecPip(pythonPath)));
+
+  if (!tryInstall) {
+    const reason = deps.isTTY
+      ? "declined the TorchCodec install prompt"
+      : "non-interactive terminal; pass --yes to allow `uv pip install torchcodec` without a second prompt";
+
+    return {
+      detailLines: [
+        `TorchCodec: import check failed — ${probeOutcome.detail}`,
+        `Skipped uv pip install (${reason}). Manual: \`uv pip install --python '${pythonPath}' torchcodec\` (docs/doctor.md).`,
+      ],
+      summary: { kind: "skipped", reason },
+    };
+  }
+
+  const pipExit = await deps.runPythonPipInherit([
+    deps.uvPath,
+    "pip",
+    "install",
+    "--python",
+    pythonPath,
+    "torchcodec",
+  ]);
+
+  if (pipExit !== 0) {
+    return {
+      detailLines: [
+        `uv pip install torchcodec failed (exit ${pipExit}). See docs/doctor.md.`,
+      ],
+      summary: {
+        kind: "missing",
+        detail: `uv pip install exited ${pipExit}`,
+      },
+    };
+  }
+
+  probeOutcome = await probeTorchcodecImportWithPython(
+    pythonPath,
+    deps.runProcess,
+  );
+
+  if (probeOutcome.kind === "available") {
+    return {
+      detailLines: [
+        `${greenCheckMarkPrefix(deps.useStdoutColor)}TorchCodec: installed via uv pip; import OK.`,
+      ],
+      summary: { kind: "repaired" },
+    };
+  }
+
+  return {
+    detailLines: [
+      "TorchCodec: uv pip finished but import still fails.",
+      probeOutcome.detail,
+      "If issues persist, see docs/doctor.md (TorchCodec / FFmpeg compatibility).",
+    ],
+    summary: { kind: "missing", detail: probeOutcome.detail },
+  };
+}
+
 function successCompletedMessage(bodyLines: readonly string[]): CommandOutcome {
   return {
     kind: "success",
@@ -227,6 +391,8 @@ export async function runInstallToolsRequest(
     deps.isTTY ??
     (typeof process !== "undefined" && process.stdin.isTTY === true);
   const confirmDemucsPip = deps.confirmDemucsPip ?? defaultConfirmDemucsPip;
+  const confirmTorchcodecPip =
+    deps.confirmTorchcodecPip ?? defaultConfirmTorchcodecPip;
   const runDemucsStep = deps.runPythonPipInherit ?? defaultRunDemucsStepInherit;
   const useStdoutColor =
     deps.useStdoutColor ??
@@ -260,6 +426,7 @@ export async function runInstallToolsRequest(
       lines.push(
         "",
         "Full tier: when you accept Demucs automation (or pass --yes), this CLI runs `uv tool install demucs`. If `demucs` is already on PATH, that step is skipped.",
+        "When Demucs is on PATH, a TorchCodec import check runs; with `--yes` or an interactive confirm it may run `uv pip install --python <Demucs Python> torchcodec` if that check fails (see docs/doctor.md).",
       );
     }
 
@@ -354,6 +521,7 @@ export async function runInstallToolsRequest(
       maybeWhich,
       useStdoutColor,
       demucs: { kind: "none" },
+      torchcodec: { kind: "none" },
     });
 
     return successCompletedMessage([
@@ -364,89 +532,112 @@ export async function runInstallToolsRequest(
   }
 
   const maybeDemucsPre = maybeWhich("demucs");
-  const demucsPrePath =
+  let demucsPathFinal =
     maybeDemucsPre !== null && maybeDemucsPre.trim() !== ""
       ? maybeDemucsPre.trim()
       : null;
 
-  if (demucsPrePath !== null) {
-    const detailLines = [
-      "",
-      "Homebrew installs finished.",
-      "",
-      `${greenCheckMarkPrefix(useStdoutColor)}\`demucs\` already on PATH (${demucsPrePath}) — skipped install.`,
-    ];
-    const summaryLines = buildInstallToolsSummaryLines({
-      includeOptional: true,
-      maybeWhich,
-      useStdoutColor,
-      demucs: { kind: "already", path: demucsPrePath },
-    });
+  let demucsSummary: DemucsSummaryKind;
+  let torchcodecSummary: TorchcodecSummaryKind = { kind: "none" };
 
-    return successCompletedMessage([...detailLines, ...summaryLines]);
-  }
-
-  let runDemucsAutomated = false;
-
-  if (request.assumeYes) {
-    runDemucsAutomated = true;
-  } else if (isTTY) {
-    runDemucsAutomated = await confirmDemucsPip();
-  }
-
-  if (!runDemucsAutomated) {
-    const summaryLines = buildInstallToolsSummaryLines({
-      includeOptional: true,
-      maybeWhich,
-      useStdoutColor,
-      demucs: { kind: "skipped" },
-    });
-
-    return successCompletedMessage([
-      "",
-      "Homebrew installs finished.",
-      "",
-      "Optional Demucs: run `uv tool install demucs` when you want vocal-isolation presets (or re-run this command).",
-      ...summaryLines,
-    ]);
-  }
-
-  const demucsResult = await runAutomatedDemucsInstall({
-    uvPath,
-    runDemucsStep,
-    maybeWhich,
-  });
-
-  if (demucsResult.kind === "failure") {
-    return {
-      kind: "failure",
-      reason: {
-        kind: "processing-failure",
-        message: demucsResult.message,
-      },
-    };
-  }
-
-  const pathAfter = demucsResult.pathAfterInstall;
   const detailLines: string[] = ["", "Homebrew installs finished.", ""];
 
-  detailLines.push("Demucs: installed via uv (`uv tool install demucs`).");
-
-  if (pathAfter !== null) {
+  if (demucsPathFinal !== null) {
+    demucsSummary = { kind: "already", path: demucsPathFinal };
     detailLines.push(
-      `${greenCheckMarkPrefix(useStdoutColor)}\`demucs\` is on PATH (${pathAfter}) — good to go for \`doctor\` and Demucs presets.`,
+      `${greenCheckMarkPrefix(useStdoutColor)}\`demucs\` already on PATH (${demucsPathFinal}) — skipped \`uv tool install\`.`,
     );
   } else {
-    detailLines.push(
-      "If `demucs` is not on PATH, ensure uv's tool bin directory is on PATH (often `~/.local/bin`); open a new shell and retry.",
-    );
+    let runDemucsAutomated = false;
+
+    if (request.assumeYes) {
+      runDemucsAutomated = true;
+    } else if (isTTY) {
+      runDemucsAutomated = await confirmDemucsPip();
+    }
+
+    if (!runDemucsAutomated) {
+      demucsSummary = { kind: "skipped" };
+      detailLines.push(
+        "Optional Demucs: run `uv tool install demucs` when you want vocal-isolation presets (or re-run this command).",
+      );
+      const summaryLines = buildInstallToolsSummaryLines({
+        includeOptional: true,
+        maybeWhich,
+        useStdoutColor,
+        demucs: demucsSummary,
+        torchcodec: { kind: "none" },
+      });
+
+      return successCompletedMessage([...detailLines, ...summaryLines]);
+    }
+
+    const demucsResult = await runAutomatedDemucsInstall({
+      uvPath,
+      runDemucsStep,
+      maybeWhich,
+    });
+
+    if (demucsResult.kind === "failure") {
+      return {
+        kind: "failure",
+        reason: {
+          kind: "processing-failure",
+          message: demucsResult.message,
+        },
+      };
+    }
+
+    const pathAfterInstall = demucsResult.pathAfterInstall;
+    demucsPathFinal =
+      pathAfterInstall !== null && pathAfterInstall.trim() !== ""
+        ? pathAfterInstall.trim()
+        : null;
+
+    detailLines.push("Demucs: installed via uv (`uv tool install demucs`).");
+
+    if (demucsPathFinal !== null) {
+      detailLines.push(
+        `${greenCheckMarkPrefix(useStdoutColor)}\`demucs\` is on PATH (${demucsPathFinal}) — good to go for \`doctor\` and Demucs presets.`,
+      );
+    } else {
+      detailLines.push(
+        "If `demucs` is not on PATH, ensure uv's tool bin directory is on PATH (often `~/.local/bin`); open a new shell and retry.",
+      );
+    }
+
+    demucsSummary = { kind: "installed", path: demucsPathFinal };
+  }
+
+  if (demucsPathFinal !== null) {
+    const torch = await runTorchcodecOptionalRepairStep({
+      uvPath,
+      demucsPath: demucsPathFinal,
+      isTTY,
+      assumeYes: request.assumeYes,
+      confirmTorchcodecPip,
+      runPythonPipInherit: runDemucsStep,
+      runProcess,
+      maybeWhich,
+      useStdoutColor,
+    });
+
+    detailLines.push(...torch.detailLines);
+    torchcodecSummary = torch.summary;
+  } else {
+    torchcodecSummary = {
+      kind: "skipped",
+      reason:
+        "Demucs not on PATH yet — add uv tool bin (often `~/.local/bin`), open a new shell, then re-run for TorchCodec.",
+    };
   }
 
   const summaryLines = buildInstallToolsSummaryLines({
     includeOptional: true,
     maybeWhich,
     useStdoutColor,
-    demucs: { kind: "installed", path: pathAfter },
+    demucs: demucsSummary,
+    torchcodec: torchcodecSummary,
   });
 
   return successCompletedMessage([...detailLines, ...summaryLines]);

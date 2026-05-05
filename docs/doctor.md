@@ -15,7 +15,9 @@ On macOS, `bun run src/cli/main.ts install-tools` runs Homebrew to install **FFm
 
 If **`demucs`** is not found after **`uv tool install`**, ensure uv's tool bin directory is on PATH (often **`~/.local/bin`**) and open a new shell.
 
-Recent **torchaudio** builds call **`save_with_torchcodec`**, which requires the **`torchcodec`** package in the same environment as Demucs. If separation fails with **`TorchCodec is required for save_with_torchcodec`**, install it into the uv tool venv, for example: **`uv pip install --python ~/.local/share/uv/tools/demucs/bin/python torchcodec`** (adjust if your **`UV_TOOLS_DIR`** layout differs).
+Recent **torchaudio** builds call **`save_with_torchcodec`**, which requires the **`torchcodec`** package in the same environment as Demucs. **`doctor`** probes **`import torchcodec`** using the Python inferred from the **`demucs`** shim (or from **`python3`** when using **`python3 -m demucs`**). **`install-tools`** (full tier, macOS) runs the same check after Demucs is on PATH; with **`--yes`** or an interactive confirm, it may run **`uv pip install --python <that interpreter> torchcodec`**.
+
+If you still see **`TorchCodec is required for save_with_torchcodec`**, install **`torchcodec`** into the uv tool venv manually, for example: **`uv pip install --python ~/.local/share/uv/tools/demucs/bin/python torchcodec`** (adjust if your **`UV_TOOLS_DIR`** layout differs).
 
 **MLT (`melt`)** is not part of this install: Homebrew’s **`mlt`** formula depends on classic **`sox`**, which conflicts with **`sox_ng`**. Install **`melt`** separately only if you accept classic **`sox`** (for example after **`brew unlink sox_ng`**) or another workflow you control.
 
@@ -66,6 +68,7 @@ Examples of intentionally deferred or partial checks:
 - FFprobe JSON probe behavior
 - SoX effect availability
 - Demucs model cache and runtime behavior
+- The **`demucs.torchcodec`** capability (Python **`import torchcodec`** for the interpreter that runs Demucs) — when **`demucs`** is missing, this row is omitted; when **`python3 -m demucs`** is used and the interpreter cannot be matched to a **`demucs`** shim, doctor still checks TorchCodec on that **`python3`** path
 - Audacity `mod-script-pipe` reachability beyond file existence (pipe protocol is exercised only when you run a macro step)
 - MLT/Kdenlive render presets
 

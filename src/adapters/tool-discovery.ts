@@ -1,3 +1,4 @@
+import { resolveDemucsPythonForTorchcodec } from "../domain/demucs-python";
 import {
   type DoctorReport,
   defaultToolDefinitions,
@@ -10,6 +11,7 @@ import {
   createProcessCommand,
   type ProcessCommand,
 } from "../domain/process-command";
+import { probeTorchcodecImportWithPython } from "./demucs-torchcodec-probe";
 import { probeFfmpegLadspaFilter } from "./ffmpeg-ladspa-probe";
 import { type ProcessRunner, runProcessCommand } from "./process-runner";
 
@@ -203,7 +205,53 @@ async function finishDiscoveryFromProbeResult(
     return await augmentFfmpegWithLadspaCapability(available, deps);
   }
 
+  if (definition.tool === "demucs") {
+    return await augmentDemucsWithTorchcodecCapability(available, deps);
+  }
+
   return available;
+}
+
+async function augmentDemucsWithTorchcodecCapability(
+  tool: Extract<ToolAvailability, { kind: "available" }>,
+  deps: ToolDiscoveryDeps,
+): Promise<ToolAvailability> {
+  const pythonResolve = resolveDemucsPythonForTorchcodec(
+    tool.path,
+    deps.maybeWhich,
+  );
+
+  if (pythonResolve.kind !== "ok") {
+    const torchcodecRow: ToolCapabilityStatus = {
+      kind: "missing",
+      id: "demucs.torchcodec",
+      detail: `Could not resolve Demucs Python for TorchCodec check: ${pythonResolve.reason}`,
+    };
+
+    return {
+      ...tool,
+      capabilities: [...tool.capabilities, torchcodecRow],
+    };
+  }
+
+  const probe = await probeTorchcodecImportWithPython(
+    pythonResolve.pythonPath,
+    deps.runProcess,
+  );
+
+  const torchcodecRow: ToolCapabilityStatus =
+    probe.kind === "available"
+      ? { kind: "available", id: "demucs.torchcodec" }
+      : {
+          kind: "missing",
+          id: "demucs.torchcodec",
+          detail: probe.detail,
+        };
+
+  return {
+    ...tool,
+    capabilities: [...tool.capabilities, torchcodecRow],
+  };
 }
 
 async function augmentFfmpegWithLadspaCapability(

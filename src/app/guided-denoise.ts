@@ -2,6 +2,7 @@ import {
   confirm,
   intro,
   isCancel,
+  note,
   outro,
   select,
   spinner,
@@ -21,6 +22,7 @@ import {
 import { argvTokensForEquivalentDenoise } from "../domain/guided-denoise-equivalent";
 import { parseGuidedNoiseStrength } from "../domain/guided-denoise-parse";
 import type { GuidedDenoiseSelections } from "../domain/guided-denoise-selection";
+import { cliName } from "../domain/product";
 import type {
   DenoiseCliOutcome,
   DenoiseDeps,
@@ -111,6 +113,13 @@ async function defaultCollectSelections(): Promise<GuidedDenoiseSelections | nul
   if (isCancel(presetPick)) {
     outro("Cancelled.");
     return null;
+  }
+
+  if (presetPick === "speech-vocals-demucs") {
+    note(
+      `This preset uses Demucs; some installs also need the TorchCodec Python package. Run \`${cliName} doctor\` to verify. On macOS, \`${cliName} install-tools\` (with optional packages) can install Demucs and offer a TorchCodec fix with confirmation.`,
+      "Demucs",
+    );
   }
 
   const noiseRaw = await text({

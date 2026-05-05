@@ -1,4 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import type { ProcessRunner } from "../../src/adapters/process-runner";
 import { runInstallToolsRequest } from "../../src/app/install-tools";
@@ -14,12 +17,46 @@ function brewOkRunProcess(): ProcessRunner {
       };
     }
 
+    if (cmd.args[0] === "-c" && cmd.args[1] === "import torchcodec") {
+      return {
+        kind: "exited",
+        exitCode: 0,
+        stdout: "",
+        stderr: "",
+      };
+    }
+
     return {
       kind: "exited",
       exitCode: 0,
       stdout: "",
       stderr: "",
     };
+  };
+}
+
+/** Writable demucs shim with shebang pointing at `python3` so TorchCodec resolution succeeds in tests. */
+function createDemucsShimForTests(): {
+  readonly demucsPath: string;
+  readonly dispose: () => void;
+} {
+  const python3 = Bun.which("python3");
+
+  if (python3 === null || python3.trim() === "") {
+    throw new Error("tests require python3 on PATH");
+  }
+
+  const dir = mkdtempSync(join(tmpdir(), "avd-install-tools-"));
+  const demucsPath = join(dir, "demucs");
+  writeFileSync(demucsPath, `#!${python3}\n# demucs shim for tests\n`, {
+    mode: 0o755,
+  });
+
+  return {
+    demucsPath,
+    dispose: () => {
+      rmSync(dir, { recursive: true, force: true });
+    },
   };
 }
 
@@ -94,6 +131,7 @@ describe("runInstallToolsRequest", () => {
       expect(outcome.message).toContain(
         "If `demucs` is already on PATH, that step is skipped.",
       );
+      expect(outcome.message).toContain("TorchCodec");
       expect(outcome.message).not.toContain("pipx");
     }
   });
@@ -258,135 +296,234 @@ describe("runInstallToolsRequest", () => {
 
   test("full tier skips uv tool install when demucs already on PATH", async () => {
     const calls: string[][] = [];
-    const demucsBin = "/Users/example/.local/bin/demucs";
+    const shim = createDemucsShimForTests();
 
-    const outcome = await runInstallToolsRequest(
-      { dryRun: false, includeOptional: true, assumeYes: true },
-      {
-        platform: "darwin",
-        maybeWhich: stubWhich({
-          brew: "/opt/homebrew/bin/brew",
-          uv: "/opt/homebrew/bin/uv",
-          demucs: demucsBin,
-        }),
-        runBrewInherit: async () => 0,
-        runProcess: brewOkRunProcess(),
-        isTTY: false,
-        useStdoutColor: false,
-        runPythonPipInherit: async (argv) => {
-          calls.push([...argv]);
+    try {
+      const outcome = await runInstallToolsRequest(
+        { dryRun: false, includeOptional: true, assumeYes: true },
+        {
+          platform: "darwin",
+          maybeWhich: stubWhich({
+            brew: "/opt/homebrew/bin/brew",
+            uv: "/opt/homebrew/bin/uv",
+            demucs: shim.demucsPath,
+          }),
+          runBrewInherit: async () => 0,
+          runProcess: brewOkRunProcess(),
+          isTTY: false,
+          useStdoutColor: false,
+          runPythonPipInherit: async (argv) => {
+            calls.push([...argv]);
 
-          return 0;
+            return 0;
+          },
         },
-      },
-    );
+      );
 
-    expect(calls).toEqual([]);
-    expect(outcome.kind).toBe("success");
-    if (outcome.kind === "success") {
-      expect(outcome.message).toContain("\u2713 ");
-      expect(outcome.message).toContain("skipped install");
-      expect(outcome.message).toContain(demucsBin);
-      expect(outcome.message).toContain("Summary:");
-      expect(outcome.message).toContain("Demucs already on PATH");
-      expect(outcome.message).not.toContain("good to go");
+      expect(calls).toEqual([]);
+      expect(outcome.kind).toBe("success");
+      if (outcome.kind === "success") {
+        expect(outcome.message).toContain("\u2713 ");
+        expect(outcome.message).toContain("skipped");
+        expect(outcome.message).toContain("uv tool install");
+        expect(outcome.message).toContain(shim.demucsPath);
+        expect(outcome.message).toContain("Summary:");
+        expect(outcome.message).toContain("Demucs already on PATH");
+        expect(outcome.message).toContain("TorchCodec");
+        expect(outcome.message).not.toContain("good to go");
+      }
+    } finally {
+      shim.dispose();
     }
   });
 
   test("full tier assumeYes reports good to go when demucs appears on PATH after install", async () => {
     const calls: string[][] = [];
-    const demucsBin = "/Users/example/.local/bin/demucs";
+    const shim = createDemucsShimForTests();
     let demucsProbes = 0;
 
-    const outcome = await runInstallToolsRequest(
-      { dryRun: false, includeOptional: true, assumeYes: true },
-      {
-        platform: "darwin",
-        maybeWhich: (name) => {
-          if (name === "demucs") {
-            demucsProbes += 1;
+    try {
+      const outcome = await runInstallToolsRequest(
+        { dryRun: false, includeOptional: true, assumeYes: true },
+        {
+          platform: "darwin",
+          maybeWhich: (name) => {
+            if (name === "demucs") {
+              demucsProbes += 1;
 
-            return demucsProbes >= 2 ? demucsBin : null;
-          }
+              return demucsProbes >= 2 ? shim.demucsPath : null;
+            }
 
-          return stubWhich({
-            brew: "/opt/homebrew/bin/brew",
-            uv: "/opt/homebrew/bin/uv",
-          })(name);
+            return stubWhich({
+              brew: "/opt/homebrew/bin/brew",
+              uv: "/opt/homebrew/bin/uv",
+            })(name);
+          },
+          runBrewInherit: async () => 0,
+          runProcess: brewOkRunProcess(),
+          isTTY: false,
+          useStdoutColor: false,
+          runPythonPipInherit: async (argv) => {
+            calls.push([...argv]);
+
+            return 0;
+          },
         },
-        runBrewInherit: async () => 0,
-        runProcess: brewOkRunProcess(),
-        isTTY: false,
-        useStdoutColor: false,
-        runPythonPipInherit: async (argv) => {
-          calls.push([...argv]);
+      );
 
-          return 0;
-        },
-      },
-    );
-
-    expect(calls).toEqual([
-      ["/opt/homebrew/bin/uv", "tool", "install", "demucs"],
-    ]);
-    expect(outcome.kind).toBe("success");
-    if (outcome.kind === "success") {
-      expect(outcome.message).toContain("good to go");
-      expect(outcome.message).toContain(demucsBin);
-      expect(outcome.message).toContain("Summary:");
+      expect(calls).toEqual([
+        ["/opt/homebrew/bin/uv", "tool", "install", "demucs"],
+      ]);
+      expect(outcome.kind).toBe("success");
+      if (outcome.kind === "success") {
+        expect(outcome.message).toContain("good to go");
+        expect(outcome.message).toContain(shim.demucsPath);
+        expect(outcome.message).toContain("Summary:");
+        expect(outcome.message).toContain("TorchCodec");
+      }
+    } finally {
+      shim.dispose();
     }
   });
 
   test("full tier TTY does not prompt when demucs already on PATH", async () => {
-    const outcome = await runInstallToolsRequest(
-      { dryRun: false, includeOptional: true, assumeYes: false },
-      {
-        platform: "darwin",
-        maybeWhich: stubWhich({
-          brew: "/opt/homebrew/bin/brew",
-          uv: "/opt/homebrew/bin/uv",
-          demucs: "/opt/homebrew/bin/demucs",
-        }),
-        runBrewInherit: async () => 0,
-        runProcess: brewOkRunProcess(),
-        isTTY: true,
-        confirmDemucsPip: async () => {
-          throw new Error("should not prompt when demucs on PATH");
-        },
-        runPythonPipInherit: async () => {
-          throw new Error("should not run uv tool install");
-        },
-      },
-    );
+    const shim = createDemucsShimForTests();
 
-    expect(outcome.kind).toBe("success");
-    if (outcome.kind === "success") {
-      expect(outcome.message).toContain("skipped install");
-      expect(outcome.message).toContain("Summary:");
+    try {
+      const outcome = await runInstallToolsRequest(
+        { dryRun: false, includeOptional: true, assumeYes: false },
+        {
+          platform: "darwin",
+          maybeWhich: stubWhich({
+            brew: "/opt/homebrew/bin/brew",
+            uv: "/opt/homebrew/bin/uv",
+            demucs: shim.demucsPath,
+          }),
+          runBrewInherit: async () => 0,
+          runProcess: brewOkRunProcess(),
+          isTTY: true,
+          confirmDemucsPip: async () => {
+            throw new Error("should not prompt when demucs on PATH");
+          },
+          confirmTorchcodecPip: async () => {
+            throw new Error(
+              "should not prompt when TorchCodec already importable",
+            );
+          },
+          runPythonPipInherit: async () => {
+            throw new Error("should not run uv tool install");
+          },
+        },
+      );
+
+      expect(outcome.kind).toBe("success");
+      if (outcome.kind === "success") {
+        expect(outcome.message).toContain("skipped");
+        expect(outcome.message).toContain("uv tool install");
+        expect(outcome.message).toContain("Summary:");
+      }
+    } finally {
+      shim.dispose();
     }
   });
 
   test("full tier uses ANSI green check when useStdoutColor is true", async () => {
-    const outcome = await runInstallToolsRequest(
-      { dryRun: false, includeOptional: true, assumeYes: true },
-      {
-        platform: "darwin",
-        maybeWhich: stubWhich({
-          brew: "/opt/homebrew/bin/brew",
-          uv: "/opt/homebrew/bin/uv",
-          demucs: "/opt/homebrew/bin/demucs",
-        }),
-        runBrewInherit: async () => 0,
-        runProcess: brewOkRunProcess(),
-        isTTY: false,
-        useStdoutColor: true,
-        runPythonPipInherit: async () => 0,
-      },
-    );
+    const shim = createDemucsShimForTests();
 
-    expect(outcome.kind).toBe("success");
-    if (outcome.kind === "success") {
-      expect(outcome.message).toContain("\u001b[32m\u2713\u001b[0m");
+    try {
+      const outcome = await runInstallToolsRequest(
+        { dryRun: false, includeOptional: true, assumeYes: true },
+        {
+          platform: "darwin",
+          maybeWhich: stubWhich({
+            brew: "/opt/homebrew/bin/brew",
+            uv: "/opt/homebrew/bin/uv",
+            demucs: shim.demucsPath,
+          }),
+          runBrewInherit: async () => 0,
+          runProcess: brewOkRunProcess(),
+          isTTY: false,
+          useStdoutColor: true,
+          runPythonPipInherit: async () => 0,
+        },
+      );
+
+      expect(outcome.kind).toBe("success");
+      if (outcome.kind === "success") {
+        expect(outcome.message).toContain("\u001b[32m\u2713\u001b[0m");
+      }
+    } finally {
+      shim.dispose();
+    }
+  });
+
+  test("full tier assumeYes runs uv pip install torchcodec when import probe fails once", async () => {
+    const shim = createDemucsShimForTests();
+    const calls: string[][] = [];
+    let torchProbePass = 0;
+    const python3 = Bun.which("python3");
+
+    if (python3 === null || python3.trim() === "") {
+      throw new Error("tests require python3 on PATH");
+    }
+
+    try {
+      const outcome = await runInstallToolsRequest(
+        { dryRun: false, includeOptional: true, assumeYes: true },
+        {
+          platform: "darwin",
+          maybeWhich: stubWhich({
+            brew: "/opt/homebrew/bin/brew",
+            uv: "/opt/homebrew/bin/uv",
+            demucs: shim.demucsPath,
+          }),
+          runBrewInherit: async () => 0,
+          runProcess: async (cmd) => {
+            if (cmd.args[0] === "-c" && cmd.args[1] === "import torchcodec") {
+              torchProbePass += 1;
+
+              if (torchProbePass >= 2) {
+                return {
+                  kind: "exited",
+                  exitCode: 0,
+                  stdout: "",
+                  stderr: "",
+                };
+              }
+
+              return {
+                kind: "exited",
+                exitCode: 1,
+                stdout: "",
+                stderr: "ModuleNotFoundError: No module named 'torchcodec'",
+              };
+            }
+
+            return brewOkRunProcess()(cmd);
+          },
+          isTTY: false,
+          useStdoutColor: false,
+          runPythonPipInherit: async (argv) => {
+            calls.push([...argv]);
+
+            return 0;
+          },
+        },
+      );
+
+      expect(outcome.kind).toBe("success");
+      expect(calls).toEqual([
+        [
+          "/opt/homebrew/bin/uv",
+          "pip",
+          "install",
+          "--python",
+          python3,
+          "torchcodec",
+        ],
+      ]);
+    } finally {
+      shim.dispose();
     }
   });
 

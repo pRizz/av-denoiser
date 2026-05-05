@@ -6,6 +6,9 @@
 
 - Guided denoise spinner shows **live elapsed time** for the current phase (including long SoX/Demucs steps), with a periodic refresh.
 - Successful **`denoise`** runs attach **`maybeExecutionTiming`** (per-phase durations and total wall time). Guided mode appends a **Timing** section to the session summary; **`denoise --json`** includes an **`executionTiming`** field when present.
+- **`doctor`** reports a **`demucs.torchcodec`** capability by running **`import torchcodec`** in the Python used by Demucs (from the **`demucs`** shebang or **`python3 -m demucs`**).
+- **`install-tools`** (macOS, full tier): after Demucs is on PATH, probes TorchCodec and, with **`--yes`** or an interactive confirm, can run **`uv pip install --python … torchcodec`** when the import fails.
+- Guided **denoise** shows a short Demucs / TorchCodec note when **`speech-vocals-demucs`** is selected.
 
 ### Fixed
 
